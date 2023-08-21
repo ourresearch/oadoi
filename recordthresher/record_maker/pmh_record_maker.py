@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import json
 import re
 import uuid
 from urllib.parse import quote
@@ -81,9 +82,9 @@ class PmhRecordMaker(RecordMaker):
             normalize_author({"raw": author}) for author in pmh_record.authors
         ] if pmh_record.authors else []
 
-        record.set_jsonb('authors', authors)
+        record.authors = authors
 
-        record.set_jsonb('citations', [])
+        record.citations = []
 
         record.doi = pmh_record.doi
 
@@ -110,6 +111,9 @@ class PmhRecordMaker(RecordMaker):
         cls._make_source_specific_record_changes(record, pmh_record, best_page)
 
         record.flag_modified_jsonb()
+
+        record.authors = json.dumps(record.authors)
+        record.citations = json.dumps(record.citations)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
@@ -142,7 +146,7 @@ class PmhRecordMaker(RecordMaker):
             from recordthresher.recordthresher_pub import RecordthresherPub
             response_pub = RecordthresherPub(id='', title=record.title)
             response_pub.normalized_title = record.normalized_title
-            response_pub.authors = record.authors
+            response_pub.authors = json.loads(record.authors)
             response_pub.response_jsonb = unpaywall_api_response.response_jsonb
             db.session().enable_relationship_loading(response_pub)
 

@@ -54,7 +54,9 @@ app = Flask(__name__)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
+openalex_db_url = os.getenv("OPENALEX_DATABASE_URL").replace('postgres://', 'postgresql://')
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace('postgres://', 'postgresql://')
+app.config["SQLALCHEMY_BINDS"] = {"openalex": openalex_db_url}
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 
 # from http://stackoverflow.com/a/12417346/596939
