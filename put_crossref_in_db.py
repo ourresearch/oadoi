@@ -5,8 +5,9 @@ from time import time, sleep
 from urllib.parse import quote
 
 import requests
-from requests.packages.urllib3.util.retry import Retry
+from requests.exceptions import ConnectionError, Timeout
 from sqlalchemy import text
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, retry_if_result
 
 from app import db
 from app import logger
@@ -109,18 +110,17 @@ def add_pubs_or_update_crossref(pubs):
     return pubs_to_add
 
 
+def is_bad_response(response):
+    return response.status_code in [413, 429, 500, 502, 503, 504]
+
+
+@retry(stop=stop_after_attempt(10),
+       wait=wait_exponential(multiplier=1, min=2, max=60),
+       retry=(retry_if_exception_type((ConnectionError, Timeout)) | retry_if_result(is_bad_response)))
 def get_response_page(url):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers = {"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
-
-    requests_session = requests.Session()
-
-    retries = Retry(total=10, backoff_factor=1, status_forcelist=[413, 429, 500, 502, 503, 504])
-    requests_session.mount('http://', DelayedAdapter(max_retries=retries))
-    requests_session.mount('https://', DelayedAdapter(max_retries=retries))
-
-    r = requests_session.get(url, headers=headers, timeout=(180, 180))
-
+    r = requests.get(url, headers=headers, timeout=(180, 180))
     return r
 
 
