@@ -124,7 +124,7 @@ def get_response_page(url):
     return r
 
 
-def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000, get_updates=False):
+def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, now=False, offset_days=0, chunk_size=1000, get_updates=False):
     root_url_doi = "https://api.crossref.org/works?filter=doi:{doi}"
 
     if get_updates:
@@ -145,6 +145,9 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
     elif today:
         last = (datetime.date.today() + datetime.timedelta(days=1))
         first = (datetime.date.today() - datetime.timedelta(days=1))
+    elif now:
+        last = datetime.date.today()
+        first = datetime.date.today()
 
     if not first:
         first = datetime.date(2016, 4, 1)
@@ -227,7 +230,7 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
 
 
 # this one is used for catch up.  use the above function when we want all weekly dois
-def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
+def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, week=False, now=False, chunk_size=1000):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers = {"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
 
@@ -297,6 +300,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--query_doi', nargs="?", type=str, help="pull in one doi")
 
+    parser.add_argument('--now', action="store_true", default=False, help="use if you want to pull in crossref records from current day")
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
     parser.add_argument('--week', action="store_true", default=False, help="use if you want to pull in crossref records from last 7 days")
 
