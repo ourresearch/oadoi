@@ -31,6 +31,12 @@ TOTAL_ATTEMPTED = 0
 SUCCESFUL_LOCK = Lock()
 SUCCESSFUL = 0
 
+SEEN = set()
+SEEN_LOCK = Lock()
+
+DUPE_COUNT = 0
+DUPE_COUNT_LOCK = Lock()
+
 libs_to_mum = [
     'boto',
     'boto3',
@@ -40,6 +46,21 @@ libs_to_mum = [
 
 for lib in libs_to_mum:
     logging.getLogger(lib).setLevel(logging.CRITICAL)
+
+
+def add_to_seen(doi):
+    with SEEN_LOCK:
+        SEEN.add(doi)
+
+
+def doi_is_seen(doi):
+    with SEEN_LOCK:
+        return doi in SEEN
+
+def inc_dupe_count():
+    global DUPE_COUNT
+    with DUPE_COUNT_LOCK:
+        DUPE_COUNT += 1
 
 
 def inc_attempted():
@@ -128,6 +149,9 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
         exc = None
         try:
             doi = pdf_doi_q.get(timeout=10)
+            if doi_is_seen(doi):
+                inc_dupe_count()
+                continue
             parsed = fetch_parsed_pdf_response(doi)['message']
             stmnt = text(
                 'UPDATE ins.recordthresher_record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
@@ -179,7 +203,7 @@ def print_stats():
         success_pct = round(SUCCESSFUL * 100 / TOTAL_ATTEMPTED,
                             2) if TOTAL_ATTEMPTED else 0
         logger.info(
-            f'Total attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESSFUL} | Success %: {success_pct} | Rate: {rate_per_hr}/hr')
+            f'Total attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESSFUL} | Success %: {success_pct} | Duplicates: {DUPE_COUNT} | Rate: {rate_per_hr}/hr')
         time.sleep(5)
 
 
