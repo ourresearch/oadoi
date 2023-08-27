@@ -12,6 +12,7 @@ from threading import Thread, Lock
 from urllib.parse import urljoin, quote
 
 import boto3
+import botocore
 import requests
 from requests import HTTPError
 from sqlalchemy import create_engine, text
@@ -37,6 +38,9 @@ SEEN_LOCK = Lock()
 DUPE_COUNT = 0
 DUPE_COUNT_LOCK = Lock()
 
+ALREADY_PARSED_COUNT = 0
+ALREADY_PARSED_LOCK = Lock()
+
 libs_to_mum = [
     'boto',
     'boto3',
@@ -48,6 +52,12 @@ for lib in libs_to_mum:
     logging.getLogger(lib).setLevel(logging.CRITICAL)
 
 
+def inc_already_parsed():
+    global ALREADY_PARSED_COUNT
+    with ALREADY_PARSED_LOCK:
+        ALREADY_PARSED_COUNT += 1
+
+
 def add_to_seen(doi):
     with SEEN_LOCK:
         SEEN.add(doi)
@@ -56,6 +66,7 @@ def add_to_seen(doi):
 def doi_is_seen(doi):
     with SEEN_LOCK:
         return doi in SEEN
+
 
 def inc_dupe_count():
     global DUPE_COUNT
@@ -81,6 +92,14 @@ def make_s3():
                           aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
                           aws_secret_access_key=os.getenv(
                               'AWS_SECRET_ACCESS_KEY'))
+
+
+def grobid_pdf_exists(key, s3):
+    try:
+        s3.get_object(Bucket=GROBID_XML_BUCKET, Key=key)
+        return True
+    except botocore.exceptions.ClientError as e:
+        return False
 
 
 def enqueue_from_db_loop(pdf_doi_q: Queue):
@@ -153,6 +172,9 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
                 inc_dupe_count()
                 continue
             add_to_seen(doi)
+            if grobid_pdf_exists(doi_to_xml_key(doi), s3):
+                inc_already_parsed()
+                continue
             parsed = fetch_parsed_pdf_response(doi)['message']
             stmnt = text(
                 'UPDATE ins.recordthresher_record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
@@ -204,7 +226,7 @@ def print_stats():
         success_pct = round(SUCCESSFUL * 100 / TOTAL_ATTEMPTED,
                             2) if TOTAL_ATTEMPTED else 0
         logger.info(
-            f'Total attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESSFUL} | Success %: {success_pct} | Duplicates: {DUPE_COUNT} | Rate: {rate_per_hr}/hr')
+            f'Total attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESSFUL} | Success %: {success_pct} | Duplicates: {DUPE_COUNT} | Already parsed: {ALREADY_PARSED_COUNT} | Rate: {rate_per_hr}/hr')
         time.sleep(5)
 
 
