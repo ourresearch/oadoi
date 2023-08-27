@@ -152,6 +152,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
             if doi_is_seen(doi):
                 inc_dupe_count()
                 continue
+            add_to_seen(doi)
             parsed = fetch_parsed_pdf_response(doi)['message']
             stmnt = text(
                 'UPDATE ins.recordthresher_record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
