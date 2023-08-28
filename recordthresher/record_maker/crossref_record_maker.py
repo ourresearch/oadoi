@@ -280,7 +280,7 @@ class CrossrefRecordMaker(RecordMaker):
     @classmethod
     def _reconcile_affiliations(cls, crossref_author, pl_author, doi):
         if '/nejm' in doi.lower():
-            return pl_author['affiliations']
+            return pl_author['affiliation']
         final_affs = []
         pl_affs = pl_author['affiliation'].copy()
         # We probably only want English affiliations from Parseland
