@@ -63,6 +63,8 @@ libs_to_mum = [
     's3transfer'
 ]
 
+INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = None
+
 for lib in libs_to_mum:
     logging.getLogger(lib).setLevel(logging.CRITICAL)
 
@@ -131,6 +133,7 @@ def doi_to_key(doi):
 
 
 def insert_into_parse_queue(parse_doi_queue: Queue):
+    global INSERT_PDF_UPDATED_INGEST_LOOP_EXITED
     with OADOI_DB_ENGINE.connect() as conn:
         chunk = []
         while True:
@@ -141,7 +144,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                     continue
                 _values = ', '.join([f"('{doi}', NULL, NULL)" for doi in chunk])
                 conn.execute(text(
-                    f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES {_values}').execution_options(
+                    f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES {_values} ON CONFLICT(doi) DO NOTHING;').execution_options(
                     autocommit=True))
                 chunk = []
             except Empty:
@@ -150,6 +153,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 logger.exception(e, exc_info=True)
                 break
     logger.info('EXITING insert_into_parse_queue loop')
+    INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = True
 
 
 def download_pdfs(url_q: Queue, parse_q: Queue):
@@ -288,6 +292,7 @@ def print_stats():
                 f'PDF url not found count: {PDF_URL_NOT_FOUND} | '
                 f'Invalid PDF count: {INVALID_PDF_COUNT} | '
                 f'Rate: {rate_per_hr}/hr | '
+                f'Queue parse loop exited: {INSERT_PDF_UPDATED_INGEST_LOOP_EXITED} | '
                 f'Hrs running: {hrs_running}hrs')
         except Exception as e:
             logger.error(e)
