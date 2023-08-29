@@ -134,6 +134,7 @@ def doi_to_key(doi):
 
 def insert_into_parse_queue(parse_doi_queue: Queue):
     global INSERT_PDF_UPDATED_INGEST_LOOP_EXITED
+    INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = False
     with OADOI_DB_ENGINE.connect() as conn:
         chunk = []
         while True:
