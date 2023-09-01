@@ -280,8 +280,8 @@ def is_retry_status(response):
        before_sleep=set_zyte_api_profile_before_retry)
 def call_requests_get(url=None,
                       headers=None,
-                      read_timeout=60,
-                      connect_timeout=60,
+                      read_timeout=300,
+                      connect_timeout=300,
                       stream=False,
                       publisher=None,
                       session_id=None,
@@ -315,8 +315,8 @@ def call_requests_get(url=None,
         headers["X-Crawlera-Timeout"] = "{}".format(
             300 * 1000)  # tomas recommended 300 seconds in email
 
-        read_timeout = read_timeout * 10
-        connect_timeout = connect_timeout * 10
+        read_timeout = 600
+        connect_timeout = 600
     else:
         if 'User-Agent' not in headers:
             headers['User-Agent'] = request_ua_headers()['User-Agent']
