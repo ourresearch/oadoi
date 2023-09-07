@@ -29,6 +29,8 @@ import endpoint  # magic
 # The documentation for this feature is available at:
 # https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#deep-paging-with-cursors
 
+CROSSREF_API_KEY = os.getenv('CROSSREF_API_KEY')
+
 
 def is_good_file(filename):
     return "chunk_" in filename
@@ -119,7 +121,11 @@ def is_bad_response(response):
        retry=(retry_if_exception_type((ConnectionError, Timeout)) | retry_if_result(is_bad_response)))
 def get_response_page(url):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
-    headers = {"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": "mailto:dev@ourresearch.org",
+        "crossref-api-key": CROSSREF_API_KEY
+    }
     r = requests.get(url, headers=headers, timeout=(180, 180))
     return r
 
@@ -215,7 +221,7 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
         logger.info("at bottom of loop")
 
         # be nice
-        seconds_between_requests = 2.0
+        seconds_between_requests = 1
         time_since_crossref_request = elapsed(crossref_answer_time)
         sleep_time = max(0, seconds_between_requests - time_since_crossref_request)
         logger.info(f'sleeping {sleep_time} between crossref requests')
