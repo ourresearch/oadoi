@@ -664,6 +664,10 @@ class Pub(db.Model):
     def do_not_refresh(self):
         current_oa_status = self.response_jsonb and self.response_jsonb.get('oa_status', None)
         if current_oa_status and current_oa_status == "gold" or current_oa_status == "hybrid":
+            r = requests.get(f"https://parseland.herokuapp.com/parse-publisher?doi={self.id}")
+            if r.status_code == 404 or r.status_code == 500:
+                logger.info(f"need to refresh gold or hybrid because parseland is bad response {self.id}")
+                return False
             return True
 
     def refresh(self, session_id=None):
