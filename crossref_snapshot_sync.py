@@ -117,7 +117,7 @@ def sync_crossref_snapshot():
         for sync_record in sync_records:
             doi = normalize_doi(sync_record.response_jsonb['DOI'])
             pub = pubs.get(doi, None)
-            if needs_update(sync_record, pub) or needs_creation(pub):
+            if needs_creation(pub) or needs_update(sync_record, pub):
                 my_pub = build_new_pub(doi, sync_record.response_jsonb)
                 # hack so it gets updated soon
                 my_pub.updated = datetime.datetime(1042, 1, 1)
