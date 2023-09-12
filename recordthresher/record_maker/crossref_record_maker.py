@@ -12,6 +12,7 @@ from app import db
 from oa_page import doi_repository_ids
 from page import RepoPage
 from recordthresher.crossref_doi_record import CrossrefDoiRecord
+from recordthresher.record import RecordFulltext
 from recordthresher.util import normalize_author, cleanup_affiliation
 from recordthresher.util import normalize_citation
 from recordthresher.util import parseland_parse
@@ -263,7 +264,11 @@ class CrossrefRecordMaker(RecordMaker):
             record.abstract = record.abstract or pl_parse.get('abstract')
             is_oa = bool(pub.response_jsonb.get('oa_locations'))
             if is_oa:
-                record.fulltext = record.fulltext or pl_parse.get('readable')
+                record_fulltext = (record.fulltext and record.fulltext.fulltext) or pl_parse.get('readable')
+                if record_fulltext:
+                    db.session.merge(
+                        RecordFulltext(recordthresher_id=record.id, fulltext=record_fulltext)
+                    )
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):

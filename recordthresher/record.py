@@ -69,8 +69,6 @@ class Record(db.Model):
     normalized_title = db.Column(db.Text)
     funders = db.Column(db.Text)
 
-    fulltext = db.Column(db.Text)
-
 
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:20]
@@ -159,3 +157,16 @@ class Record(db.Model):
 
             if original_json != current_json:
                 flag_modified(self, attribute_name)
+
+
+class RecordFulltext(db.Model):
+    __table_args__ = {'schema': 'mid'}
+    __tablename__ = "record_fulltext"
+    __bind_key__ = 'openalex'
+
+    recordthresher_id = db.Column(db.Text, db.ForeignKey("ins.recordthresher_record.id"), primary_key=True)
+    fulltext = db.Column(db.Text)
+
+
+Record.fulltext = db.relationship(RecordFulltext, lazy='selectin', viewonly=True, uselist=False)
+
