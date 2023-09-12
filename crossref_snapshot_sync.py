@@ -24,6 +24,7 @@ class MonthlySync(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     response_jsonb = db.Column(JSONB)
+    processed = db.Column(db.Boolean, default=False)
 
 
 def iso_to_datetime(iso_str):
@@ -87,15 +88,22 @@ def needs_creation(pub):
         return True
 
 
-def get_dois_and_data_from_crossref(chunk_size=100):
+def get_next_chunk(chunk_size=100):
+    sync_records = db.session.query(MonthlySync).filter_by(processed=False).with_for_update(skip_locked=True).limit(chunk_size).all()
+    for record in sync_records:
+        record.processed = True
+    db.session.commit()
+    return sync_records
+
+
+def sync_crossref_snapshot():
     num_pubs_added_so_far = 0
     insert_pub_fn = add_pubs_or_update_crossref
 
-    offset = int(os.getenv('MONTHLY_SYNC_OFFSET', 0))
     while True:
         pubs_this_chunk = []
-        logger.info(f"getting dois from crossref, offset {offset}")
-        sync_records = MonthlySync.query.order_by(MonthlySync.id).offset(offset).limit(chunk_size).all()
+        logger.info("getting crossref data from db")
+        sync_records = get_next_chunk()
 
         if not sync_records:
             break
@@ -119,10 +127,6 @@ def get_dois_and_data_from_crossref(chunk_size=100):
         logger.info("added {} pubs, loop done".format(len(added_pubs), ))
         num_pubs_added_so_far += len(added_pubs)
 
-        # Update the offset for the next batch
-        offset += chunk_size
-        logger.info("Processed up to offset {}".format(offset))
-
     # make sure to get the last ones
     if pubs_this_chunk:
         logger.info("saving last ones")
@@ -134,4 +138,4 @@ def get_dois_and_data_from_crossref(chunk_size=100):
 
 
 if __name__ == "__main__":
-    get_dois_and_data_from_crossref()
+    sync_crossref_snapshot()

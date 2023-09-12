@@ -13,7 +13,9 @@ Use this script to stage the Crossref snapshot data in a PostgreSQL database. De
     CREATE TABLE IF NOT EXISTS temp_crossref_monthly_sync (
         id TEXT PRIMARY KEY,
         response_jsonb JSONB
+        processed BOOLEAN DEFAULT FALSE
     );
+    CREATE INDEX idx_temp_crossref_monthly_sync_processed ON temp_crossref_monthly_sync(processed) WHERE processed = FALSE;
 3. Run this script to dump each JSON line into the temp table:
     python crossref_snapshot_setup.py
 """
