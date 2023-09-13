@@ -516,13 +516,6 @@ def get_overrides_dict():
     }
 
     # from email
-    override_dict["10.1126/science.aap9559"] = {
-        "pdf_url": "http://vermontcomplexsystems.org/share/papershredder/vosoughi2018a.pdf",
-        "version": "publishedVersion",
-        "host_type_set": "repository"
-    }
-
-    # from email
     override_dict["10.1109/tpds.2012.97"] = {
         "pdf_url": "https://www.cnsr.ictas.vt.edu/publication/06171175.pdf",
         "version": "publishedVersion",
