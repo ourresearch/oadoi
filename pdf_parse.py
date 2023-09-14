@@ -176,11 +176,11 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
                 inc_already_parsed()
                 continue
             parsed = fetch_parsed_pdf_response(doi)['message']
-            stmnt = text(
-                '''INSERT INTO mid.record_fulltext (recordthresher_id, fulltext) SELECT r.id, :fulltext FROM (SELECT id FROM ins.recordthresher_record WHERE doi = :doi AND record_type = 'crossref_doi') r ON CONFLICT(recordthresher_id) DO UPDATE SET fulltext = :fulltext;''').bindparams(
-                    fulltext=parsed['fulltext'],
-                    doi=doi)
-            db_q.put((stmnt, 'OPENALEX', False))
+            # stmnt = text(
+            #     '''INSERT INTO mid.record_fulltext (recordthresher_id, fulltext) SELECT r.id, :fulltext FROM (SELECT id FROM ins.recordthresher_record WHERE doi = :doi AND record_type = 'crossref_doi') r ON CONFLICT(recordthresher_id) DO UPDATE SET fulltext = :fulltext;''').bindparams(
+            #         fulltext=parsed['fulltext'],
+            #         doi=doi)
+            # db_q.put((stmnt, 'OPENALEX', False))
             other_obj = {}
             for k, v in parsed.items():
                 if k not in known_keys:
