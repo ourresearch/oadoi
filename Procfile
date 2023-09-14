@@ -18,3 +18,4 @@ recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
 recordthresher_refresh_enqueue_top_25: bash run_recordthresher_refresh_enqueue_top_25.sh
 recordthresher_refresh_enqueue_tmp: python3 recordthresher_refresh.py  -ep https://openalex.org/P4310320527 -ep https://openalex.org/P4310319811 -ep https://openalex.org/P4310320448 -ep https://openalex.org/P4310319748 -ep https://openalex.org/P4310319847 -ep https://openalex.org/P4310317825 -ep P4310320990 -ep P4310320083
 crossref_snapshot_sync: bash run_crossref_snapshot_sync.sh
+parse_pdfs: bash run_pdf_parse_worker.sh
