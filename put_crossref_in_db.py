@@ -116,8 +116,8 @@ def is_bad_response(response):
     return response.status_code in [413, 429, 500, 502, 503, 504]
 
 
-@retry(stop=stop_after_attempt(10),
-       wait=wait_exponential(multiplier=1, min=2, max=60),
+@retry(stop=stop_after_attempt(5),
+       wait=wait_exponential(multiplier=1, min=2, max=30),
        retry=(retry_if_exception_type((ConnectionError, Timeout)) | retry_if_result(is_bad_response)))
 def get_response_page(url):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
