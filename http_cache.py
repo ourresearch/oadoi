@@ -126,7 +126,9 @@ def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
 
     if r.is_redirect:
-        location = urljoin(r.url, r.headers.get('location'))
+        location = r.headers.get('location', '')
+        location = location if location.startswith('http') else urljoin(r.url, location)
+        location = location.replace('http:///', 'http://').replace('https:///', 'https://')
         logger.info('30x redirect: {}'.format(location))
 
         if location.startswith(
@@ -448,6 +450,7 @@ def call_requests_get(url=None,
                 return r
         else:
             # logger.info(u"getting url {}".format(url))
+            # url = 'https://bmczool.biomedcentral.com/articles/10.1186/s40850-021-00085-7'
             r = requests_session.get(url,
                                      headers=headers,
                                      timeout=(connect_timeout, read_timeout),
