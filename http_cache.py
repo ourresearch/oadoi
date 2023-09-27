@@ -450,7 +450,6 @@ def call_requests_get(url=None,
                 return r
         else:
             # logger.info(u"getting url {}".format(url))
-            # url = 'https://bmczool.biomedcentral.com/articles/10.1186/s40850-021-00085-7'
             r = requests_session.get(url,
                                      headers=headers,
                                      timeout=(connect_timeout, read_timeout),
