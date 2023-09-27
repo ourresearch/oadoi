@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from time import sleep
+import time
 
 import requests
 from lxml import etree
@@ -10,61 +10,42 @@ from app import logger
 ARXIV_ID_PATTERN = r'arXiv:\d{4}\.\d{4,5}(?:v\d+)?'
 
 
-def parseland_response(parseland_api_url, retry_seconds):
-    retry = True
-    next_retry_interval = 1
-    cumulative_wait = 0
+def parseland_response(parseland_api_url):
+    start = time.time()
+    logger.info(f'trying {parseland_api_url}')
+    try:
+        response = requests.get(parseland_api_url, verify=False)
+        response_time = f'{time.time() - start:.2f}'
+    except Exception as e:
+        logger.exception(e)
+        return None
 
-    while retry:
-        logger.info(f'trying {parseland_api_url}')
+    if response.ok:
+        logger.info(f'got a 200 response from parseland in {response_time} seconds')
         try:
-            response = requests.get(parseland_api_url, verify=False)
-        except Exception as e:
-            logger.exception(e)
-            return None
+            parseland_json = response.json()
+            message = parseland_json.get('message', None)
 
-        if response.ok:
-            logger.info('got a 200 response from parseland')
-            try:
-                parseland_json = response.json()
-                message = parseland_json.get('message', None)
-
-                if isinstance(message, list):
-                    # old-style response with authors at top level
-                    return {'authors': message}
-                elif isinstance(message, dict):
-                    return message
-                else:
-                    logger.error("can't recognize parseland response format")
-                    return None
-
-            except ValueError as e:
-                logger.error("response isn't valid json")
-                return None
-        else:
-            logger.warning(f'got error response from parseland: {response}')
-
-            if (
-                    response.status_code == 404
-                    and 'Source file not found' in response.text
-                    and cumulative_wait + next_retry_interval <= retry_seconds
-            ):
-                logger.info(f'retrying in {next_retry_interval} seconds')
-                sleep(next_retry_interval)
-                cumulative_wait += next_retry_interval
-                next_retry_interval *= 1.5
+            if isinstance(message, list):
+                # old-style response with authors at top level
+                return {'authors': message}
+            elif isinstance(message, dict):
+                return message
             else:
-                logger.info('not retrying')
-                retry = False
+                logger.error("can't recognize parseland response format")
+                return None
 
-    logger.info(f'done retrying after {cumulative_wait} seconds')
-    return None
+        except ValueError as e:
+            logger.error("response isn't valid json")
+            return None
+    else:
+        logger.warning(f'got error response from parseland in {response_time} seconds: {response}')
 
 
-def parseland_parse(parseland_api_url, retry_seconds=0):
+def parseland_parse(parseland_api_url):
     parse = None
 
-    if response := parseland_response(parseland_api_url, retry_seconds):
+    if response := parseland_response(parseland_api_url):
         parse = {'authors': [], 'published_date': None, 'genre': None,
                  'abstract': None}
 

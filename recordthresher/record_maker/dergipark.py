@@ -30,5 +30,5 @@ class DergiparkRecordMaker(PmhRecordMaker):
             if first_date_element is not None and first_date_element.text:
                 record.set_published_date(first_date_element.text)
 
-        if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page), retry_seconds=10)) is not None:
+        if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page))) is not None:
             record.set_authors(pl_parse['authors'])

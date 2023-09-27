@@ -59,7 +59,7 @@ pip==23.0.1
 property-manager==3.0
 proto-plus==1.19.5
 protobuf==3.17.3
-psycopg2==2.8.6
+psycopg2==2.9.7
 pyalex==0.10
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
@@ -83,7 +83,7 @@ shortuuid==1.0.1
 Sickle==0.6.5
 slackclient==2.9.3
 soupsieve==2.2.1
-SQLAlchemy==1.4.44
+SQLAlchemy==1.4.49
 starkbank-ecdsa==2.0.0
 tenacity==8.2.2
 typing-extensions==3.10.0.2
