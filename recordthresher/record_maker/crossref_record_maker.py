@@ -298,6 +298,9 @@ class CrossrefRecordMaker(RecordMaker):
         pl_affs = [aff for aff in pl_affs if aff['name'].isascii()] if crossref_author['affiliation'] else pl_affs
         for aff in crossref_author['affiliation']:
             # Assume crossref affiliation is better version initially
+            if all((aff.get('department'), aff.get('id'), not pl_affs, not aff['name'])):
+                final_affs.append(aff)
+                continue
             best_aff_version = aff['name']
             pl_aff_idx = cls._match_affiliation(aff['name'], [aff['name'] for aff in pl_affs])
             if pl_aff_idx > -1:
