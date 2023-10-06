@@ -1,4 +1,5 @@
 import datetime
+from dateutil.parser import parse
 import hashlib
 import json
 import math
@@ -7,6 +8,7 @@ import uuid
 from urllib.parse import quote
 
 import shortuuid
+from sqlalchemy import text
 
 from app import db
 from oa_page import doi_repository_ids
@@ -177,8 +179,14 @@ class CrossrefRecordMaker(RecordMaker):
         record.funders = json.dumps(record.funders)
 
         if db.session.is_modified(record):
-            record.updated = datetime.datetime.utcnow().isoformat()
-
+            if not record.updated or parse(pub.crossref_api_raw_new['indexed'][
+                'date-time']) > datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc) - datetime.timedelta(
+                    days=2):
+                record.updated = datetime.datetime.utcnow().isoformat()
+            else:
+                db.session.execute(text(
+                    '''INSERT INTO recordthresher.doi_record_add_everything_queue (doi) VALUES (:doi)'''
+                ).bindparams(doi=pub.doi))
         return record
 
     @classmethod
