@@ -82,7 +82,6 @@ class QueueDoiRtRecord:
                 num_updated += chunk_size
                 logger.info(
                     f'processed {len(dois)} DOI records in {elapsed(start_time, 2)} seconds')
-                logger.info()
 
     def fetch_queue_chunk(self, chunk_size):
         logger.info("looking for new jobs")
