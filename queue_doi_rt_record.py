@@ -24,7 +24,7 @@ def print_stats():
         now = datetime.datetime.now()
         hrs_running = (now - start).total_seconds() / (60 * 60)
         rate_hr = round(PROCESSED/hrs_running, 2)
-        print(f'[*] Processing rate: {rate_hr}/hr')
+        logger.info(f'[*] Processing rate: {rate_hr}/hr')
         sleep(5)
 
 
