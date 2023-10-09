@@ -23,6 +23,7 @@ def date_transform_func(real_updated):
 
 with OADOI_DB_ENGINE.connect() as conn:
     ROWS = conn.execute(text(SELECT_CMD)).fetchall()
+    conn.connection.commit()
 
 with OPENALEX_DB_ENGINE.connect() as conn, conn.connection.cursor() as oa_cur:
     df = pd.DataFrame(data=ROWS)
