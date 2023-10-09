@@ -13,7 +13,7 @@ OPENALEX_DB_ENGINE = create_engine(OPENALEX_DB_URL).execution_options(
 OADOI_DB_ENGINE = create_engine(OADOI_DB_URL)
 
 
-SELECT_CMD = "WITH chunk as (SELECT * FROM recordthresher.doi_record_add_everything_queue WHERE enqueued_add_everything = false LIMIT 20) UPDATE recordthresher.doi_record_add_everything_queue tbl SET enqueued_add_everything = false FROM chunk WHERE tbl.doi = chunk.doi RETURNING chunk.doi, chunk.real_updated;"
+SELECT_CMD = "WITH chunk as (SELECT * FROM recordthresher.doi_record_add_everything_queue WHERE enqueued_add_everything = false) UPDATE recordthresher.doi_record_add_everything_queue tbl SET enqueued_add_everything = true FROM chunk WHERE tbl.doi = chunk.doi RETURNING chunk.doi, chunk.real_updated;"
 
 
 def date_transform_func(real_updated):
