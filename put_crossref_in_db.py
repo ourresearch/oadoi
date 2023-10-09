@@ -5,9 +5,10 @@ from time import time, sleep
 from urllib.parse import quote
 
 import requests
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import RequestException
 from sqlalchemy import text
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, retry_if_result
+from tenacity import retry, stop_after_attempt, wait_exponential, \
+    retry_if_exception_type, retry_if_result
 
 from app import db
 from app import logger
@@ -15,13 +16,9 @@ from app import logging
 from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
-from util import DelayedAdapter
 from util import elapsed
 from util import normalize_doi
 from util import safe_commit
-
-import endpoint  # magic
-
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
@@ -118,7 +115,7 @@ def is_bad_response(response):
 
 @retry(stop=stop_after_attempt(5),
        wait=wait_exponential(multiplier=1, min=2, max=30),
-       retry=(retry_if_exception_type((ConnectionError, Timeout)) | retry_if_result(is_bad_response)))
+       retry=(retry_if_exception_type((RequestException, )) | retry_if_result(is_bad_response)))
 def get_response_page(url):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers = {
