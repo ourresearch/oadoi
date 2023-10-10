@@ -19,6 +19,7 @@ from pub import build_new_pub
 from util import elapsed
 from util import normalize_doi
 from util import safe_commit
+from endpoint import Endpoint  # magic
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
