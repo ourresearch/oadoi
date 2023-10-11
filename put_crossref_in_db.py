@@ -115,6 +115,7 @@ def is_bad_response(response):
 
 
 @retry(stop=stop_after_attempt(5),
+       reraise=True,
        wait=wait_exponential(multiplier=1, min=2, max=30),
        retry=(retry_if_exception_type((RequestException, )) | retry_if_result(is_bad_response)))
 def get_response_page(url):
