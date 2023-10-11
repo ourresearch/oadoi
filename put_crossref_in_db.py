@@ -296,6 +296,7 @@ def print_db_conns_count():
     while True:
         conns = db.session.execute('SELECT sum(numbackends) FROM pg_stat_database;').fetchone()
         logger.debug(f'Connections count: {conns[0]}')
+        db.session.commit()
         sleep(5)
 
 
