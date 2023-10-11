@@ -1,4 +1,6 @@
 import argparse
+import datetime
+from threading import Thread
 from time import sleep
 from time import time
 
@@ -13,9 +15,22 @@ from util import safe_commit
 
 import endpoint  # magic
 
+PROCESSED = 0
+
+
+def print_stats():
+    start = datetime.datetime.now()
+    while True:
+        now = datetime.datetime.now()
+        hrs_running = (now - start).total_seconds() / (60 * 60)
+        rate_hr = round(PROCESSED/hrs_running, 2)
+        logger.info(f'[*] Processing rate: {rate_hr}/hr')
+        sleep(5)
+
 
 class QueueDoiRtRecord:
     def worker_run(self, **kwargs):
+        global PROCESSED
         single_id = kwargs.get("doi", None)
         chunk_size = kwargs.get("chunk", 100)
         limit = kwargs.get("limit", None)
@@ -28,6 +43,7 @@ class QueueDoiRtRecord:
 
             if record := CrossrefRecordMaker.make_record(pub):
                 db.session.merge(record)
+                PROCESSED += 1
 
             safe_commit(db) or logger.info("COMMIT fail")
         else:
@@ -39,7 +55,8 @@ class QueueDoiRtRecord:
                 dois = self.fetch_queue_chunk(chunk_size)
 
                 if not dois:
-                    logger.info('no queued DOI records ready to update. waiting...')
+                    logger.info(
+                        'no queued DOI records ready to update. waiting...')
                     sleep(5)
                     continue
 
@@ -48,6 +65,7 @@ class QueueDoiRtRecord:
                     if pub := Pub.query.get(doi):
                         if record := CrossrefRecordMaker.make_record(pub):
                             db.session.merge(record)
+                            PROCESSED += 1
 
                 db.session.execute(
                     text('''
@@ -58,10 +76,12 @@ class QueueDoiRtRecord:
 
                 commit_start_time = time()
                 safe_commit(db) or logger.info("commit fail")
-                logger.info(f'commit took {elapsed(commit_start_time, 2)} seconds')
+                logger.info(
+                    f'commit took {elapsed(commit_start_time, 2)} seconds')
 
                 num_updated += chunk_size
-                logger.info(f'processed {len(dois)} DOI records in {elapsed(start_time, 2)} seconds')
+                logger.info(
+                    f'processed {len(dois)} DOI records in {elapsed(start_time, 2)} seconds')
 
     def fetch_queue_chunk(self, chunk_size):
         logger.info("looking for new jobs")
@@ -83,19 +103,25 @@ class QueueDoiRtRecord:
         """).bindparams(chunk=chunk_size)
 
         job_time = time()
-        doi_list = [row[0] for row in db.engine.execute(queue_query.execution_options(autocommit=True)).all()]
-        logger.info(f'got {len(doi_list)} DOIs, took {elapsed(job_time)} seconds')
+        doi_list = [row[0] for row in db.engine.execute(
+            queue_query.execution_options(autocommit=True)).all()]
+        logger.info(
+            f'got {len(doi_list)} DOIs, took {elapsed(job_time)} seconds')
 
         return doi_list
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--doi', nargs="?", type=str, help="doi you want to update the RT record for")
-    parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many records to update")
-    parser.add_argument('--chunk', "-ch", nargs="?", default=100, type=int, help="how many records to update at once")
+    parser.add_argument('--doi', nargs="?", type=str,
+                        help="doi you want to update the RT record for")
+    parser.add_argument('--limit', "-l", nargs="?", type=int,
+                        help="how many records to update")
+    parser.add_argument('--chunk', "-ch", nargs="?", default=100, type=int,
+                        help="how many records to update at once")
 
     parsed_args = parser.parse_args()
 
     my_queue = QueueDoiRtRecord()
+    Thread(target=print_stats, daemon=True).start()
     my_queue.worker_run(**vars(parsed_args))
