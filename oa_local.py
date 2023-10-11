@@ -254,6 +254,15 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '1945-4589' in issns and pub_year >= 2008:
         return True
 
+    if '0208-189X' in issns and pub_year >= 1984:
+        return True
+
+    if '1847-3377' in issns and pub_year >= 1994:
+        return True
+
+    if '1406-0922' in issns and pub_year >= 1996:
+        return True
+
     return False
 
 
