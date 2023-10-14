@@ -185,7 +185,7 @@ class CrossrefRecordMaker(RecordMaker):
                 record.updated = datetime.datetime.utcnow().isoformat()
             else:
                 db.session.execute(text(
-                    '''INSERT INTO recordthresher.doi_record_add_everything_queue (doi) VALUES (:doi) ON CONFLICT DO NOTHING;'''
+                    '''INSERT INTO recordthresher.doi_record_add_everything_queue (doi) VALUES (:doi) ON CONFLICT DO UPDATE SET real_updated = now();'''
                 ).bindparams(doi=pub.doi))
         return record
 
