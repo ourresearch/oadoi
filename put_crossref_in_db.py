@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import os
+from threading import Thread
 from time import time, sleep
 from urllib.parse import quote
 
@@ -291,6 +292,14 @@ def date_str(s):
     return datetime.datetime.strptime(s, '%Y-%m-%d').date()
 
 
+def print_db_conns_count():
+    while True:
+        conns = db.session.execute('SELECT sum(numbackends) FROM pg_stat_database;').fetchone()
+        logger.debug(f'Connections count: {conns[0]}')
+        db.session.commit()
+        sleep(5)
+
+
 if __name__ == "__main__":
     if os.getenv('OADOI_LOG_SQL'):
         logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -317,5 +326,6 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
 
     logger.info("calling {} with these args: {}".format(function.__name__, vars(parsed)))
+    Thread(target=print_db_conns_count, daemon=True).start()
     function(**vars(parsed))
 

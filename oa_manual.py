@@ -26,10 +26,6 @@ def get_override_dict(pub):
         return overrides_dict[pub.doi]
     elif db_overrides_dict:
         return db_overrides_dict.response_jsonb
-    elif pub.issn_l == '1330-7533' and pub.best_host == 'publisher':
-        # Tourism and Hospitality Management, ticket 667
-        # doi.org links don't work if referer header is set
-        return {}
     elif pub.issn_l == '0860-021X':
         # Biology of Sport.
         # ticket 995
