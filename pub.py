@@ -359,7 +359,7 @@ class PDFVersion(Enum):
         return ''
 
     def s3_url(self, doi):
-        return f's3://{LANDING_PAGE_ARCHIVE_BUCKET}/{self.s3_key(doi)}'
+        return f's3://{PDF_ARCHIVE_BUCKET}/{self.s3_key(doi)}'
 
     @classmethod
     def from_version_str(cls, version_str: str):
@@ -1131,7 +1131,7 @@ class Pub(db.Model):
                 self.save_landing_page_text(publisher_landing_page.page_text)
                 self.save_pdf(publisher_landing_page.pdf_content)
                 # We don't want to save published version since we just did so in line above
-                if (page_new := self.page_new) and (pdf_version := PDFVersion.from_version_str(page_new.scrape_version)) and pdf_version != PDFVersion.PUBLISHED:
+                if (page_new := self.page_new(lambda p: p.scrape_pdf_url is not None)) and (pdf_version := PDFVersion.from_version_str(page_new.scrape_version)) and pdf_version != PDFVersion.PUBLISHED:
                     if (r := http_get(page_new.scrape_pdf_url, ask_slowly=True)) and r.ok:
                         self.save_pdf(r.content, pdf_version)
 
@@ -1534,9 +1534,8 @@ class Pub(db.Model):
             my_pages.append(my_page)
         return my_pages
 
-    @property
-    def page_new(self):
-        if p_new := [p for p in self.pages if isinstance(p, page.PageNew)]:
+    def page_new(self, filter_f=lambda x: True):
+        if p_new := [p for p in self.pages if isinstance(p, page.PageNew) and filter_f(p)]:
             return p_new[0]
         return None
 
