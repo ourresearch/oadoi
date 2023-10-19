@@ -9,6 +9,7 @@ from enum import Enum
 from threading import Thread
 
 import boto3
+import botocore
 import dateutil.parser
 import gzip
 import requests
@@ -47,6 +48,8 @@ from util import safe_commit
 from webpage import PublisherWebpage
 
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
+
+s3 = boto3.client('s3', verify=False)
 
 
 def build_new_pub(doi, crossref_api):
@@ -367,6 +370,13 @@ class PDFVersion(Enum):
             if version.value in version_str.lower():
                 return version
         return None
+
+    def in_s3(self, doi) -> bool:
+        try:
+            s3.get_object(Bucket=PDF_ARCHIVE_BUCKET, Key=self.s3_key(doi))
+            return True
+        except botocore.exceptions.ClientError as e:
+            return False
 
 
 class PmcidPublishedVersionLookup(db.Model):
@@ -1129,9 +1139,8 @@ class Pub(db.Model):
                 db.session.merge(self)
 
                 self.save_landing_page_text(publisher_landing_page.page_text)
-                self.save_pdf(publisher_landing_page.pdf_content)
-                # We don't want to save published version since we just did so in line above
-                if (page_new := self.page_new(lambda p: p.scrape_pdf_url is not None)) and (pdf_version := PDFVersion.from_version_str(page_new.scrape_version)) and pdf_version != PDFVersion.PUBLISHED:
+                saved_lp_published = self.save_pdf(publisher_landing_page.pdf_content)
+                if not saved_lp_published and (page_new := self.page_new(lambda p: p.scrape_pdf_url is not None)) and (pdf_version := PDFVersion.from_version_str(page_new.scrape_version)):
                     if (r := http_get(page_new.scrape_pdf_url, ask_slowly=True)) and r.ok:
                         self.save_pdf(r.content, pdf_version)
 
@@ -1177,8 +1186,7 @@ class Pub(db.Model):
         try:
             logger.info(
                 f'saving {len(page_text)} characters to {self.landing_page_archive_url()}')
-            client = boto3.client('s3')
-            client.put_object(
+            s3.put_object(
                 Body=gzip.compress(page_text.encode('utf-8')),
                 Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
                 Key=self.landing_page_archive_key()
@@ -1190,19 +1198,20 @@ class Pub(db.Model):
 
     def save_pdf(self, pdf_content, pdf_version=PDFVersion.PUBLISHED):
         if not pdf_content:
-            return
+            return False
 
         try:
             logger.info(
                 f'saving {len(pdf_content)} characters to {pdf_version.s3_url(self.doi)}')
-            client = boto3.client('s3', verify=False)
-            client.put_object(
+            s3.put_object(
                 Body=pdf_content,
                 Bucket=PDF_ARCHIVE_BUCKET,
                 Key=pdf_version.s3_key(self.doi)
             )
+            return True
         except Exception as e:
             logger.error(f'failed to save pdf: {e}')
+            return False
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
