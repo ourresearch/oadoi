@@ -1107,6 +1107,11 @@ class Pub(db.Model):
         for my_page in self.pages:
             my_page.scrape()
 
+    def enqueue_pdf_parsing(self):
+        db.session.execute(text(
+            "INSERT INTO recordthresher.pdf_update_ingest (doi) VALUES (:doi) ON CONFLICT(doi) DO UPDATE SET finished = NULL;").bindparams(
+            doi=self.doi).execution_options(autocommit=True))
+
     def refresh_hybrid_scrape(self):
         logger.info("***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
@@ -1139,10 +1144,16 @@ class Pub(db.Model):
                 db.session.merge(self)
 
                 self.save_landing_page_text(publisher_landing_page.page_text)
-                saved_lp_published = self.save_pdf(publisher_landing_page.pdf_content)
-                if not saved_lp_published and (page_new := self.page_new(lambda p: p.scrape_pdf_url is not None)) and (pdf_version := PDFVersion.from_version_str(page_new.scrape_version)):
-                    if (r := http_get(page_new.scrape_pdf_url, ask_slowly=True)) and r.ok:
-                        self.save_pdf(r.content, pdf_version)
+                pdf_saved = self.save_pdf(publisher_landing_page.pdf_content)
+                if not pdf_saved and (page_new := self.page_new(
+                        lambda p: p.scrape_pdf_url is not None)) and (
+                pdf_version := PDFVersion.from_version_str(
+                        page_new.scrape_version)):
+                    if (r := http_get(page_new.scrape_pdf_url,
+                                      ask_slowly=True)) and r.ok:
+                        pdf_saved = self.save_pdf(r.content, pdf_version)
+                if pdf_saved:
+                    self.enqueue_pdf_parsing()
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
@@ -1544,7 +1555,8 @@ class Pub(db.Model):
         return my_pages
 
     def page_new(self, filter_f=lambda x: True):
-        if p_new := [p for p in self.pages if isinstance(p, page.PageNew) and filter_f(p)]:
+        if p_new := [p for p in self.pages if
+                     isinstance(p, page.PageNew) and filter_f(p)]:
             return p_new[0]
         return None
 
