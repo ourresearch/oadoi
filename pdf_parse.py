@@ -9,7 +9,7 @@ from datetime import datetime
 from io import BytesIO
 from queue import Queue, Empty
 from threading import Thread, Lock
-from urllib.parse import urljoin, quote
+from urllib.parse import urljoin
 
 import boto3
 import botocore
@@ -19,12 +19,13 @@ from sqlalchemy import create_engine, text
 from tenacity import retry, stop_after_attempt, retry_if_exception_type
 
 from app import app, logger
+from const import GROBID_XML_BUCKET
+from pdf_util import PDFVersion
 
 OADOI_DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 OPENALEX_DB_ENGINE = create_engine(os.getenv('OPENALEX_DATABASE_URL'))
 OPENALEX_PDF_PARSER_URL = os.getenv('OPENALEX_PDF_PARSER_URL')
 OPENALEX_PDF_PARSER_API_KEY = os.getenv('OPENALEX_PDF_PARSER_API_KEY')
-GROBID_XML_BUCKET = os.getenv('AWS_S3_GROBID_XML_BUCKET')
 
 TOTAL_ATTEMPTED_LOCK = Lock()
 TOTAL_ATTEMPTED = 0
@@ -120,27 +121,24 @@ def enqueue_from_db_loop(pdf_doi_q: Queue):
                 text(query).execution_options(autocommit=True,
                                               autoflush=True)).all()
             for row in rows:
-                pdf_doi_q.put(row['doi'])
+                pdf_doi_q.put((row['doi'], PDFVersion.from_version_str(row['pdf_version'])))
             if not rows:
                 break
 
 
 @retry(stop=stop_after_attempt(3), reraise=True,
        retry=retry_if_exception_type(HTTPError))
-def fetch_parsed_pdf_response(doi):
+def fetch_parsed_pdf_response(doi, version: PDFVersion):
     url = urljoin(OPENALEX_PDF_PARSER_URL, 'parse')
     r = requests.get(url, params={'doi': doi,
-                                  'api_key': OPENALEX_PDF_PARSER_API_KEY})
+                                  'api_key': OPENALEX_PDF_PARSER_API_KEY,
+                                  'version': version.value})
     r.raise_for_status()
     return r.json()
 
 
 def decompress_raw(raw):
     return gzip.decompress(base64.decodebytes(raw.encode())).decode()
-
-
-def doi_to_xml_key(doi):
-    return f'{quote(doi, safe="")}.xml'
 
 
 def process_db_statements_loop(db_q: Queue):
@@ -167,15 +165,15 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
         doi = None
         exc = None
         try:
-            doi = pdf_doi_q.get(timeout=10)
+            doi, version = pdf_doi_q.get(timeout=20)
             if doi_is_seen(doi):
                 inc_dupe_count()
                 continue
             add_to_seen(doi)
-            if grobid_pdf_exists(doi_to_xml_key(doi), s3):
+            if version.grobid_in_s3(doi):
                 inc_already_parsed()
                 continue
-            parsed = fetch_parsed_pdf_response(doi)['message']
+            parsed = fetch_parsed_pdf_response(doi, version)['message']
             stmnt = text(
                 '''INSERT INTO mid.record_fulltext (recordthresher_id, fulltext) SELECT r.id, :fulltext FROM (SELECT id FROM ins.recordthresher_record WHERE doi = :doi AND record_type = 'crossref_doi') r ON CONFLICT(recordthresher_id) DO UPDATE SET fulltext = :fulltext;''').bindparams(
                     fulltext=parsed['fulltext'],
@@ -196,7 +194,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
             db_q.put((stmnt, 'OADOI', False))
             if raw := parsed.get('raw'):
                 gzipped = base64.decodebytes(raw.encode())
-                s3.upload_fileobj(BytesIO(gzipped), Key=doi_to_xml_key(doi),
+                s3.upload_fileobj(BytesIO(gzipped), Key=version.grobid_s3_key(doi),
                                   Bucket=GROBID_XML_BUCKET)
             inc_successful()
         except Empty:

@@ -24,6 +24,7 @@ from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
 from urllib.parse import quote
 
+import const
 import journal_export
 import pub
 import repository
@@ -1069,7 +1070,7 @@ def get_doi_landing_page(doi):
     doi_key = quote(normalize_doi(doi), safe='')
 
     s3 = boto.connect_s3()
-    bucket = s3.get_bucket(pub.LANDING_PAGE_ARCHIVE_BUCKET)
+    bucket = s3.get_bucket(const.LANDING_PAGE_ARCHIVE_BUCKET)
     key = bucket.lookup(doi_key)
 
     if not key:
