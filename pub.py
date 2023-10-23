@@ -9,7 +9,6 @@ from enum import Enum
 from threading import Thread
 
 import boto3
-import botocore
 import dateutil.parser
 import gzip
 import requests
@@ -29,11 +28,13 @@ import oa_page
 import page
 from app import db
 from app import logger
+from const import LANDING_PAGE_ARCHIVE_BUCKET, PDF_ARCHIVE_BUCKET
 from http_cache import get_session_id, http_get
 from journal import Journal
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, \
     oa_status_sort_key
 from pdf_url import PdfUrl
+from pdf_util import PDFVersion
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -347,38 +348,6 @@ def build_crossref_record(data):
     return record
 
 
-class PDFVersion(Enum):
-    PUBLISHED = 'published'
-    ACCEPTED = 'accepted'
-    SUBMITTED = 'submitted'
-
-    def s3_key(self, doi):
-        return f"{self.s3_prefix}{urllib.parse.quote(doi, safe='')}.pdf"
-
-    @property
-    def s3_prefix(self):
-        if not self == PDFVersion.PUBLISHED:
-            return f'{self.value}_'
-        return ''
-
-    def s3_url(self, doi):
-        return f's3://{PDF_ARCHIVE_BUCKET}/{self.s3_key(doi)}'
-
-    @classmethod
-    def from_version_str(cls, version_str: str):
-        for version in cls:
-            if version.value in version_str.lower():
-                return version
-        return None
-
-    def in_s3(self, doi) -> bool:
-        try:
-            s3.get_object(Bucket=PDF_ARCHIVE_BUCKET, Key=self.s3_key(doi))
-            return True
-        except botocore.exceptions.ClientError as e:
-            return False
-
-
 class PmcidPublishedVersionLookup(db.Model):
     pmcid = db.Column(db.Text, db.ForeignKey('pmcid_lookup.pmcid'),
                       primary_key=True)
@@ -468,10 +437,6 @@ class PubRefreshResult(db.Model):
 
     def __repr__(self):
         return f'<PubRefreshResult({self.id}, {self.refresh_time}, {self.oa_status_before}, {self.oa_status_after})>'
-
-
-LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-doi-landing-page'
-PDF_ARCHIVE_BUCKET = 'unpaywall-doi-pdf'
 
 
 class Pub(db.Model):
@@ -1107,10 +1072,11 @@ class Pub(db.Model):
         for my_page in self.pages:
             my_page.scrape()
 
-    def enqueue_pdf_parsing(self):
+    def enqueue_pdf_parsing(self, version: PDFVersion = PDFVersion.PUBLISHED):
         db.session.execute(text(
-            "INSERT INTO recordthresher.pdf_update_ingest (doi) VALUES (:doi) ON CONFLICT(doi) DO UPDATE SET finished = NULL;").bindparams(
-            doi=self.doi).execution_options(autocommit=True))
+            "INSERT INTO recordthresher.pdf_update_ingest (doi, pdf_version) VALUES (:doi, :version) ON CONFLICT(doi) DO UPDATE SET finished = NULL;").bindparams(
+            doi=self.doi, version=version.value))
+        db.session.commit()
 
     def refresh_hybrid_scrape(self):
         logger.info("***** {}: {}".format(self.publisher, self.journal))
@@ -1145,6 +1111,7 @@ class Pub(db.Model):
 
                 self.save_landing_page_text(publisher_landing_page.page_text)
                 pdf_saved = self.save_pdf(publisher_landing_page.pdf_content)
+                pdf_version = PDFVersion.PUBLISHED
                 if not pdf_saved and (page_new := self.page_new(
                         lambda p: p.scrape_pdf_url is not None)) and (
                 pdf_version := PDFVersion.from_version_str(
@@ -1153,7 +1120,7 @@ class Pub(db.Model):
                                       ask_slowly=True)) and r.ok:
                         pdf_saved = self.save_pdf(r.content, pdf_version)
                 if pdf_saved:
-                    self.enqueue_pdf_parsing()
+                    self.enqueue_pdf_parsing(pdf_version)
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
