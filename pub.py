@@ -1,7 +1,9 @@
 import datetime
+import gzip
 import json
 import random
 import re
+import urllib.parse
 from collections import Counter
 from collections import OrderedDict
 from collections import defaultdict
@@ -10,15 +12,13 @@ from threading import Thread
 
 import boto3
 import dateutil.parser
-import gzip
 import requests
-import urllib.parse
 from dateutil.relativedelta import relativedelta
 from lxml import etree
 from psycopg2.errors import UniqueViolation
 from sqlalchemy import orm, sql, text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.attributes import flag_modified
 
 import oa_evidence
@@ -29,12 +29,13 @@ import page
 from app import db
 from app import logger
 from const import LANDING_PAGE_ARCHIVE_BUCKET, PDF_ARCHIVE_BUCKET
-from http_cache import get_session_id, http_get
+from convert_http_to_https import fix_url_scheme
+from http_cache import get_session_id
 from journal import Journal
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, \
     oa_status_sort_key
 from pdf_url import PdfUrl
-from pdf_util import PDFVersion
+from pdf_util import save_pdf
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -1072,12 +1073,6 @@ class Pub(db.Model):
         for my_page in self.pages:
             my_page.scrape()
 
-    def enqueue_pdf_parsing(self, version: PDFVersion = PDFVersion.PUBLISHED):
-        db.session.execute(text(
-            "INSERT INTO recordthresher.pdf_update_ingest (doi, pdf_version) VALUES (:doi, :version) ON CONFLICT(doi) DO UPDATE SET finished = NULL;").bindparams(
-            doi=self.doi, version=version.value))
-        db.session.commit()
-
     def refresh_hybrid_scrape(self):
         logger.info("***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
@@ -1110,17 +1105,7 @@ class Pub(db.Model):
                 db.session.merge(self)
 
                 self.save_landing_page_text(publisher_landing_page.page_text)
-                pdf_saved = self.save_pdf(publisher_landing_page.pdf_content)
-                pdf_version = PDFVersion.PUBLISHED
-                if not pdf_saved and (page_new := self.page_new(
-                        lambda p: p.scrape_pdf_url is not None)) and (
-                pdf_version := PDFVersion.from_version_str(
-                        page_new.scrape_version)):
-                    if (r := http_get(page_new.scrape_pdf_url,
-                                      ask_slowly=True)) and r.ok:
-                        pdf_saved = self.save_pdf(r.content, pdf_version)
-                if pdf_saved:
-                    self.enqueue_pdf_parsing(pdf_version)
+                save_pdf(self.doi, publisher_landing_page.pdf_content)
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
@@ -1173,23 +1158,6 @@ class Pub(db.Model):
         except Exception as e:
             # page text is just nice-to-have for now
             logger.error(f'failed to save landing page: {e}')
-
-    def save_pdf(self, pdf_content, pdf_version=PDFVersion.PUBLISHED):
-        if not pdf_content:
-            return False
-
-        try:
-            logger.info(
-                f'saving {len(pdf_content)} characters to {pdf_version.s3_url(self.doi)}')
-            s3.put_object(
-                Body=pdf_content,
-                Bucket=PDF_ARCHIVE_BUCKET,
-                Key=pdf_version.s3_key(self.doi)
-            )
-            return True
-        except Exception as e:
-            logger.error(f'failed to save pdf: {e}')
-            return False
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi

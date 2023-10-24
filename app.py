@@ -3,7 +3,7 @@ import os
 import sys
 import warnings
 
-import boto
+import boto3
 import requests
 from flask import Flask
 from flask_compress import Compress
@@ -88,10 +88,7 @@ app.config["COMPRESS_DEBUG"] = compress_json
 
 
 # aws s3 connection
-s3_conn = boto.connect_s3(
-    os.getenv("AWS_ACCESS_KEY_ID"),
-    os.getenv("AWS_SECRET_ACCESS_KEY")
-)
+s3_conn = boto3.client('s3')
 
 # imports got here for tables that need auto-created.
 # import publication
