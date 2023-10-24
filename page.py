@@ -336,7 +336,7 @@ class PageBase(db.Model):
         if self.scrape_pdf_url:
             self.scrape_pdf_url = clean_url(self.scrape_pdf_url)
 
-        if isinstance(self, PageNew) and self.scrape_version:
+        if isinstance(self, PageNew) and self.scrape_version and self.doi:
             logger.debug(f'Saving {self.scrape_version} PDF of DOI - {self.doi}')
             self.save_pdf(PDFVersion.from_version_str(self.scrape_version),
                           pdf_r=pdf_r)
