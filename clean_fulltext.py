@@ -21,7 +21,7 @@ def print_stats():
     while True:
         now = datetime.now()
         hrs_passed = (now - started).total_seconds() / (60 * 60)
-        rate = round(PROCESSED_COUNT/hrs_passed, 2)
+        rate = round(PROCESSED_COUNT / hrs_passed, 2)
         print(f'[*] Processing rate: {rate}/hr')
         time.sleep(5)
 
@@ -46,25 +46,31 @@ def update_fulltexts():
     RETURNING queue.*;
     '''
     updates = []
-    cursor = conn.connection.cursor()
-    while True:
-        try:
-            rows = conn.execute(text(stmnt)).fetchall()
-            for row in rows:
-                recordthresher_id, fulltext = row
-                cleaned = clean_fulltext(fulltext, truncate_limit=200000)
-                updates.append((recordthresher_id, cleaned))
-                PROCESSED_COUNT += 1
-            if len(updates) > 0 and len(updates) % CHUNK_SIZE == 0:
-                updates_formatted = ', '.join(
-                    [cursor.mogrify('(%s, %s)', update).decode() for update in
-                     updates])
-                conn.execute(text(
-                    f'INSERT INTO mid.tmp_cleaned_fulltext (recordthresher_id, fulltext) VALUES {updates_formatted};'))
-                conn.connection.commit()
-                updates = []
-        except Exception as e:
-            print(e)
+    with conn.connection.cursor() as cursor:
+        while True:
+            try:
+                rows = conn.execute(text(stmnt)).fetchall()
+                if not rows:
+                    break
+                for row in rows:
+                    recordthresher_id, fulltext = row
+                    cleaned = clean_fulltext(fulltext, truncate_limit=200_000)
+                    updates.append((recordthresher_id, cleaned))
+                    PROCESSED_COUNT += 1
+                if len(updates) > 0 and ((len(updates) % CHUNK_SIZE) == 0):
+                    updates_template = ','.join(['%s'] * len(updates))
+                    # updates_formatted = ', '.join(
+                    #     [cursor.mogrify('(%s, %s)', update).decode() for update in
+                    #      updates])
+                    query = cursor.mogrify(
+                        f'INSERT INTO mid.tmp_cleaned_fulltext (recordthresher_id, fulltext) VALUES {updates_template};',
+                        updates)
+                    cursor.execute(query.decode())
+                    conn.connection.commit()
+                    updates = []
+            except Exception as e:
+                print(e)
+    conn.close()
 
 
 if __name__ == '__main__':
