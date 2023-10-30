@@ -1,4 +1,5 @@
 import time
+import traceback
 from datetime import datetime
 from threading import Thread
 
@@ -69,7 +70,7 @@ def update_fulltexts():
                     conn.connection.commit()
                     updates = []
             except Exception as e:
-                print(e)
+                print(traceback.format_exc())
     conn.close()
 
 
