@@ -52,7 +52,7 @@ def update_fulltexts():
             rows = conn.execute(text(stmnt)).fetchall()
             for row in rows:
                 recordthresher_id, fulltext = row
-                cleaned = clean_fulltext(fulltext, truncate_limit=2000000)
+                cleaned = clean_fulltext(fulltext, truncate_limit=200000)
                 updates.append((recordthresher_id, cleaned))
                 PROCESSED_COUNT += 1
             if len(updates) > 0 and len(updates) % CHUNK_SIZE == 0:
