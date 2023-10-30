@@ -30,7 +30,7 @@ def print_stats():
 def clean_fulltext(fulltext, truncate_limit):
     soup = BeautifulSoup(fulltext, features='lxml', parser='lxml')
     cleaned = soup.get_text(separator=' ')
-    return cleaned[:truncate_limit]
+    return cleaned[:truncate_limit] if cleaned else ''
 
 
 def update_fulltexts():
@@ -39,7 +39,7 @@ def update_fulltexts():
     with queue as (
         SELECT record_fulltext_truncate_queue.recordthresher_id, rf.fulltext FROM mid.record_fulltext_truncate_queue 
         JOIN mid.record_fulltext rf on record_fulltext_truncate_queue.recordthresher_id = rf.recordthresher_id
-        WHERE started is FALSE 
+        WHERE started is FALSE AND rf.fulltext IS NOT NULL
         LIMIT {CHUNK_SIZE} FOR UPDATE SKIP LOCKED
     )
     update mid.record_fulltext_truncate_queue update_rows SET started = TRUE
@@ -54,10 +54,13 @@ def update_fulltexts():
                 if not rows:
                     break
                 for row in rows:
-                    recordthresher_id, fulltext = row
-                    cleaned = clean_fulltext(fulltext, truncate_limit=200_000)
-                    updates.append((recordthresher_id, cleaned))
-                    PROCESSED_COUNT += 1
+                    try:
+                        recordthresher_id, fulltext = row
+                        cleaned = clean_fulltext(fulltext, truncate_limit=200_000)
+                        updates.append((recordthresher_id, cleaned))
+                        PROCESSED_COUNT += 1
+                    except Exception as e:
+                        print(e)
                 if len(updates) > 0 and ((len(updates) % CHUNK_SIZE) == 0):
                     updates_template = ','.join(['%s'] * len(updates))
                     # updates_formatted = ', '.join(
