@@ -15,10 +15,10 @@ class PDFVersion(Enum):
     SUBMITTED = 'submitted'
 
     def s3_key(self, doi):
-        return f"{self.s3_prefix}{quote(doi, safe='')}.pdf"
+        return f"{self.s3_prefix}{quote(doi.lower(), safe='')}.pdf"
 
     def grobid_s3_key(self, doi):
-        return f'{self.s3_prefix}{quote(doi, safe="")}.xml'
+        return f'{self.s3_prefix}{quote(doi.lower(), safe="")}.xml'
 
     @property
     def s3_prefix(self):
