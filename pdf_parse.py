@@ -14,6 +14,7 @@ from urllib.parse import urljoin
 import boto3
 import botocore
 import requests
+from bs4 import BeautifulSoup
 from requests import HTTPError
 from sqlalchemy import create_engine, text
 from tenacity import retry, stop_after_attempt, retry_if_exception_type
@@ -174,9 +175,10 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
                 inc_already_parsed()
                 continue
             parsed = fetch_parsed_pdf_response(doi, version)['message']
+            soup = BeautifulSoup(parsed['fulltext'], parser='lxml', features='lxml')
             stmnt = text(
                 '''INSERT INTO mid.record_fulltext (recordthresher_id, fulltext) SELECT r.id, :fulltext FROM (SELECT id FROM ins.recordthresher_record WHERE doi = :doi AND record_type = 'crossref_doi') r ON CONFLICT(recordthresher_id) DO UPDATE SET fulltext = :fulltext;''').bindparams(
-                    fulltext=parsed['fulltext'],
+                    fulltext=soup.get_text(separator=' '),
                     doi=doi)
             db_q.put((stmnt, 'OPENALEX', False))
             other_obj = {}

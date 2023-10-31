@@ -51,6 +51,20 @@ class PDFVersion(Enum):
         except botocore.exceptions.ClientError as e:
             return False
 
+    def get_grobid_xml_obj(self, doi):
+        try:
+            return s3_conn.get_object(Bucket=GROBID_XML_BUCKET,
+                               Key=self.grobid_s3_key(doi))
+        except botocore.exceptions.ClientError as e:
+            return None
+
+    def get_pdf_obj(self, doi):
+        try:
+            return s3_conn.get_object(Bucket=PDF_ARCHIVE_BUCKET,
+                                      Key=self.s3_key(doi))
+        except botocore.exceptions.ClientError as e:
+            return None
+
 
 def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
     if not content:
