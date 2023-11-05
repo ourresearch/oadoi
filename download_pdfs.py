@@ -221,7 +221,7 @@ def try_parse_pdf_url(doi):
 
 def enqueue_from_db(url_q: Queue):
     query = f'''WITH queue as (
-                SELECT * FROM pdf_save_queue WHERE in_progress = false AND (version like '%submitted%' OR version LIKE '%accepted%')
+                SELECT * FROM pdf_save_queue WHERE in_progress = false
                 LIMIT {DEQUEUE_CHUNK_SIZE}
                 FOR UPDATE SKIP LOCKED
                 )
