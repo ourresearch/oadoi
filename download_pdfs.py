@@ -23,6 +23,7 @@ from tenacity import retry, retry_if_exception_type, \
     stop_after_attempt
 
 from app import app, logger
+from pdf_util import PDFVersion
 from http_cache import http_get
 
 TOTAL_ATTEMPTED = 0
@@ -55,6 +56,7 @@ HEADERS = {
 }
 
 PARSE_QUEUE_CHUNK_SIZE = 100
+DEQUEUE_CHUNK_SIZE = 1
 
 libs_to_mum = [
     'boto',
@@ -128,10 +130,6 @@ def parse_pdf_content(landing_page):
     return None
 
 
-def doi_to_key(doi):
-    return f'{quote(doi, safe="")}.pdf'
-
-
 def insert_into_parse_queue(parse_doi_queue: Queue):
     global INSERT_PDF_UPDATED_INGEST_LOOP_EXITED
     INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = False
@@ -165,11 +163,12 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
     global INVALID_PDF_COUNT
     s3 = make_s3()
     while True:
-        doi, url = None, None
+        doi, url, version = None, None, None
         try:
-            doi, url = url_q.get(timeout=15)
-            key = doi_to_key(doi)
-            if pdf_exists(key, s3):
+            version: PDFVersion
+            doi, url, version = url_q.get(timeout=15*100)
+            key = version.s3_key(doi)
+            if version.in_s3(doi):
                 ALREADY_EXIST += 1
                 continue
             if not url:
@@ -185,9 +184,6 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
                 PDF_CONTENT_NOT_FOUND += 1
                 continue
             parse_q.put(doi)
-            # conn.execute(text(
-            #     'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES (:doi, NULL, NULL)').bindparams(
-            #     doi=doi).execution_options(autocommit=True))
             SUCCESSFUL += 1
         except Empty:
             logger.error('Timeout exceeded, exiting pdf download loop...')
@@ -224,9 +220,9 @@ def try_parse_pdf_url(doi):
 
 
 def enqueue_from_db(url_q: Queue):
-    query = '''WITH queue as (
-                SELECT * FROM pdf_save_queue WHERE in_progress = false
-                LIMIT 50
+    query = f'''WITH queue as (
+                SELECT * FROM pdf_save_queue WHERE in_progress = false AND (version like '%submitted%' OR version LIKE '%accepted%')
+                LIMIT {DEQUEUE_CHUNK_SIZE}
                 FOR UPDATE SKIP LOCKED
                 )
                 UPDATE pdf_save_queue enqueued
@@ -241,7 +237,7 @@ def enqueue_from_db(url_q: Queue):
                 text(query).execution_options(autocommit=True,
                                               autoflush=True)).all()
             for row in rows:
-                url_q.put((row['id'], row['scrape_pdf_url']))
+                url_q.put((row['id'], row['scrape_pdf_url'], PDFVersion.from_version_str(row['version'])))
             if not rows:
                 break
             ids = [row['id'] for row in rows]
@@ -266,7 +262,7 @@ def parse_args():
                         action='store_true',
                         help='Enqueue PDF urls to download from API rather than database (default)')
     parser.add_argument('--download_threads', '-dt', '-t',
-                        default=50,
+                        default=1,
                         type=int,
                         help='Number of threads to download PDFs')
     args = parser.parse_args()
