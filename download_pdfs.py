@@ -1,4 +1,4 @@
-import gzip
+import json
 import logging
 import os
 import re
@@ -9,22 +9,18 @@ from gzip import decompress
 from io import BytesIO
 from queue import Queue, Empty
 from threading import Thread
-from urllib.parse import quote
 
 import boto3
 import botocore
 import requests
 from bs4 import BeautifulSoup
 from pyalex import Works
-from requests import HTTPError
 from sqlalchemy import text, create_engine
 from sqlalchemy.engine import Engine
-from tenacity import retry, retry_if_exception_type, \
-    stop_after_attempt
 
 from app import app, logger
-from pdf_util import PDFVersion
 from http_cache import http_get
+from pdf_util import PDFVersion
 
 TOTAL_ATTEMPTED = 0
 SUCCESSFUL = 0
@@ -32,6 +28,7 @@ ALREADY_EXIST = 0
 PDF_URL_NOT_FOUND = 0
 PDF_CONTENT_NOT_FOUND = 0
 INVALID_PDF_COUNT = 0
+LAST_SUCCESSFUL = {}
 
 START = datetime.now()
 
@@ -159,6 +156,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
     global SUCCESSFUL
     global TOTAL_ATTEMPTED
     global ALREADY_EXIST
+    global LAST_SUCCESSFUL
     global PDF_CONTENT_NOT_FOUND
     global INVALID_PDF_COUNT
     s3 = make_s3()
@@ -166,7 +164,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
         doi, url, version = None, None, None
         try:
             version: PDFVersion
-            doi, url, version = url_q.get(timeout=15*100)
+            doi, url, version = url_q.get(timeout=15 * 100)
             key = version.s3_key(doi)
             if version.in_s3(doi):
                 ALREADY_EXIST += 1
@@ -185,6 +183,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
                 continue
             parse_q.put(doi)
             SUCCESSFUL += 1
+            LAST_SUCCESSFUL = {'doi': doi, 's3_key': key}
         except Empty:
             logger.error('Timeout exceeded, exiting pdf download loop...')
             break
@@ -237,7 +236,8 @@ def enqueue_from_db(url_q: Queue):
                 text(query).execution_options(autocommit=True,
                                               autoflush=True)).all()
             for row in rows:
-                url_q.put((row['id'], row['scrape_pdf_url'], PDFVersion.from_version_str(row['version'])))
+                url_q.put((row['id'], row['scrape_pdf_url'],
+                           PDFVersion.from_version_str(row['version'])))
             if not rows:
                 break
             ids = [row['id'] for row in rows]
@@ -289,6 +289,7 @@ def print_stats():
                 f'PDF url not found count: {PDF_URL_NOT_FOUND} | '
                 f'Invalid PDF count: {INVALID_PDF_COUNT} | '
                 f'Rate: {rate_per_hr}/hr | '
+                f'Last successful: {json.dumps(LAST_SUCCESSFUL)} | '
                 f'Queue parse loop exited: {INSERT_PDF_UPDATED_INGEST_LOOP_EXITED} | '
                 f'Hrs running: {hrs_running}hrs')
         except Exception as e:
@@ -301,8 +302,8 @@ def main():
     global OADOI_DB_ENGINE
     args = parse_args()
     OADOI_DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
-                              pool_size=args.download_threads + 1,
-                              max_overflow=0)
+                                    pool_size=args.download_threads + 1,
+                                    max_overflow=0)
     logger.info(f'Starting PDF downloader with args: {args.__dict__}')
     threads = []
     parse_q = Queue(maxsize=PARSE_QUEUE_CHUNK_SIZE)
