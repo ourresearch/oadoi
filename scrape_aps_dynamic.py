@@ -147,6 +147,7 @@ def print_stats():
         print(f'Total seen: {TOTAL_SEEN} | '
               f'Successful: {SUCCESSFUL} | '
               f'Successful %: {success_pct}% | '
+              f'Last successful: {LAST_SUCCESSFUL}% | '
               f'Unnecessary: {UNNECESSARY} | '
               f'Rate: {rate}/hr')
         time.sleep(5)
