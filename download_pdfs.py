@@ -21,6 +21,7 @@ from sqlalchemy.engine import Engine
 from app import app, logger
 from http_cache import http_get
 from pdf_util import PDFVersion
+from s3_util import get_landing_page
 
 TOTAL_ATTEMPTED = 0
 SUCCESSFUL = 0
@@ -196,14 +197,6 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
             logger.exception(e)
         finally:
             TOTAL_ATTEMPTED += 1
-
-
-def get_landing_page(doi):
-    url = f"https://api.unpaywall.org/doi_page/{doi}"
-    r = requests.get(url)
-    if not r.ok:
-        return None
-    return decompress(r.content)
 
 
 def parse_pdf_url(html):

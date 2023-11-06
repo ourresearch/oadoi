@@ -20,3 +20,4 @@ recordthresher_refresh_enqueue_tmp: python3 recordthresher_refresh.py  -ep https
 crossref_snapshot_sync: bash run_crossref_snapshot_sync.sh
 parse_pdfs: bash run_pdf_parse_worker.sh
 download_pdfs: bash run_pdf_download_worker.sh
+scrape_aps_dynamic: python scrape_aps_dynamic.py -dt 50
