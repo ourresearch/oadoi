@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app import s3_conn, logger, db
 
 from const import PDF_ARCHIVE_BUCKET, GROBID_XML_BUCKET
+from s3_util import check_exists, get_object
 
 
 class PDFVersion(Enum):
@@ -37,33 +38,16 @@ class PDFVersion(Enum):
         return None
 
     def in_s3(self, doi) -> bool:
-        try:
-            s3_conn.get_object(Bucket=PDF_ARCHIVE_BUCKET, Key=self.s3_key(doi))
-            return True
-        except botocore.exceptions.ClientError as e:
-            return False
+        return check_exists(PDF_ARCHIVE_BUCKET, self.s3_key(doi))
 
     def grobid_in_s3(self, doi):
-        try:
-            s3_conn.get_object(Bucket=GROBID_XML_BUCKET,
-                               Key=self.grobid_s3_key(doi))
-            return True
-        except botocore.exceptions.ClientError as e:
-            return False
+        return check_exists(GROBID_XML_BUCKET, self.grobid_s3_key(doi))
 
     def get_grobid_xml_obj(self, doi):
-        try:
-            return s3_conn.get_object(Bucket=GROBID_XML_BUCKET,
-                               Key=self.grobid_s3_key(doi))
-        except botocore.exceptions.ClientError as e:
-            return None
+        return get_object(GROBID_XML_BUCKET, self.grobid_s3_key(doi))
 
     def get_pdf_obj(self, doi):
-        try:
-            return s3_conn.get_object(Bucket=PDF_ARCHIVE_BUCKET,
-                                      Key=self.s3_key(doi))
-        except botocore.exceptions.ClientError as e:
-            return None
+        return get_object(PDF_ARCHIVE_BUCKET, self.s3_key(doi))
 
 
 def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
@@ -83,7 +67,8 @@ def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
         return False
 
 
-def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED, commit=True):
+def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED,
+                        commit=True):
     db.session.execute(text(
         "INSERT INTO recordthresher.pdf_update_ingest (doi, pdf_version) VALUES (:doi, :version) ON CONFLICT(doi) DO UPDATE SET finished = NULL;").bindparams(
         doi=doi, version=version.value))
