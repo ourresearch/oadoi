@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import traceback
@@ -23,6 +24,7 @@ S3 = boto3.client('s3')
 SUCCESSFUL = 0
 UNNECESSARY = 0
 TOTAL_SEEN = 0
+LAST_SUCCESSFUL = None
 
 
 def get_aps_urls():
@@ -103,6 +105,7 @@ def save_responses_loop(q: Queue):
     global SUCCESSFUL
     global TOTAL_SEEN
     global UNNECESSARY
+    global LAST_SUCCESSFUL
     while True:
         try:
             doi, landing_page_url = q.get(timeout=30)
@@ -114,6 +117,7 @@ def save_responses_loop(q: Queue):
             key = landing_page_key(doi)
             upload_obj(LANDING_PAGE_ARCHIVE_BUCKET, key, body)
             SUCCESSFUL += 1
+            LAST_SUCCESSFUL = json.dumps({'doi': doi, 'key': key})
         except Exception as e:
             print(traceback.format_exc())
         finally:
@@ -139,7 +143,7 @@ def print_stats():
         now = datetime.now()
         hrs_passed = (now - started).total_seconds() / (60 * 60)
         rate = round(TOTAL_SEEN / hrs_passed, 4)
-        success_pct = round(SUCCESSFUL/TOTAL_SEEN, 4) if TOTAL_SEEN else 0
+        success_pct = round(SUCCESSFUL/TOTAL_SEEN, 4)*100 if TOTAL_SEEN else 0
         print(f'Total seen: {TOTAL_SEEN} | '
               f'Successful: {SUCCESSFUL} | '
               f'Successful %: {success_pct}% | '
