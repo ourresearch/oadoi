@@ -67,7 +67,7 @@ def get_dynamic_response(url):
             },
             {
                 "action": "click",
-                "selector": {"type": "css", "value": "section.article.authors"},
+                "selector": {"type": "css", "value": "section.article.authors h4"},
             },
             {
                 "action": "waitForSelector",
@@ -76,6 +76,7 @@ def get_dynamic_response(url):
                     "value": "section.article.authors p",
                     "state": "visible",
                 },
+                "timeout": 15,
             },
         ]
     }
