@@ -53,7 +53,7 @@ HEADERS = {
 }
 
 PARSE_QUEUE_CHUNK_SIZE = 100
-DEQUEUE_CHUNK_SIZE = 1
+DEQUEUE_CHUNK_SIZE = 100
 
 libs_to_mum = [
     'boto',
@@ -134,7 +134,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
         chunk = []
         while True:
             try:
-                doi = parse_doi_queue.get(timeout=120)
+                doi = parse_doi_queue.get()
                 chunk.append(doi)
                 if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
                     continue
@@ -164,7 +164,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
         doi, url, version = None, None, None
         try:
             version: PDFVersion
-            doi, url, version = url_q.get(timeout=15 * 100)
+            doi, url, version = url_q.get(timeout=30)
             key = version.s3_key(doi)
             if version.in_s3(doi):
                 ALREADY_EXIST += 1
