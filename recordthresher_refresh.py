@@ -286,11 +286,9 @@ def filter_string_to_dict(oa_filter_str):
     return d
 
 
-def enqueue_records(pub_ids, base_filter):
+def enqueue_from_api(oa_filters):
     config.email = 'nolanmccafferty@gmail.com'
-    for pub_id in pub_ids:
-        oa_filter = base_filter.rstrip(
-            ',') + f',primary_location.source.host_organization:{pub_id}'
+    for oa_filter in oa_filters:
         print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
         d = filter_string_to_dict(oa_filter)
         pager = iter(Works().filter(**d).paginate(per_page=200, n_max=None))
@@ -302,24 +300,25 @@ def enqueue_records(pub_ids, base_filter):
                 stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
                 db.session.execute(text(stmnt).bindparams(dois=dois))
                 db.session.commit()
-                publisher = page[0]['primary_location']['source'][
-                    'host_organization_name']
-                pub_id = page[0]['primary_location']['source'][
-                    'host_organization']
+                # publisher = page[0]['primary_location']['source'][
+                #     'host_organization_name']
+                # pub_id = page[0]['primary_location']['source'][
+                #     'host_organization']
                 print(
-                    f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
+                    f'[*] Inserted {200 * (i + 1)} into refresh queue from filter - {oa_filter}')
             except StopIteration:
                 break
             except Exception as e:
-                print(f'[!] Error fetching page for {pub_id}')
+                print(f'[!] Error fetching page for filter - {oa_filter}')
                 print(traceback.format_exc())
             finally:
                 i += 1
 
+
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--enqueue_pub', '-ep', action='append',
-                        help='Publisher IDs of publishers to enqueue')
+    parser.add_argument('--oa_filters', '-f', action='append',
+                        help='OpenAlex filters from which to enqueue works to recordthresher refresh')
     return parser.parse_args()
 
 
@@ -330,19 +329,16 @@ def split(a, n):
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.enqueue_pub:
+    if args.oa_filters:
         threads = []
-        pub_ids = list(set(args.enqueue_pub))
-        base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
-        chunks = split(pub_ids, 3)
+        # pub_ids = list(set(args.enqueue_pub))
+        # base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
+        chunks = split(list(set(args.oa_filters)), 3)
         for chunk in chunks:
-            t = Thread(target=enqueue_records, args=(chunk, base_oa_filter))
+            t = Thread(target=enqueue_from_api, args=(chunk, ))
             t.start()
             threads.append(t)
         for t in threads:
             t.join()
-    # pub = Pub.query.filter_by(id='10.1007/s11356-019-06494-z').one()
-    # if pub.create_or_update_recordthresher_record():
-    #     db.session.commit()
     else:
         refresh_sql()
