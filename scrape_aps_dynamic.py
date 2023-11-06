@@ -138,7 +138,7 @@ def print_stats():
         now = datetime.now()
         hrs_passed = (now - started).total_seconds() / (60 * 60)
         rate = round(TOTAL_SEEN / hrs_passed, 4)
-        success_pct = round(SUCCESSFUL/TOTAL_SEEN, 4)
+        success_pct = round(SUCCESSFUL/TOTAL_SEEN, 4) if TOTAL_SEEN else 0
         print(f'Total seen: {TOTAL_SEEN} | '
               f'Successful: {SUCCESSFUL} | '
               f'Successful %: {success_pct}% | '
