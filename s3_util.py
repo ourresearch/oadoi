@@ -39,8 +39,8 @@ def upload_obj(bucket, key, body, s3=None):
     s3.upload_fileobj(body, bucket, key)
 
 
-def landing_page_key(doi):
-    return quote(doi, safe='')
+def landing_page_key(doi: str):
+    return quote(doi.lower(), safe='')
 
 
 def get_landing_page(doi):
