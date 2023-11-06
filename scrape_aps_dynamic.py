@@ -3,6 +3,7 @@ import time
 import traceback
 from argparse import ArgumentParser
 from datetime import datetime
+from gzip import compress
 from io import BytesIO
 from queue import Queue
 from threading import Thread
@@ -88,9 +89,12 @@ def get_dynamic_response(url):
 
 
 def needs_rescrape(doi):
-    if lp := get_landing_page(doi):
-        soup = BeautifulSoup(lp, features='lxml', parser='lxml')
-        return not bool(soup.select_one('section.article.authors p'))
+    try:
+        if lp := get_landing_page(doi):
+            soup = BeautifulSoup(lp, features='lxml', parser='lxml')
+            return not bool(soup.select_one('section.article.authors p'))
+    except Exception:
+        return True
     return True
 
 
@@ -105,7 +109,7 @@ def save_responses_loop(q: Queue):
                 UNNECESSARY += 1
                 continue
             html = get_dynamic_response(landing_page_url)
-            body = BytesIO(html.encode())
+            body = BytesIO(compress(html.encode()))
             key = landing_page_key(doi)
             upload_obj(LANDING_PAGE_ARCHIVE_BUCKET, key, body)
             SUCCESSFUL += 1
