@@ -274,7 +274,7 @@ class CrossrefRecordMaker(RecordMaker):
             #     record.set_authors(pl_authors)
 
             record.abstract = record.abstract or pl_parse.get('abstract')
-            is_oa = bool(pub.response_jsonb.get('oa_locations'))
+            is_oa = bool(pub.response_jsonb.get('oa_locations')) if bool(pub.response_jsonb) else False
             if is_oa:
                 record_fulltext = (record.fulltext and record.fulltext.fulltext) or pl_parse.get('readable')
                 if record_fulltext:
