@@ -338,6 +338,7 @@ def call_requests_get(url=None,
 
         if not use_zyte_api_profile:
             zyte_profile_hosts = [
+                'iop.org',
                 "academic.oup.com",
                 "pubsonline.informs.org",
                 "journals.asm.org",
@@ -372,7 +373,6 @@ def call_requests_get(url=None,
                 'escholarship.org',
                 'exlibrisgroup.com',
                 'explore.bps.org.uk',
-                'iop.org',
                 'jci.org',
                 'nature.com',
                 'nejm.org',
