@@ -203,12 +203,11 @@ def refresh_api():
                         PROCESSED_COUNT += 1
 
 
-def refresh_sql():
-    Thread(target=print_stats, daemon=True).start()
+def refresh_sql(chunk_size=10):
     global PROCESSED_COUNT
-    query = '''WITH queue as (
+    query = f'''WITH queue as (
             SELECT * FROM recordthresher.refresh_queue WHERE in_progress = false
-            LIMIT 100
+            LIMIT {chunk_size}
             FOR UPDATE SKIP LOCKED
             )
             UPDATE recordthresher.refresh_queue enqueued
@@ -240,42 +239,6 @@ def refresh_sql():
                     if processed:
                         PROCESSED_COUNT += 1
 
-
-# def refresh_sql():
-#     Thread(target=print_stats).start()
-#     global PROCESSED_COUNT
-#     global SEEN_DOIS
-#     global DUPE_COUNT
-#     query = """SELECT pub.*
-#                        FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.1)
-#                             JOIN pub ON record.id = pub.recordthresher_id
-#                        WHERE record.authors::text LIKE '%"affiliation": []%'
-#                             AND record.updated < '2023-04-14 00:00:00'
-#                        LIMIT 1;"""
-#     with app.app_context():
-#         while True:
-#             processed = False
-#             try:
-#                 r = db.session.execute(text(query)).first()
-#                 if r is None:
-#                     continue
-#                 elif str(r.doi) in SEEN_DOIS and r.doi is not None:
-#                     logger.info(f'[!] Seen DOI - {r.doi}')
-#                     DUPE_COUNT += 1
-#                     continue
-#                 SEEN_DOIS.add(str(r.doi))
-#                 mapping = dict(r._mapping).copy()
-#                 del mapping['doi']
-#                 pub = Pub(**mapping)
-#                 if pub.create_or_update_recordthresher_record():
-#                     db.session.commit()
-#                 processed = True
-#             except Exception as e:
-#                 logger.exception(f'[!] Error updating record: {r.doi} - {e}')
-#                 logger.exception(traceback.format_exc())
-#             finally:
-#                 if processed:
-#                     PROCESSED_COUNT += 1
 
 def filter_string_to_dict(oa_filter_str):
     items = oa_filter_str.split(',')
@@ -315,10 +278,29 @@ def enqueue_from_api(oa_filters):
                 i += 1
 
 
+def enqueue_from_txt(path):
+    with open(path) as f:
+        contents = f.read()
+        dois = list(
+            set([line.split('doi.org/')[-1] if line.startswith('http') else line
+                 for line in contents.splitlines()]))
+        dois = tuple(normalize_doi(doi) for doi in dois)
+        stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT(id) DO UPDATE SET in_progress = FALSE;'
+        db.session.execute(text(stmnt).bindparams(dois=dois))
+        db.session.commit()
+    print(f'Enqueued {len(dois)} DOIS from {path}')
+
+
 def parse_args():
     parser = ArgumentParser()
+    parser.add_argument('--txt',
+                        help='Path to txt file to refresh DOIs (one per line)',
+                        type=str)
+    parser.add_argument('--n_threads', help='Number of threads to use',
+                        type=int, default=10)
     parser.add_argument('--oa_filters', '-f', action='append',
                         help='OpenAlex filters from which to enqueue works to recordthresher refresh')
+
     return parser.parse_args()
 
 
@@ -329,16 +311,26 @@ def split(a, n):
 
 if __name__ == '__main__':
     args = parse_args()
+    if args.txt:
+        enqueue_from_txt(args.txt)
     if args.oa_filters:
         threads = []
         # pub_ids = list(set(args.enqueue_pub))
         # base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
-        chunks = split(list(set(args.oa_filters)), 3)
+        chunks = split(list(set(args.oa_filters)), args.n_threads)
         for chunk in chunks:
-            t = Thread(target=enqueue_from_api, args=(chunk, ))
+            t = Thread(target=enqueue_from_api, args=(chunk,))
             t.start()
             threads.append(t)
         for t in threads:
             t.join()
     else:
-        refresh_sql()
+        Thread(target=print_stats, daemon=True).start()
+        threads = []
+        for _ in range(args.n_threads):
+            t = Thread(target=refresh_sql)
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
