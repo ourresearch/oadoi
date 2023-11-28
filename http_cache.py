@@ -28,6 +28,9 @@ MAX_PAYLOAD_SIZE_BYTES = 1000 * 1000 * 10  # 10mb
 
 os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
 
+ZYTE_PROFILE_HOSTS = os.getenv('ZYTE_PROFILE_HOSTS').split(';')
+CRAWLERA_PROFILE_HOSTS = os.getenv('CRAWLERA_PROFILE_HOSTS').split(';')
+
 
 @dataclass
 class ResponseObject:
@@ -336,64 +339,18 @@ def call_requests_get(url=None,
 
     while following_redirects:
 
-        if not use_zyte_api_profile:
-            zyte_profile_hosts = [
-                'iop.org',
-                "academic.oup.com",
-                "pubsonline.informs.org",
-                "journals.asm.org",
-                "oatext.com",
-                "pnas.org",
-                "pubs.acs.org",
-                "science.org",
-                "sciencedirect.com",
-                "opticsjournal.net",
-                "archives.datapages.com",
-                "pdcnet.org",
-                "csj.jp",
-                "asha.org",
-                "jstor.org",
-                "sagepub.com",
-                "brill.com",
-                "persee.fr",
-                "cell.com",
-                "europa.eu",
-                "tandfonline.com",
-            ]
-
         if not use_crawlera_profile:
-            crawlera_profile_hosts = [
-                'ahajournals.org',
-                'ashpublications.org',
-                'biomedcentral.com',
-                'biorxiv.org',
-                'brazilianjournals.com',
-                'cochranelibrary.com',
-                'degruyter.com',
-                'escholarship.org',
-                'exlibrisgroup.com',
-                'explore.bps.org.uk',
-                'jci.org',
-                'nature.com',
-                'nejm.org',
-                'researchsquare.com',
-                'rmit.edu.au',
-                'sciencedirect.com',
-                'springer.com',
-                'springeropen.com',
-                "wiley.com",
-            ]
 
             hostname = urlparse(url).hostname
 
             if not use_zyte_api_profile:
-                for h in zyte_profile_hosts:
+                for h in ZYTE_PROFILE_HOSTS:
                     if hostname and hostname.endswith(h):
                         use_zyte_api_profile = True
                         logger.info('using zyte profile')
                         break
 
-                for h in crawlera_profile_hosts:
+                for h in CRAWLERA_PROFILE_HOSTS:
                     if hostname and hostname.endswith(h):
                         use_crawlera_profile = True
                         logger.info('using crawlera profile')
