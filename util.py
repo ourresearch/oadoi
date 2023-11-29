@@ -70,7 +70,7 @@ def calculate_percentile(refset, value):
     return percentile
 
 def clean_html(raw_html):
-    cleanr = re.compile('<.*?>')
+    cleanr = re.compile('<\w+.*?>')
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
 
