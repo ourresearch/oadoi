@@ -263,6 +263,9 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '1406-0922' in issns and pub_year >= 1996:
         return True
 
+    if '2575-4459' in issns:
+        return True
+
     return False
 
 
@@ -272,6 +275,7 @@ def manual_gold_journal_license(issn_l):
         '0352-3551': 'cc-by-nc-sa',  # https://actahydrotechnica.fgg.uni-lj.si/en/
         '2582-4988': 'cc-by-nc',  # https://www.pidjournal.com/journal/PID/page/about
         '1945-4589': 'cc-by',  # https://www.aging-us.com/for-authors#licenses-and-copyright
+        '2575-4459': 'cc-by-nd', # https://knowablemagazine.org/republish
     }
 
     return licenses.get(issn_l, None)
