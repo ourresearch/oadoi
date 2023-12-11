@@ -193,7 +193,7 @@ class PmhRecord(db.Model):
             # lots of identifiers and this item's is first
             identifier_matches.reverse()
 
-        if self.pmh_id and self.pmh_id.startswith('oai:alma.44SUR_INST'):
+        if self.pmh_id and self.pmh_id.startswith('oai:alma.44SUR_INST') or self.pmh_id.startswith('oai:alma.44SUR_INST'):
             identifier_matches = oai_tag_match("file.download.url", pmh_input_record, return_list=True)
             self.authors = oai_tag_match("creatorname", pmh_input_record, return_list=True)
 
