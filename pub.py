@@ -710,8 +710,6 @@ class Pub(db.Model):
                 'oa_status', None)
         )
 
-        # self.refresh_green_locations()
-
         self.refresh_hybrid_scrape()
 
         # and then recalculate everything, so can do to_dict() after this and it all works
@@ -727,6 +725,8 @@ class Pub(db.Model):
         db.session.merge(self)
 
     def create_or_update_recordthresher_record(self):
+        if self.error and "crossref deleted doi" in self.error.lower():
+            return False
         if rt_record := CrossrefRecordMaker.make_record(self):
             db.session.merge(rt_record)
             self.recordthresher_id = rt_record.id
