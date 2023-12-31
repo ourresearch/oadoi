@@ -213,6 +213,7 @@ class ZyteSession(requests.Session):
 
     def _send_with_policies(self, request: PreparedRequest,
                             zyte_policies: List[ZytePolicy], *args, **kwargs):
+        r = None
         for p in zyte_policies:
             try:
                 r = self._send_with_policy(request, p, *args, **kwargs)
