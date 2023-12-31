@@ -1,3 +1,4 @@
+import logging
 from gzip import decompress
 from urllib.parse import quote
 
@@ -7,6 +8,17 @@ import botocore
 from const import LANDING_PAGE_ARCHIVE_BUCKET
 
 _s3 = boto3.client('s3')
+
+
+def mute_boto_logging():
+    libs_to_mum = [
+        'boto',
+        'boto3',
+        'botocore',
+        's3transfer'
+    ]
+    for lib in libs_to_mum:
+        logging.getLogger(lib).setLevel(logging.CRITICAL)
 
 
 def make_s3():

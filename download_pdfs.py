@@ -21,7 +21,7 @@ from sqlalchemy.engine import Engine
 from app import app, logger
 from http_cache import http_get
 from pdf_util import PDFVersion
-from s3_util import get_landing_page
+from s3_util import get_landing_page, mute_boto_logging
 
 TOTAL_ATTEMPTED = 0
 SUCCESSFUL = 0
@@ -56,17 +56,9 @@ HEADERS = {
 PARSE_QUEUE_CHUNK_SIZE = 100
 DEQUEUE_CHUNK_SIZE = 100
 
-libs_to_mum = [
-    'boto',
-    'boto3',
-    'botocore',
-    's3transfer'
-]
+mute_boto_logging()
 
 INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = None
-
-for lib in libs_to_mum:
-    logging.getLogger(lib).setLevel(logging.CRITICAL)
 
 
 class InvalidPDFException(Exception):

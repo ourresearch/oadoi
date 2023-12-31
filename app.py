@@ -9,6 +9,7 @@ from flask import Flask
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
 HEROKU_APP_NAME = "articlepage"
@@ -66,6 +67,8 @@ class NullPoolSQLAlchemy(SQLAlchemy):
         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
 
 db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
+
+db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 # do compression.  has to be above flask debug toolbar so it can override this.
 compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
