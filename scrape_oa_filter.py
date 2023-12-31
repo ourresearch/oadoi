@@ -53,6 +53,7 @@ UNPAYWALL_S3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
                             aws_secret_access_key=AWS_SECRET)
 
 LAST_CURSOR = None
+LAST_DOI = None
 
 LOGGER: logging.Logger = None
 
@@ -210,7 +211,7 @@ def print_stats():
         pct_success = round((SUCCESS / TOTAL_ATTEMPTED) * 100,
                             2) if TOTAL_ATTEMPTED > 0 else 0
         LOGGER.info(
-            f'[*] Total seen: {TOTAL_SEEN} | Attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESS} | Need rescraped: {NEEDS_RESCRAPE_COUNT} | % Success: {pct_success}% | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Filter count: {FILTER_TOTAL_COUNT} | Cursor: {LAST_CURSOR}')
+            f'[*] Total seen: {TOTAL_SEEN} | Attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESS} | Need rescraped: {NEEDS_RESCRAPE_COUNT} | % Success: {pct_success}% | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Filter count: {FILTER_TOTAL_COUNT} | Last DOI: {LAST_DOI} | Cursor: {LAST_CURSOR}')
         time.sleep(5)
 
 
@@ -236,6 +237,7 @@ def enqueue_for_refresh_worker(q: Queue):
 
 
 def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, zyte_policy=None):
+    global LAST_DOI
     s3 = make_s3()
     # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb', profile='api', priority=1, params=json.loads('''{"actions": [{"action": "waitForSelector", "selector": {"type": "css", "state": "visible", "value": "#show-more-btn"}}, {"action": "click", "selector": {"type": "css", "value": "#show-more-btn"}}, {"action": "waitForSelector", "timeout": 15, "selector": {"type": "css", "state": "visible", "value": "div.author-collaboration div.author-group"}}], "javascript": true, "browserHtml": true, "httpResponseHeaders": true}'''))
     s = ZyteSession()
@@ -253,6 +255,7 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, zyte_policy=
                        landing_page_key(doi),
                        BytesIO(gzip.compress(html)), s3=s3)
             inc_success()
+            LAST_DOI = doi
             refresh_q.put(doi)
             if rescrape:
                 LOGGER.debug(f'[*] Successfully rescraped DOI: {doi}')
