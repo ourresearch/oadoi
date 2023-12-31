@@ -38,6 +38,7 @@ def _get_zyte_api_response(url, zyte_params, session: requests.Session=None, **k
 class ZytePolicy(db.Model):
     __tablename__ = 'zyte_policies'
 
+    id = Column(Integer, primary_key=True)
     type = Column(
         Enum('url', 'doi', name='zyte_policy_type_enum'),
         nullable=False, default='domain_regex')
@@ -46,10 +47,6 @@ class ZytePolicy(db.Model):
                      nullable=False, default='proxy')
     params = Column(JSON, nullable=True, default={})
     priority = Column(Integer, nullable=False, default=1)
-
-    __table_args__ = (
-        PrimaryKeyConstraint('type', 'regex', 'profile'),
-    )
 
     def match(self, doi_or_domain):
         return bool(re.search(self.regex, doi_or_domain))

@@ -285,7 +285,8 @@ def parse_args():
                         default=False)
     parser.add_argument('--policy_id', '-pid', help='Zyte policy ID (optional)',
                         dest='policy_id',
-                        default=None)
+                        default=None,
+                        type=int)
     args = parser.parse_args()
     if not args.cursor:
         args.cursor = get_cursor(args.filter)
