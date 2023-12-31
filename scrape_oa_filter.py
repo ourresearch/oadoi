@@ -63,6 +63,7 @@ REDIS_LOCK = Lock()
 REFRESH_QUEUE_CHUNK_SIZE = 50
 
 FILTER_TOTAL_COUNT = None
+FILTER = None
 
 
 def set_cursor(filter_, cursor):
@@ -177,7 +178,7 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         query['cursor'] = j['meta']['next_cursor']
         LAST_CURSOR = j['meta']['next_cursor']
         FILTER_TOTAL_COUNT = j['meta']['count']
-        LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR}')
+        LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR} | Filter: {FILTER}')
         set_cursor(_filter, LAST_CURSOR)
         for result in results:
             TOTAL_SEEN += 1
@@ -301,7 +302,9 @@ def parse_args():
 
 
 def main():
+    global FILTER
     args = parse_args()
+    FILTER = args.filter
     config_logger()
     # japan_journal_of_applied_physics = 'https://openalex.org/P4310313292'
     rescrape = args.rescrape
