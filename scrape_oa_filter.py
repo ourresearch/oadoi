@@ -61,6 +61,8 @@ REDIS_LOCK = Lock()
 
 REFRESH_QUEUE_CHUNK_SIZE = 50
 
+FILTER_TOTAL_COUNT = None
+
 
 def set_cursor(filter_, cursor):
     with REDIS_LOCK:
@@ -158,6 +160,7 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
     global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
     global LAST_CURSOR
+    global FILTER_TOTAL_COUNT
     seen = set()
     query = {'select': 'doi,id,primary_location',
              'mailto': 'nolanmccafferty@gmail.com',
@@ -172,6 +175,7 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         results = j['results']
         query['cursor'] = j['meta']['next_cursor']
         LAST_CURSOR = j['meta']['next_cursor']
+        FILTER_TOTAL_COUNT = j['meta']['count']
         LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR}')
         set_cursor(_filter, LAST_CURSOR)
         for result in results:
@@ -206,7 +210,7 @@ def print_stats():
         pct_success = round((SUCCESS / TOTAL_ATTEMPTED) * 100,
                             2) if TOTAL_ATTEMPTED > 0 else 0
         LOGGER.info(
-            f'[*] Total seen: {TOTAL_SEEN} | Attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESS} | Need rescraped: {NEEDS_RESCRAPE_COUNT} | % Success: {pct_success}% | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Cursor: {LAST_CURSOR}')
+            f'[*] Total seen: {TOTAL_SEEN} | Attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESS} | Need rescraped: {NEEDS_RESCRAPE_COUNT} | % Success: {pct_success}% | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Filter count: {FILTER_TOTAL_COUNT} | Cursor: {LAST_CURSOR}')
         time.sleep(5)
 
 
