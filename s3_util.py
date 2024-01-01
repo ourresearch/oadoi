@@ -6,6 +6,7 @@ import boto3
 import botocore
 
 from const import LANDING_PAGE_ARCHIVE_BUCKET
+from util import normalize_doi
 
 _s3 = boto3.client('s3')
 
@@ -52,6 +53,7 @@ def upload_obj(bucket, key, body, s3=None):
 
 
 def landing_page_key(doi: str):
+    doi = normalize_doi(doi)
     return quote(doi.lower(), safe='')
 
 

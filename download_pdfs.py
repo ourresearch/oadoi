@@ -65,12 +65,6 @@ class InvalidPDFException(Exception):
     pass
 
 
-def normalize_doi(doi):
-    if doi.startswith('http'):
-        return re.findall(r'doi.org/(.*?)$', doi)[0]
-    return doi
-
-
 def pdf_exists(key, s3):
     try:
         s3.get_object(Bucket=S3_PDF_BUCKET_NAME, Key=key)

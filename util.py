@@ -26,12 +26,15 @@ from convert_http_to_https import fix_url_scheme
 class NoDoiException(Exception):
     pass
 
+
 class DelayedAdapter(HTTPAdapter):
-    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None,
+             proxies=None):
         # logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
         # sleep(2)
         start_time = time.time()
-        response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
+        response = super(DelayedAdapter, self).send(request, stream, timeout,
+                                                    verify, cert, proxies)
         # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
         return response
 
@@ -49,6 +52,7 @@ def update_recursive_sum(d, u):
                 d[k] = u[k]
     return d
 
+
 # returns dict with values that are proportion of all values
 def as_proportion(my_dict):
     if not my_dict:
@@ -56,8 +60,9 @@ def as_proportion(my_dict):
     total = sum(my_dict.values())
     resp = {}
     for k, v in my_dict.items():
-        resp[k] = round(float(v)/total, 2)
+        resp[k] = round(float(v) / total, 2)
     return resp
+
 
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero
@@ -69,10 +74,12 @@ def calculate_percentile(refset, value):
 
     return percentile
 
+
 def clean_html(raw_html):
     cleanr = re.compile('<\w+.*?>')
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
+
 
 # good for deduping strings.  warning: output removes spaces so isn't readable.
 def normalize(text):
@@ -87,12 +94,14 @@ def normalize(text):
     response = re.sub(r"\s+", "", response)
     return response
 
+
 def normalize_simple(text):
     response = text.lower()
     response = remove_punctuation(response)
     response = re.sub(r"\b(a|an|the)\b", "", response)
     response = re.sub(r"\s+", "", response)
     return response
+
 
 def remove_everything_but_alphas(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
@@ -101,12 +110,15 @@ def remove_everything_but_alphas(input_string):
         only_alphas = "".join(e for e in input_string if (e.isalpha()))
     return only_alphas
 
+
 def remove_punctuation(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
     no_punc = input_string
     if input_string:
-        no_punc = "".join(e for e in input_string if (e.isalnum() or e.isspace()))
+        no_punc = "".join(
+            e for e in input_string if (e.isalnum() or e.isspace()))
     return no_punc
+
 
 # from http://stackoverflow.com/a/11066579/596939
 def replace_punctuation(text, sub):
@@ -127,7 +139,8 @@ def json_serial(obj):
     if isinstance(obj, datetime):
         serial = obj.isoformat()
         return serial
-    raise TypeError ("Type not serializable")
+    raise TypeError("Type not serializable")
+
 
 def conversational_number(number):
     words = {
@@ -163,7 +176,6 @@ def conversational_number(number):
     return short_number + " " + unit
 
 
-
 def safe_commit(db):
     try:
         db.session.commit()
@@ -182,7 +194,9 @@ def safe_commit(db):
 
 
 def is_pmc(url):
-    return any(f in url for f in ["ncbi.nlm.nih.gov/pmc", "europepmc.org/articles/", "europepmc.org/pmc/articles/"])
+    return any(f in url for f in
+               ["ncbi.nlm.nih.gov/pmc", "europepmc.org/articles/",
+                "europepmc.org/pmc/articles/"])
 
 
 def is_doi_url(url):
@@ -234,7 +248,8 @@ def clean_doi(dirty_doi, return_none_if_error=False):
         else:
             raise NoDoiException("There's no DOI at all.")
 
-    dirty_doi = normalize_doi(dirty_doi, return_none_if_error=return_none_if_error)
+    dirty_doi = normalize_doi(dirty_doi,
+                              return_none_if_error=return_none_if_error)
 
     if not dirty_doi:
         if return_none_if_error:
@@ -273,7 +288,7 @@ def pick_best_url(urls):
     if not urls:
         return None
 
-    #get a backup
+    # get a backup
     response = urls[0]
 
     # now go through and pick the best one
@@ -288,6 +303,7 @@ def pick_best_url(urls):
 
     return response
 
+
 def date_as_iso_utc(datetime_object):
     if datetime_object is None:
         return None
@@ -297,7 +313,6 @@ def date_as_iso_utc(datetime_object):
 
 
 def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
-
     if keys_to_ignore is None:
         keys_to_ignore = []
     elif isinstance(keys_to_ignore, str):
@@ -341,11 +356,12 @@ def median(my_list):
     """
     my_list = sorted(my_list)
     if len(my_list) < 1:
-            return None
-    if len(my_list) %2 == 1:
-            return my_list[((len(my_list)+1)/2)-1]
-    if len(my_list) %2 == 0:
-            return float(sum(my_list[(len(my_list)/2)-1:(len(my_list)/2)+1]))/2.0
+        return None
+    if len(my_list) % 2 == 1:
+        return my_list[((len(my_list) + 1) / 2) - 1]
+    if len(my_list) % 2 == 0:
+        return float(
+            sum(my_list[(len(my_list) / 2) - 1:(len(my_list) / 2) + 1])) / 2.0
 
 
 def underscore_to_camelcase(value):
@@ -356,6 +372,7 @@ def underscore_to_camelcase(value):
 
     return "".join(capitalized_words)
 
+
 def chunks(l, n):
     """
     Yield successive n-sized chunks from l.
@@ -363,7 +380,8 @@ def chunks(l, n):
     from http://stackoverflow.com/a/312464
     """
     for i in range(0, len(l), n):
-        yield l[i:i+n]
+        yield l[i:i + n]
+
 
 def page_query(q, page_size=1000):
     offset = 0
@@ -377,9 +395,9 @@ def page_query(q, page_size=1000):
         if not r:
             break
 
+
 def elapsed(since, round_places=2):
     return round(time.time() - since, round_places)
-
 
 
 def truncate(str, max=100):
@@ -397,10 +415,13 @@ def str_to_bool(x):
     else:
         raise ValueError("This string can't be cast to a boolean.")
 
-# from http://stackoverflow.com/a/20007730/226013
-ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
 
-#from http://farmdev.com/talks/unicode/
+# from http://stackoverflow.com/a/20007730/226013
+ordinal = lambda n: "%d%s" % (
+n, "tsnrhtdd"[(n / 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
+
+
+# from http://farmdev.com/talks/unicode/
 def to_unicode_or_bust(obj, encoding='utf-8'):
     if isinstance(obj, bytes):
         obj = str(obj, encoding)
@@ -417,7 +438,8 @@ def remove_nonprinting_characters(input, encoding='utf-8'):
     # see http://www.fileformat.info/info/unicode/category/index.htm
     char_classes_to_remove = ["C", "M", "Z"]
 
-    response = ''.join(c for c in unicode_input if unicodedata.category(c)[0] not in char_classes_to_remove)
+    response = ''.join(c for c in unicode_input if
+                       unicodedata.category(c)[0] not in char_classes_to_remove)
 
     if not input_was_text:
         response = response.encode(encoding)
@@ -466,14 +488,16 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
     while len(dois) < n:
         # api takes a max of 100
         number_this_round = min(n, 100)
-        url = "https://api.crossref.org/works?sample={}".format(number_this_round)
+        url = "https://api.crossref.org/works?sample={}".format(
+            number_this_round)
         if only_journal_articles:
             url += "&filter=type:journal-article"
         if from_date:
             url += ",from-pub-date:{}".format(from_date)
         print(url)
-        print("calling crossref, asking for {} dois, so far have {} of {} dois".format(
-            number_this_round, len(dois), n))
+        print(
+            "calling crossref, asking for {} dois, so far have {} of {} dois".format(
+                number_this_round, len(dois), n))
         r = requests.get(url)
         items = r.json()["message"]["items"]
         dois += [item["DOI"].lower() for item in items]
@@ -498,9 +522,9 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
 #             raise elasticsearch.exceptions.SerializationError(data, e)
 
 
-
 def get_tree(page):
-    page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
+    page = page.replace("&nbsp;",
+                        " ")  # otherwise starts-with for lxml doesn't work
     try:
         page = page.encode('utf-8')  # this is a waste, take page as bytes later
         encoding = UnicodeDammit(page, is_html=True).original_encoding
@@ -519,9 +543,11 @@ def is_the_same_url(url1, url2):
         return True
     return False
 
+
 def strip_jsessionid_from_url(url):
     url = re.sub(r";jsessionid=\w+", "", url)
     return url
+
 
 def get_link_target(url, base_url, strip_jsessionid=True):
     if strip_jsessionid:
@@ -559,15 +585,18 @@ def run_sql(db, q):
     finally:
         con.close()
 
+
 def get_sql_answer(db, q):
     row = db.engine.execute(sql.text(q)).first()
     return row[0]
+
 
 def get_sql_answers(db, q):
     rows = db.engine.execute(sql.text(q)).fetchall()
     if not rows:
         return []
     return [row[0] for row in rows]
+
 
 def normalize_title(title):
     if not title:
@@ -590,7 +619,8 @@ def normalize_title(title):
     response = clean_html(response)
 
     # remove articles and common prepositions
-    response = re.sub(r"\b(the|a|an|of|to|in|for|on|by|with|at|from)\b", "", response)
+    response = re.sub(r"\b(the|a|an|of|to|in|for|on|by|with|at|from)\b", "",
+                      response)
 
     # remove everything except alphas
     response = remove_everything_but_alphas(response)
@@ -639,3 +669,9 @@ def normalize_issn(issn):
 
 def is_same_issn(l, r):
     return normalize_issn(l) == normalize_issn(r)
+
+
+def normalize_doi(doi):
+    if doi.startswith('http'):
+        return re.findall(r'doi.org/(.*?)$', doi)[0]
+    return doi

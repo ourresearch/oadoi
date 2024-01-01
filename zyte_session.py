@@ -2,10 +2,11 @@ import os
 import re
 from base64 import standard_b64decode
 from typing import List
+from urllib.parse import unquote
 
 import requests
-from requests import Request, PreparedRequest
-from sqlalchemy import Column, String, JSON, Enum, PrimaryKeyConstraint, Integer
+from requests import Request, PreparedRequest, Response
+from sqlalchemy import Column, String, JSON, Enum, Integer
 from tenacity import Retrying, stop_after_attempt, wait_exponential
 
 from app import db
@@ -15,7 +16,30 @@ CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
 
 
-def _get_zyte_api_response(url, zyte_params, session: requests.Session=None, **kwargs):
+def _sd_redirector(resp: Response):
+    target = None
+    if matches := re.findall(r'name="redirectURL" value="(http.*?)"',
+                             resp.text):
+        target = unquote(matches[0])
+    elif ('<title>Handle Redirect') in resp.text and (
+            matches := re.findall(r'<body><a href="(http.*?)"', resp.text)):
+        target = matches[0]
+    return target if (target and 'retrieve' in target) else None
+
+
+_REDIRECTORS = [_sd_redirector]
+
+
+def _zyte_params_to_req(url, zyte_params):
+    req = PreparedRequest()
+    req.method = zyte_params.get('httpRequestMethod', "GET")
+    req.url = url
+    req.headers = zyte_params.get('customHttpRequestHeaders')
+    return req
+
+
+def _get_zyte_api_response(url, zyte_params, session: requests.Session = None,
+                           **kwargs):
     if not zyte_params:
         zyte_params = {}
     zyte_params['url'] = url
@@ -31,7 +55,9 @@ def _get_zyte_api_response(url, zyte_params, session: requests.Session=None, **k
                               '').encode() or standard_b64decode(
         j.get('httpResponseBody'))
     response.url = j['url']
-    response.headers = j.get('httpResponseHeaders', {})
+    for header in j.get('httpResponseHeaders', []):
+        response.headers[header['name']] = header['value']
+    response.request = _zyte_params_to_req(url, zyte_params)
     return response
 
 
@@ -92,9 +118,26 @@ class ZytePolicy(db.Model):
 _ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
 BYPASS_POLICY = ZytePolicy(profile='bypass')
 
+
+def log_exception(retry_state):
+    if retry_state.outcome.failed:
+        exception = retry_state.outcome.exception()
+        #TODO: use logger rather than print
+        print(
+            f"Exception {type(exception)}: {str(exception)} during retry attempt {retry_state.attempt_number}")
+
+
+# def make_before_cb(url):
+#     def before_logger(retry_state):
+#         print(f'Trying attempt #{retry_state.attempt_number} with URL: {url}')
+#
+#     return before_logger
+
+
 _DEFAULT_RETRY = Retrying(
-    stop=stop_after_attempt(3),
+    stop=stop_after_attempt(5),
     wait=wait_exponential(multiplier=0.5, min=1, max=10),
+    retry_error_callback=log_exception,
     reraise=True,
 )
 
@@ -118,6 +161,12 @@ class ZyteSession(requests.Session):
     ):
         return self.request('GET', url, zyte_policies=zyte_policies,
                             fixed_policies=fixed_policies, **kwargs)
+
+    def get_redirect_target(self, resp):
+        for redirector in _REDIRECTORS:
+            if target := redirector(resp):
+                return target
+        return super().get_redirect_target(resp)
 
     def request(
             self,
@@ -190,26 +239,36 @@ class ZyteSession(requests.Session):
                 zyte_policies = [BYPASS_POLICY]
         kwargs['allow_redirects'] = False
         r = self._send_with_policies(request, zyte_policies, *args, **kwargs)
-        if r.is_redirect:
-            for req in self.resolve_redirects(r, request, yield_requests=True):
-                if not fixed_policies:
-                    zyte_policies = ZytePolicy.get_matching_policies(
-                        url=req.url)
-                r = self._send_with_policies(req, zyte_policies, *args,
-                                             **kwargs)
-                if not r.is_redirect:
-                    break
+        while r.is_redirect:
+            url = self.get_redirect_target(r)
+            req = r.request.copy()
+            req.url = url
+            if not fixed_policies:
+                zyte_policies = ZytePolicy.get_matching_policies(
+                    url=req.url) or [BYPASS_POLICY]
+            r = self._send_with_policies(req, zyte_policies, *args,
+                                         **kwargs)
         return r
 
     def _send_with_policy(self, request: PreparedRequest,
                           zyte_policy: ZytePolicy, *args, **kwargs):
         r = None
-        for attempt in self.retry:
-            with attempt:
+        # retry = self.retry.copy(before=make_before_cb(request.url))
+        retry = self.retry
+        for atp in retry:
+            with atp:
                 r = zyte_policy.sender(self)(request, *args, **kwargs)
                 r.raise_for_status()
                 return r
         return r
+
+    @staticmethod
+    def _modify_response_for_redirect(resp: Response):
+        for redirector in _REDIRECTORS:
+            if target := redirector(resp):
+                resp.headers.update({'location': target})
+                resp.status_code = 302
+        return resp
 
     def _send_with_policies(self, request: PreparedRequest,
                             zyte_policies: List[ZytePolicy], *args, **kwargs):
@@ -218,15 +277,19 @@ class ZyteSession(requests.Session):
             try:
                 r = self._send_with_policy(request, p, *args, **kwargs)
             except Exception as e:
+                # TODO: LOG
                 pass
+        if r is not None:
+            return self._modify_response_for_redirect(r)
         return r
 
 
 if __name__ == '__main__':
     s = ZyteSession()
-    url = 'https://doi.org/10.1016/j.physletb.2012.08.020'
+    url = 'https://doi.org/10.1074/jbc.272.40.25252'
+    policy = ZytePolicy.query.get(1)
     # policy = ZytePolicy.get_matching_policies(url=url)[0]
-    policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb',
-                        profile='proxy')
-    r = s.get(url, zyte_policies=[policy], fixed_policies=False)
+    # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb',
+    #                     profile='proxy')
+    r = s.get(url, zyte_policies=policy, fixed_policies=True)
     print(r.text)

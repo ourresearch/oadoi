@@ -1,8 +1,10 @@
 import argparse
+import base64
 import gzip
-import json
+import itertools
 import logging
 import os
+import sys
 import time
 from datetime import datetime
 from io import BytesIO
@@ -10,6 +12,7 @@ from pathlib import Path
 from queue import Queue, Empty
 from threading import Thread, Lock
 
+import pdftotext
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
@@ -23,6 +26,7 @@ from tenacity import stop_after_attempt, retry, \
     wait_exponential
 
 from need_rescrape_funcs import ORGS_NEED_RESCRAPE_MAP
+from pdf_util import is_pdf
 from s3_util import get_object, landing_page_key, make_s3, upload_obj, \
     mute_boto_logging
 from util import normalize_doi
@@ -122,6 +126,19 @@ def bad_landing_page(html):
         b'/cookieAbsent' in html])
 
 
+def pdf_needs_rescrape(contents: bytes):
+    reader = BytesIO(contents)
+    pdf = None
+    try:
+        pdf = list(itertools.islice(pdftotext.PDF(reader), 1))
+    except Exception as e:
+        pass
+    if not pdf:
+        return True
+    # less than 100 words in PDF = rescrape
+    return len(pdf[0]) < 100
+
+
 def doi_needs_rescrape(obj_details, pub_id, source_id):
     if obj_details['ContentLength'] < 10000:
         return True
@@ -129,6 +146,9 @@ def doi_needs_rescrape(obj_details, pub_id, source_id):
     body = obj_details['Body'].read()
     if body[:3] == b'\x1f\x8b\x08':
         body = gzip.decompress(body)
+
+    if is_pdf(body):
+        return pdf_needs_rescrape(body)
     pub_specific_needs_rescrape = False
     source_specific_needs_rescrape = False
     soup = BeautifulSoup(body, parser='lxml', features='lxml')
@@ -237,7 +257,8 @@ def enqueue_for_refresh_worker(q: Queue):
                 break
 
 
-def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, zyte_policy=None):
+def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
+                        zyte_policy=None):
     global LAST_DOI
     s3 = make_s3()
     # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb', profile='api', priority=1, params=json.loads('''{"actions": [{"action": "waitForSelector", "selector": {"type": "css", "state": "visible", "value": "#show-more-btn"}}, {"action": "click", "selector": {"type": "css", "value": "#show-more-btn"}}, {"action": "waitForSelector", "timeout": 15, "selector": {"type": "css", "state": "visible", "value": "div.author-collaboration div.author-group"}}], "javascript": true, "browserHtml": true, "httpResponseHeaders": true}'''))
@@ -274,6 +295,10 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, zyte_policy=
     LOGGER.debug('[*] Exiting process DIOs loop')
 
 
+def valid_cursor(cursor):
+    return b'openalex.org' in base64.standard_b64decode(cursor)
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n_threads", '-n',
@@ -287,18 +312,32 @@ def parse_args():
     parser.add_argument('--filter', '-f',
                         help='Filter with which to paginate through OpenAlex',
                         type=str, required=True)
-    parser.add_argument("--rescrape", '-r', help="Is this a rescrape job (optional)",
+    parser.add_argument("--rescrape", '-r',
+                        help="Is this a rescrape job (optional)",
                         dest='rescrape',
                         action='store_true',
                         default=False)
     parser.add_argument('--policy_id', '-pid', help='Zyte policy ID (optional)',
                         dest='policy_id',
                         default=None,
-                        type=int)
+                        type=str)
     args = parser.parse_args()
+    if args.cursor and not valid_cursor(args.cursor):
+        args.cursor = '*'
     if not args.cursor:
         args.cursor = get_cursor(args.filter)
     return args
+
+
+def get_zyte_policy(pid):
+    if pid is None:
+        return None
+    elif pid == 'proxy':
+        return ZytePolicy(profile='proxy')
+    elif pid == 'api':
+        return ZytePolicy(profile='api')
+    else:
+        return ZytePolicy.query.get(int(pid))
 
 
 def main():
@@ -308,7 +347,7 @@ def main():
     config_logger()
     # japan_journal_of_applied_physics = 'https://openalex.org/P4310313292'
     rescrape = args.rescrape
-    zyte_policy = ZytePolicy.query.get(args.policy_id) if args.policy_id is not None else None
+    zyte_policy = get_zyte_policy(args.policy_id)
     if not zyte_policy:
         LOGGER.error('Zyte policy with id {} not found'.format(args.policy_id))
         return
@@ -322,13 +361,15 @@ def main():
     Thread(target=enqueue_dois,
            args=(filter_, q,),
            kwargs=dict(rescrape=rescrape, resume_cursor=cursor)).start()
-    Thread(target=enqueue_for_refresh_worker, args=(refresh_q, ), daemon=True).start()
+    Thread(target=enqueue_for_refresh_worker, args=(refresh_q,),
+           daemon=True).start()
     consumers = []
     for i in range(threads):
         if threads <= 0:
             break
         t = Thread(target=process_dois_worker, args=(q, refresh_q),
-                   kwargs=dict(rescrape=args.rescrape, zyte_policy=zyte_policy), )
+                   kwargs=dict(rescrape=args.rescrape,
+                               zyte_policy=zyte_policy), )
         t.start()
         consumers.append(t)
     for t in consumers:

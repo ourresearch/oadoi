@@ -74,3 +74,7 @@ def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED,
         doi=doi, version=version.value))
     if commit:
         db.session.commit()
+
+
+def is_pdf(contents: bytes) -> bool:
+    return contents.startswith(b"%PDF-")
