@@ -4,7 +4,7 @@ import re
 from base64 import standard_b64decode
 from threading import current_thread
 from typing import List
-from urllib.parse import unquote
+from random_header_generator import HeaderGenerator
 
 import requests
 from requests import Request, PreparedRequest, Response
@@ -14,23 +14,12 @@ from tenacity import Retrying, stop_after_attempt, wait_exponential
 from app import db
 from const import ZYTE_API_URL, ZYTE_API_KEY
 from pdf_util import is_pdf
+from redirectors import ALL_REDIRECTORS
 
 CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
 
-
-def _sd_redirector(resp: Response):
-    target = None
-    if matches := re.findall(r'name="redirectURL" value="(http.*?)"',
-                             resp.text):
-        target = unquote(matches[0])
-    elif ('<title>Handle Redirect') in resp.text and (
-            matches := re.findall(r'<body><a href="(http.*?)"', resp.text)):
-        target = matches[0]
-    return target if (target and 'retrieve' in target) else None
-
-
-_REDIRECTORS = [_sd_redirector]
+_HEADER_GENERATOR = HeaderGenerator(user_agents='scrape')
 
 
 def _zyte_params_to_req(url, zyte_params):
@@ -93,7 +82,7 @@ class ZytePolicy(db.Model):
         return sorted(policies, key=lambda p: p.priority, reverse=False)
 
     def sender(self, session):
-        def _sender(request,
+        def _sender(request: PreparedRequest,
                     *args,
                     **kwargs, ):
             if self.profile == 'api':
@@ -105,6 +94,12 @@ class ZytePolicy(db.Model):
                 proxies = {'http': CRAWLERA_PROXY, 'https': CRAWLERA_PROXY}
                 kwargs['proxies'] = proxies
                 kwargs['verify'] = False
+                headers = dict(_HEADER_GENERATOR(device='desktop',
+                                                 httpVersion=2,
+                                                 country='us'))
+                if 'referer' in headers:
+                    del headers['referer']
+                request.headers.update(headers)
                 return super(session.__class__, session).send(request,
                                                               *args,
                                                               **kwargs)
@@ -122,14 +117,6 @@ _ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
 BYPASS_POLICY = ZytePolicy(profile='bypass')
 
 
-def log_exception(retry_state):
-    if retry_state.outcome.failed:
-        exception = retry_state.outcome.exception()
-        # TODO: use logger rather than print
-        print(
-            f"Exception {type(exception)}: {str(exception)} during retry attempt {retry_state.attempt_number}")
-
-
 def make_before_cb(url, logger: logging.Logger):
     def before_logger(retry_state):
         logger.debug(
@@ -140,14 +127,19 @@ def make_before_cb(url, logger: logging.Logger):
 
 def make_after_cb(url, logger: logging.Logger):
     def after_logger(retry_state):
-        logger.debug(f'URL {url} has taken {retry_state.seconds_since_start}s so far (attempt #{retry_state.attempt_number})')
+        if retry_state.outcome.failed:
+            exception = retry_state.outcome.exception()
+            logger.warning(
+                f"Exception {type(exception)}: {str(exception)} during retry attempt {retry_state.attempt_number}")
+        logger.debug(
+            f'URL {url} has taken {retry_state.seconds_since_start}s so far (attempt #{retry_state.attempt_number})')
+
     return after_logger
 
 
 _DEFAULT_RETRY = Retrying(
     stop=stop_after_attempt(5),
     wait=wait_exponential(multiplier=0.5, min=1, max=10),
-    retry_error_callback=log_exception,
     reraise=True,
 )
 
@@ -172,12 +164,14 @@ class ZyteSession(requests.Session):
         return logger
 
     def __init__(self, policies: List[ZytePolicy] = None,
-                 retry: Retrying = _DEFAULT_RETRY, logger: logging.Logger = None):
+                 retry: Retrying = _DEFAULT_RETRY,
+                 logger: logging.Logger = None):
         self.policies = sorted(policies, key=lambda p: p.priority,
                                reverse=False) if policies else None
         self.api_session = requests.Session()
         self.retry = retry
-        self.logger = logger if logger else self.make_logger(current_thread().name)
+        self.logger = logger if logger else self.make_logger(
+            current_thread().name)
         super().__init__()
 
     def get(
@@ -191,7 +185,7 @@ class ZyteSession(requests.Session):
                             fixed_policies=fixed_policies, **kwargs)
 
     def get_redirect_target(self, resp):
-        for redirector in _REDIRECTORS:
+        for redirector in ALL_REDIRECTORS:
             if target := redirector(resp):
                 return target
         return super().get_redirect_target(resp)
@@ -292,10 +286,11 @@ class ZyteSession(requests.Session):
 
     @staticmethod
     def _modify_response_for_redirect(resp: Response):
-        for redirector in _REDIRECTORS:
+        for redirector in ALL_REDIRECTORS:
             if target := redirector(resp):
                 resp.headers.update({'location': target})
                 resp.status_code = 302
+                return resp
         return resp
 
     def _send_with_policies(self, request: PreparedRequest,
