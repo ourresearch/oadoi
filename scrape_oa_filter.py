@@ -10,7 +10,7 @@ from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from queue import Queue, Empty
-from threading import Thread, Lock
+from threading import Thread, Lock, current_thread
 
 import pdftotext
 from sqlalchemy import text
@@ -259,11 +259,13 @@ def enqueue_for_refresh_worker(q: Queue):
 
 
 def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
-                        zyte_policy=None):
+                        zyte_policy=None, debug=False):
     global LAST_DOI
     s3 = make_s3()
+    zyte_logger = ZyteSession.make_logger(current_thread().name,
+                                                   logging.DEBUG if debug else logging.INFO)
     # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb', profile='api', priority=1, params=json.loads('''{"actions": [{"action": "waitForSelector", "selector": {"type": "css", "state": "visible", "value": "#show-more-btn"}}, {"action": "click", "selector": {"type": "css", "value": "#show-more-btn"}}, {"action": "waitForSelector", "timeout": 15, "selector": {"type": "css", "state": "visible", "value": "div.author-collaboration div.author-group"}}], "javascript": true, "browserHtml": true, "httpResponseHeaders": true}'''))
-    s = ZyteSession()
+    s = ZyteSession(logger=zyte_logger)
     while True:
         doi, openalex_id = None, None
         try:
@@ -322,6 +324,11 @@ def parse_args():
                         dest='policy_id',
                         default=None,
                         type=str)
+    parser.add_argument('--debug', '-d', help='Print debug messages from ZyteSession',
+                        dest='debug',
+                        default=False,
+                        action='store_true',
+                        type=bool)
     args = parser.parse_args()
     if args.cursor and not valid_cursor(args.cursor):
         args.cursor = '*'
@@ -370,7 +377,8 @@ def main():
             break
         t = Thread(target=process_dois_worker, args=(q, refresh_q),
                    kwargs=dict(rescrape=args.rescrape,
-                               zyte_policy=zyte_policy), )
+                               zyte_policy=zyte_policy,
+                               debug=args.debug), )
         t.start()
         consumers.append(t)
     for t in consumers:
