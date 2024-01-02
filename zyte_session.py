@@ -4,7 +4,6 @@ import re
 from base64 import standard_b64decode
 from threading import current_thread
 from typing import List
-from random_header_generator import HeaderGenerator
 
 import requests
 from requests import Request, PreparedRequest, Response
