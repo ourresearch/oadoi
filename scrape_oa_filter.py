@@ -316,7 +316,7 @@ def parse_args():
                         help='Filter with which to paginate through OpenAlex',
                         type=str, required=True)
     parser.add_argument("--rescrape", '-r',
-                        help="Is this a rescrape job (optional)",
+                        help="Is this a rescrape job. This will only rescrape pages that are bad/blocked pages, etc. (optional)",
                         dest='rescrape',
                         action='store_true',
                         default=False)
