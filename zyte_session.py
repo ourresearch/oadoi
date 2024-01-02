@@ -1,6 +1,8 @@
+import logging
 import os
 import re
 from base64 import standard_b64decode
+from threading import current_thread
 from typing import List
 from urllib.parse import unquote
 
@@ -14,6 +16,23 @@ from const import ZYTE_API_URL, ZYTE_API_KEY
 
 CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
+
+
+def make_logger(thread_n):
+    logger = logging.getLogger(f'zyte_session-{thread_n}')
+    logger.setLevel(logging.DEBUG)
+    # fh = logging.FileHandler(f'log_{org_id}.log', 'w')
+    # fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        '[%(name)s | %(asctime)s] %(levelname)s - %(message)s')
+    # fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # LOGGER.addHandler(fh)
+    logger.addHandler(ch)
+    logger.propagate = False
+    return logger
 
 
 def _sd_redirector(resp: Response):
@@ -127,11 +146,11 @@ def log_exception(retry_state):
             f"Exception {type(exception)}: {str(exception)} during retry attempt {retry_state.attempt_number}")
 
 
-# def make_before_cb(url):
-#     def before_logger(retry_state):
-#         print(f'Trying attempt #{retry_state.attempt_number} with URL: {url}')
-#
-#     return before_logger
+def make_before_cb(url, logger: logging.Logger):
+    def before_logger(retry_state):
+        logger.debug(f'Trying attempt #{retry_state.attempt_number} with URL: {url}')
+
+    return before_logger
 
 
 _DEFAULT_RETRY = Retrying(
@@ -150,6 +169,7 @@ class ZyteSession(requests.Session):
                                reverse=False) if policies else None
         self.api_session = requests.Session()
         self.retry = retry
+        self.logger = make_logger(current_thread().name)
         super().__init__()
 
     def get(
@@ -253,8 +273,7 @@ class ZyteSession(requests.Session):
     def _send_with_policy(self, request: PreparedRequest,
                           zyte_policy: ZytePolicy, *args, **kwargs):
         r = None
-        # retry = self.retry.copy(before=make_before_cb(request.url))
-        retry = self.retry
+        retry = self.retry.copy(before=make_before_cb(request.url, self.logger))
         for atp in retry:
             with atp:
                 r = zyte_policy.sender(self)(request, *args, **kwargs)
