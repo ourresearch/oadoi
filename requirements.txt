@@ -71,7 +71,6 @@ pyparsing==2.4.7
 python-dateutil==2.8.2
 python-http-client==3.3.3
 pytz==2021.3
-random-header-generator==1.2.0
 redis==3.5.3
 requests==2.25.1
 requests-cache==0.6.3

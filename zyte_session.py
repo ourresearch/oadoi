@@ -94,12 +94,7 @@ class ZytePolicy(db.Model):
                 proxies = {'http': CRAWLERA_PROXY, 'https': CRAWLERA_PROXY}
                 kwargs['proxies'] = proxies
                 kwargs['verify'] = False
-                headers = dict(_HEADER_GENERATOR(device='desktop',
-                                                 httpVersion=2,
-                                                 country='us'))
-                if 'referer' in headers:
-                    del headers['referer']
-                request.headers.update(headers)
+                request.headers['X-Crawlera-Profile'] = 'desktop'
                 return super(session.__class__, session).send(request,
                                                               *args,
                                                               **kwargs)
