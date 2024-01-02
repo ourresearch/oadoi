@@ -327,8 +327,7 @@ def parse_args():
     parser.add_argument('--debug', '-d', help='Print debug messages from ZyteSession',
                         dest='debug',
                         default=False,
-                        action='store_true',
-                        type=bool)
+                        action='store_true')
     args = parser.parse_args()
     if args.cursor and not valid_cursor(args.cursor):
         args.cursor = '*'
