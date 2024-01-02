@@ -56,7 +56,7 @@ class ZytePolicy(db.Model):
     id = Column(Integer, primary_key=True)
     type = Column(
         Enum('url', 'doi', name='zyte_policy_type_enum'),
-        nullable=False, default='domain_regex')
+        nullable=False, default='url')
     regex = Column(String(50), nullable=False)
     profile = Column(Enum('proxy', 'api', 'bypass', name='zyte_profile_enum'),
                      nullable=False, default='proxy')
