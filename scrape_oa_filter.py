@@ -4,7 +4,6 @@ import gzip
 import itertools
 import logging
 import os
-import sys
 import time
 from datetime import datetime
 from io import BytesIO
@@ -65,9 +64,6 @@ REDIS = redis.Redis.from_url(os.getenv('REDIS_URL'))
 REDIS_LOCK = Lock()
 
 REFRESH_QUEUE_CHUNK_SIZE = 50
-
-FILTER_TOTAL_COUNT = None
-FILTER = None
 
 
 def set_cursor(filter_, cursor):
@@ -183,7 +179,6 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
     global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
     global LAST_CURSOR
-    global FILTER_TOTAL_COUNT
     seen = set()
     query = {'select': 'doi,id,primary_location',
              'mailto': 'nolanmccafferty@gmail.com',
@@ -198,8 +193,8 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         results = j['results']
         query['cursor'] = j['meta']['next_cursor']
         LAST_CURSOR = j['meta']['next_cursor']
-        FILTER_TOTAL_COUNT = j['meta']['count']
-        LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR} | Filter: {FILTER}')
+        filter_total_count = j['meta']['count']
+        LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR} | Filter: {_filter} | Filter total count: {filter_total_count}')
         set_cursor(_filter, LAST_CURSOR)
         for result in results:
             TOTAL_SEEN += 1
@@ -233,7 +228,7 @@ def print_stats():
         pct_success = round((SUCCESS / TOTAL_ATTEMPTED) * 100,
                             2) if TOTAL_ATTEMPTED > 0 else 0
         LOGGER.info(
-            f'[*] Total seen: {TOTAL_SEEN} | Attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESS} | Need rescraped: {NEEDS_RESCRAPE_COUNT} | % Success: {pct_success}% | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Filter count: {FILTER_TOTAL_COUNT} | Last DOI: {LAST_DOI} | Cursor: {LAST_CURSOR}')
+            f'[*] Total seen: {TOTAL_SEEN} | Attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESS} | Need rescraped: {NEEDS_RESCRAPE_COUNT} | % Success: {pct_success}% | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Last DOI: {LAST_DOI} | Cursor: {LAST_CURSOR}')
         time.sleep(5)
 
 
@@ -313,8 +308,10 @@ def parse_args():
                         help="Cursor to resume paginating from (optional)",
                         type=str, default=None)
     parser.add_argument('--filter', '-f',
-                        help='Filter with which to paginate through OpenAlex',
-                        type=str, required=True)
+                        help='Filter(s) with which to paginate through OpenAlex',
+                        type=str,
+                        action='append',
+                        required=True)
     parser.add_argument("--rescrape", '-r',
                         help="Is this a rescrape job. This will only rescrape pages that are bad/blocked pages, etc. (optional)",
                         dest='rescrape',
@@ -348,9 +345,7 @@ def get_zyte_policy(pid):
 
 
 def main():
-    global FILTER
     args = parse_args()
-    FILTER = args.filter
     config_logger()
     # japan_journal_of_applied_physics = 'https://openalex.org/P4310313292'
     rescrape = args.rescrape
@@ -359,15 +354,15 @@ def main():
         LOGGER.error('Zyte policy with id {} not found'.format(args.policy_id))
         return
     cursor = args.cursor
-    filter_ = args.filter
     threads = args.threads
     q = Queue(maxsize=threads + 1)
     refresh_q = Queue(maxsize=REFRESH_QUEUE_CHUNK_SIZE + 1)
     Thread(target=print_stats, daemon=True).start()
     LOGGER.debug(f'Starting with args: {vars(args)}')
-    Thread(target=enqueue_dois,
-           args=(filter_, q,),
-           kwargs=dict(rescrape=rescrape, resume_cursor=cursor)).start()
+    for filter_ in args.filter:
+        Thread(target=enqueue_dois,
+               args=(filter_, q,),
+               kwargs=dict(rescrape=rescrape, resume_cursor=cursor)).start()
     Thread(target=enqueue_for_refresh_worker, args=(refresh_q,),
            daemon=True).start()
     consumers = []
