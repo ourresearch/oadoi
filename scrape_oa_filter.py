@@ -123,6 +123,7 @@ def bad_landing_page(html):
         b'We apologize for the inconvenience' in html,
         b'<title>APA PsycNet</title>' in html,
         b'<title>Redirecting</title>' in html,
+        b'Your request cannot be processed at this time' in html,
         b'/cookieAbsent' in html])
 
 
