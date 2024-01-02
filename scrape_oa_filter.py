@@ -86,7 +86,7 @@ def get_cursor(filter_):
 def config_logger():
     mute_boto_logging()
     global LOGGER
-    LOGGER = logging.getLogger('oa_publisher_scraper')
+    LOGGER = logging.getLogger('oa_filter_scraper')
     LOGGER.setLevel(logging.DEBUG)
     # fh = logging.FileHandler(f'log_{org_id}.log', 'w')
     # fh.setLevel(logging.DEBUG)
