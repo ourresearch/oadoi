@@ -122,7 +122,7 @@ BYPASS_POLICY = ZytePolicy(profile='bypass')
 def log_exception(retry_state):
     if retry_state.outcome.failed:
         exception = retry_state.outcome.exception()
-        #TODO: use logger rather than print
+        # TODO: use logger rather than print
         print(
             f"Exception {type(exception)}: {str(exception)} during retry attempt {retry_state.attempt_number}")
 
@@ -273,15 +273,15 @@ class ZyteSession(requests.Session):
     def _send_with_policies(self, request: PreparedRequest,
                             zyte_policies: List[ZytePolicy], *args, **kwargs):
         r = None
+        exc = None
         for p in zyte_policies:
             try:
                 r = self._send_with_policy(request, p, *args, **kwargs)
             except Exception as e:
-                # TODO: LOG
-                pass
-        if r is not None:
-            return self._modify_response_for_redirect(r)
-        return r
+                exc = e
+        if r is None:
+            raise exc
+        return self._modify_response_for_redirect(r)
 
 
 if __name__ == '__main__':

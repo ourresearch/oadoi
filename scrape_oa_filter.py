@@ -336,7 +336,7 @@ def get_zyte_policy(pid):
     elif pid == 'proxy':
         return ZytePolicy(profile='proxy')
     elif pid == 'api':
-        return ZytePolicy(profile='api')
+        return ZytePolicy(profile='api', params={"httpResponseBody": True, "httpResponseHeaders": True})
     else:
         return ZytePolicy.query.get(int(pid))
 
