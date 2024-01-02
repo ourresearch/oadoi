@@ -18,8 +18,6 @@ from redirectors import ALL_REDIRECTORS
 CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
 
-_HEADER_GENERATOR = HeaderGenerator(user_agents='scrape')
-
 
 def _zyte_params_to_req(url, zyte_params):
     req = PreparedRequest()
