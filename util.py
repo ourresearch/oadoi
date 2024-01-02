@@ -669,9 +669,3 @@ def normalize_issn(issn):
 
 def is_same_issn(l, r):
     return normalize_issn(l) == normalize_issn(r)
-
-
-def normalize_doi(doi):
-    if doi.startswith('http'):
-        return re.findall(r'doi.org/(.*?)$', doi)[0]
-    return doi
