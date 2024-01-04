@@ -175,6 +175,9 @@ def get_openalex_json(url, params):
     return j
 
 
+
+
+
 def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
     global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
@@ -202,22 +205,25 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
             # IOP probably unnecessary source
             if doi.startswith('10.1086'):
                 continue
-            doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
-                                 landing_page_key(result['doi']))
-            pub_id = \
-                result['primary_location']['source']['host_organization'].split(
-                    '/')[-1]
-            source_id = result['primary_location']['source']['id'].split('/')[
-                -1]
-            if doi_obj and rescrape and not doi_needs_rescrape(doi_obj, pub_id,
-                                                               source_id):
-                continue
-            if rescrape:
-                NEEDS_RESCRAPE_COUNT += 1
-            if doi in seen:
-                continue
-            seen.add(doi)
-            q.put((doi, result['id']))
+            try:
+                doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
+                                     landing_page_key(result['doi']))
+                pub_id = \
+                    result['primary_location']['source']['host_organization'].split(
+                        '/')[-1]
+                source_id = result['primary_location']['source']['id'].split('/')[
+                    -1]
+                if doi in seen:
+                    continue
+                if doi_obj and rescrape and not doi_needs_rescrape(doi_obj, pub_id,
+                                                                   source_id):
+                    continue
+                if rescrape:
+                    NEEDS_RESCRAPE_COUNT += 1
+                seen.add(doi)
+                q.put((doi, result['id']))
+            except Exception as e:
+                LOGGER.warning(f'[*] Error enqueueing doi: {doi} - {e}')
 
 
 def print_stats():
