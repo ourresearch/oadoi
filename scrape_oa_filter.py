@@ -175,9 +175,6 @@ def get_openalex_json(url, params):
     return j
 
 
-
-
-
 def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
     global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
@@ -197,7 +194,8 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         query['cursor'] = j['meta']['next_cursor']
         LAST_CURSOR = j['meta']['next_cursor']
         filter_total_count = j['meta']['count']
-        LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR} | Filter: {_filter} | Filter total count: {filter_total_count}')
+        LOGGER.debug(
+            f'[*] Last cursor: {LAST_CURSOR} | Filter: {_filter} | Filter total count: {filter_total_count}')
         set_cursor(_filter, LAST_CURSOR)
         for result in results:
             TOTAL_SEEN += 1
@@ -209,13 +207,16 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
                 doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
                                      landing_page_key(result['doi']))
                 pub_id = \
-                    result['primary_location']['source']['host_organization'].split(
+                    result['primary_location']['source'][
+                        'host_organization'].split(
                         '/')[-1]
-                source_id = result['primary_location']['source']['id'].split('/')[
+                source_id = \
+                result['primary_location']['source']['id'].split('/')[
                     -1]
                 if doi in seen:
                     continue
-                if doi_obj and rescrape and not doi_needs_rescrape(doi_obj, pub_id,
+                if doi_obj and rescrape and not doi_needs_rescrape(doi_obj,
+                                                                   pub_id,
                                                                    source_id):
                     continue
                 if rescrape:
@@ -264,7 +265,7 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
     global LAST_DOI
     s3 = make_s3()
     zyte_logger = ZyteSession.make_logger(current_thread().name,
-                                                   logging.DEBUG if debug else logging.INFO)
+                                          logging.DEBUG if debug else logging.INFO)
     # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb', profile='api', priority=1, params=json.loads('''{"actions": [{"action": "waitForSelector", "selector": {"type": "css", "state": "visible", "value": "#show-more-btn"}}, {"action": "click", "selector": {"type": "css", "value": "#show-more-btn"}}, {"action": "waitForSelector", "timeout": 15, "selector": {"type": "css", "state": "visible", "value": "div.author-collaboration div.author-group"}}], "javascript": true, "browserHtml": true, "httpResponseHeaders": true}'''))
     s = ZyteSession(logger=zyte_logger)
     while True:
@@ -327,7 +328,8 @@ def parse_args():
                         dest='policy_id',
                         default=None,
                         type=str)
-    parser.add_argument('--debug', '-d', help='Print debug messages from ZyteSession',
+    parser.add_argument('--debug', '-d',
+                        help='Print debug messages from ZyteSession',
                         dest='debug',
                         default=False,
                         action='store_true')
@@ -345,7 +347,8 @@ def get_zyte_policy(pid):
     elif pid == 'proxy':
         return ZytePolicy(profile='proxy')
     elif pid == 'api':
-        return ZytePolicy(profile='api', params={"httpResponseBody": True, "httpResponseHeaders": True})
+        return ZytePolicy(profile='api', params={"httpResponseBody": True,
+                                                 "httpResponseHeaders": True})
     else:
         return ZytePolicy.query.get(int(pid))
 
