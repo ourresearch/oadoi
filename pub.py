@@ -39,7 +39,9 @@ from pdf_util import save_pdf
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
+from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import CrossrefRecordMaker
+from recordthresher.record_maker import PmhRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
 from util import is_pmc, clamp, clean_doi, normalize_doi
@@ -730,6 +732,10 @@ class Pub(db.Model):
         if rt_record := CrossrefRecordMaker.make_record(self):
             db.session.merge(rt_record)
             self.recordthresher_id = rt_record.id
+            secondary_records = PmhRecordMaker.make_secondary_repository_responses(rt_record)
+            for secondary_record in secondary_records:
+                db.session.merge(secondary_record)
+                db.session.merge(RecordthresherParentRecord(record_id=secondary_record.id, parent_record_id=rt_record.id))
             return True
         return False
 
