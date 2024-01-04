@@ -334,6 +334,8 @@ def parse_args():
                         default=False,
                         action='store_true')
     args = parser.parse_args()
+    if len(args.filter) > 1:
+        args.cursor = '*'
     if args.cursor and not valid_cursor(args.cursor):
         args.cursor = '*'
     if not args.cursor:
