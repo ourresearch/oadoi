@@ -168,14 +168,5 @@ class RecordFulltext(db.Model):
     fulltext = db.Column(db.Text)
 
 
-class RecordthresherParentRecord(db.Model):
-    __table_args__ = {'schema': 'ins'}
-    __tablename__ = "recordthresher_parent_record"
-    __bind_key__ = 'openalex'
-
-    record_id = db.Column(db.Text, primary_key=True)
-    parent_record_id = db.Column(db.Text, primary_key=True)
-
-
 Record.fulltext = db.relationship(RecordFulltext, lazy='selectin', viewonly=True, uselist=False)
 

@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 from time import sleep
 from time import time
 
@@ -8,7 +7,6 @@ from sqlalchemy import text
 from app import db
 from app import logger
 from pmh_record import PmhRecord
-from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import PmhRecordMaker
 from util import elapsed
 from util import safe_commit
@@ -48,19 +46,8 @@ class QueuePmhRTRecord:
 
                 for pmh_id in pmh_ids:
                     if pmh := PmhRecord.query.filter(PmhRecord.id == pmh_id).scalar():
-                        if PmhRecordMaker.is_high_quality(pmh):
-                            if record := PmhRecordMaker.make_record(pmh):
-                                db.session.merge(record)
-
-                                secondary_records = PmhRecordMaker.make_secondary_pmh_records(record)
-                                for secondary_record in secondary_records:
-                                    db.session.merge(secondary_record)
-                                    db.session.merge(
-                                        RecordthresherParentRecord(
-                                            record_id=secondary_record.id,
-                                            parent_record_id=record.id
-                                        )
-                                    )
+                        if record := PmhRecordMaker.make_record(pmh):
+                            db.session.merge(record)
 
                 db.session.execute(
                     text('''

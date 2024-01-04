@@ -49,29 +49,13 @@ class PmhRecordMaker(RecordMaker):
         return f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}'
 
     @classmethod
-    def _record_id(cls, pmh_record):
-        return shortuuid.encode(
-            uuid.UUID(bytes=hashlib.sha256(f'pmh_record:{pmh_record.id}'.encode('utf-8')).digest()[0:16])
-        )
-
-    @classmethod
-    def _existing_record_search(cls, record_id):
-        return PmhRecordRecord.query.get(record_id)
-
-    @classmethod
-    def _new_record_init(cls, record_id):
-        return PmhRecordRecord(id=record_id)
-
-    @classmethod
     def _make_record_impl(cls, pmh_record):
         if not (pmh_record and pmh_record.id):
             return None
 
         if not PmhRecordMaker.is_high_quality(pmh_record):
             logger.info(f'not making a recordthresher record for {pmh_record}')
-            logger.info(f'trying to make a secondary record for {pmh_record}')
-            from recordthresher.record_maker.secondary_pmh_record_maker import SecondaryPmhRecordMaker
-            return SecondaryPmhRecordMaker._make_record_impl(pmh_record)
+            return None
 
         if best_page := cls._representative_page(pmh_record):
             logger.info(f'selected the representative page {best_page}')
@@ -79,12 +63,14 @@ class PmhRecordMaker(RecordMaker):
             logger.info(f'cannot pick a representative repo page for {pmh_record} so not making a record')
             return None
 
-        record_id = cls._record_id(pmh_record)
+        record_id = shortuuid.encode(
+            uuid.UUID(bytes=hashlib.sha256(f'pmh_record:{pmh_record.id}'.encode('utf-8')).digest()[0:16])
+        )
 
-        record = cls._existing_record_search(record_id)
+        record = PmhRecordRecord.query.get(record_id)
 
         if not record:
-            record = cls._new_record_init(record_id)
+            record = PmhRecordRecord(id=record_id)
 
         record.pmh_id = pmh_record.id
         record.repository_id = pmh_record.endpoint_id
@@ -139,7 +125,17 @@ class PmhRecordMaker(RecordMaker):
         return record
 
     @classmethod
-    def make_secondary_pmh_records(cls, record):
+    def make_unpaywall_api_response(cls, record):
+        unpaywall_api_response = RecordUnpaywallResponse.query.get(record.id)
+        if not unpaywall_api_response:
+            unpaywall_api_response = RecordUnpaywallResponse(
+                recordthresher_id=record.id,
+                updated=datetime.datetime.utcnow(),
+                last_changed_date=datetime.datetime.utcnow()
+            )
+
+        old_response_jsonb = unpaywall_api_response.response_jsonb or {}
+
         response_pub = None
 
         if record.doi:
@@ -151,37 +147,22 @@ class PmhRecordMaker(RecordMaker):
             response_pub = RecordthresherPub(id='', title=record.title)
             response_pub.normalized_title = record.normalized_title
             response_pub.authors = json.loads(record.authors)
+            response_pub.response_jsonb = unpaywall_api_response.response_jsonb
             db.session().enable_relationship_loading(response_pub)
 
-        pub_pmh_ids = set()
+        response_pub.recalculate()
+        response_pub.set_results()
 
-        for pub_page in response_pub.pages:
-            if not pub_page.scrape_version:
-                continue
+        response_pub.updated = unpaywall_api_response.updated
+        response_pub.last_changed_date = unpaywall_api_response.last_changed_date
 
-            pub_pmh_id = pub_page.pmh_id
+        response_pub.decide_if_response_changed(old_response_jsonb)
 
-            if not pub_pmh_id or pub_pmh_id in pub_pmh_ids or pub_pmh_id == record.pmh_id:
-                continue
+        unpaywall_api_response.updated = response_pub.updated
+        unpaywall_api_response.last_changed_date = response_pub.last_changed_date
+        unpaywall_api_response.response_jsonb = response_pub.response_jsonb
 
-            pub_pmh_ids.add(pub_pmh_id)
-
-        secondary_rt_records = []
-
-        from pmh_record import PmhRecord
-        for pub_pmh_id in pub_pmh_ids:
-            logger.info(f"creating secondary_pmh_record for {pub_pmh_id}")
-            secondary_pmh_record = PmhRecord.query.get(pub_pmh_id)
-
-            if PmhRecordMaker.is_high_quality(secondary_pmh_record):
-                logger.info(f"skipping high quality record {pub_pmh_id}")
-                continue
-
-            secondary_rt_record = PmhRecordMaker._make_record_impl(secondary_pmh_record)
-            if secondary_rt_record:
-                secondary_rt_records.append(secondary_rt_record)
-
-        return secondary_rt_records
+        return unpaywall_api_response
 
     @classmethod
     def _representative_page(cls, pmh_record):

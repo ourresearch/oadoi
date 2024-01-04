@@ -8,7 +8,6 @@ from multiprocessing import current_process
 from time import sleep
 from time import time
 from urllib.parse import urlparse
-from collections import defaultdict
 
 import redis
 from redis import WatchError
@@ -21,7 +20,6 @@ from app import logger
 from oa_page import publisher_equivalent_endpoint_id
 from page import PageNew
 from queue_main import DbQueue
-from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import PmhRecordMaker
 from util import elapsed
 from util import safe_commit
@@ -255,21 +253,9 @@ class DbQueueGreenOAScrape(DbQueue):
 
             safe_commit(db) or logger.info("COMMIT fail")
 
-            if PmhRecordMaker.is_high_quality(page.pmh_record):
-                if recordthresher_record := PmhRecordMaker.make_record(page.pmh_record):
-                    db.session.merge(recordthresher_record)
-
-                    logger.info('making secondary pmh records')
-
-                    secondary_records = PmhRecordMaker.make_secondary_pmh_records(recordthresher_record)
-                    for secondary_record in secondary_records:
-                        db.session.merge(secondary_record)
-                        db.session.merge(
-                            RecordthresherParentRecord(
-                                record_id=secondary_record.id,
-                                parent_record_id=recordthresher_record.id
-                            )
-                        )
+            if recordthresher_record := PmhRecordMaker.make_record(page.pmh_record):
+                db.session.merge(recordthresher_record)
+                db.session.merge(PmhRecordMaker.make_unpaywall_api_response(recordthresher_record))
 
             safe_commit(db) or logger.info("COMMIT fail")
         else:
@@ -321,10 +307,7 @@ class DbQueueGreenOAScrape(DbQueue):
 
                 logger.info('making recordthresher records')
 
-                recordthresher_records = [
-                    PmhRecordMaker.make_record(p.pmh_record) for p in scraped_pages
-                    if PmhRecordMaker.is_high_quality(p.pmh_record)
-                ]
+                recordthresher_records = [PmhRecordMaker.make_record(p.pmh_record) for p in scraped_pages]
 
                 distinct_records = {}
                 for recordthresher_record in recordthresher_records:
@@ -335,36 +318,12 @@ class DbQueueGreenOAScrape(DbQueue):
                     logger.info('saving recordthresher records')
                     merge_and_commit_objects(distinct_records.values())
 
-                logger.info('making secondary pmh records')
-                secondary_records = []
-                parent_relationships = []
-
-                for new_rt_record in list(distinct_records.values()):
-                    new_secondary_records = PmhRecordMaker.make_secondary_pmh_records(new_rt_record)
-                    secondary_records.extend(new_secondary_records)
-                    parent_relationships.extend([
-                        RecordthresherParentRecord(record_id=r.id, parent_record_id=new_rt_record.id)
-                        for r in new_secondary_records
-                        if r.id != new_rt_record.id
-                    ])
-
-                distinct_secondary_records = {}
-                for secondary_pmh_record in secondary_records:
-                    if secondary_pmh_record:
-                        distinct_secondary_records[secondary_pmh_record.id] = secondary_pmh_record
-
-                if distinct_secondary_records:
-                    merge_and_commit_objects(distinct_secondary_records.values())
-
-                distinct_parent_relationships = []
-                parent_keys = defaultdict(set)
-                for parent_relationship in parent_relationships:
-                    if parent_relationship.record_id not in parent_keys[parent_relationship.parent_record_id]:
-                        distinct_parent_relationships.append(parent_relationship)
-                        parent_keys[parent_relationship.parent_record_id].add(parent_relationship.record_id)
-
-                if distinct_parent_relationships:
-                    merge_and_commit_objects(distinct_parent_relationships)
+                    logger.info('making mock unpaywall responses')
+                    unpaywall_responses = [
+                        PmhRecordMaker.make_unpaywall_api_response(r) for r in distinct_records.values()
+                    ]
+                    logger.info('saving mock unpaywall responses')
+                    merge_and_commit_objects(unpaywall_responses)
 
                 index += 1
                 num_updated += chunk_size
