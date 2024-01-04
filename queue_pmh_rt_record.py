@@ -7,10 +7,10 @@ from sqlalchemy import text
 from app import db
 from app import logger
 from pmh_record import PmhRecord
+from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import PmhRecordMaker
 from util import elapsed
 from util import safe_commit
-
 
 import endpoint  # magic
 
@@ -29,6 +29,15 @@ class QueuePmhRTRecord:
 
             if record := PmhRecordMaker.make_record(pmh):
                 db.session.merge(record)
+                secondary_records = PmhRecordMaker.make_secondary_repository_responses(record)
+                for secondary_record in secondary_records:
+                    db.session.merge(secondary_record)
+                    db.session.merge(
+                        RecordthresherParentRecord(
+                            record_id=secondary_record.id,
+                            parent_record_id=record.id
+                        )
+                    )
 
             safe_commit(db) or logger.info("COMMIT fail")
         else:
@@ -44,10 +53,27 @@ class QueuePmhRTRecord:
                     sleep(5)
                     continue
 
+                secondary_records = {}
+                parent_relationships = {}
+
                 for pmh_id in pmh_ids:
                     if pmh := PmhRecord.query.filter(PmhRecord.id == pmh_id).scalar():
                         if record := PmhRecordMaker.make_record(pmh):
                             db.session.merge(record)
+                            record_secondary_records = PmhRecordMaker.make_secondary_repository_responses(record)
+                            for record_secondary_record in record_secondary_records:
+                                secondary_records[record_secondary_record.id] = record_secondary_record
+                                parent_relationships[record_secondary_record.id] = RecordthresherParentRecord(
+                                    record_id=record_secondary_record.id,
+                                    parent_record_id=record.id
+                                )
+
+                for secondary_record in secondary_records.values():
+                    print(secondary_record)
+                    db.session.merge(secondary_record)
+
+                for parent_relationship in parent_relationships.values():
+                    db.session.merge(parent_relationship)
 
                 db.session.execute(
                     text('''
