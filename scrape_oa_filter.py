@@ -256,8 +256,8 @@ def enqueue_for_refresh_worker(q: Queue):
                     enqueue_dois_for_refresh(chunk, conn)
                     chunk = []
             except Empty:
-                LOGGER.debug('[*] Exiting enqueue_for_refresh_worker')
-                break
+                enqueue_dois_for_refresh(chunk, conn)
+                chunk = []
 
 
 def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
