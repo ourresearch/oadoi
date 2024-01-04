@@ -10,7 +10,6 @@ import shortuuid
 from app import db
 from app import logger
 from recordthresher.pmh_record_record import PmhRecordRecord
-from recordthresher.record_unpaywall_response import RecordUnpaywallResponse
 from recordthresher.util import ARXIV_ID_PATTERN
 from recordthresher.util import normalize_author
 from .record_maker import RecordMaker
@@ -125,16 +124,8 @@ class PmhRecordMaker(RecordMaker):
         return record
 
     @classmethod
-    def make_unpaywall_api_response(cls, record):
-        unpaywall_api_response = RecordUnpaywallResponse.query.get(record.id)
-        if not unpaywall_api_response:
-            unpaywall_api_response = RecordUnpaywallResponse(
-                recordthresher_id=record.id,
-                updated=datetime.datetime.utcnow(),
-                last_changed_date=datetime.datetime.utcnow()
-            )
-
-        old_response_jsonb = unpaywall_api_response.response_jsonb or {}
+    def make_secondary_repository_responses(cls, record):
+        from recordthresher.record_maker.secondary_repository_record_maker import SecondaryRepositoryRecordMaker
 
         response_pub = None
 
@@ -147,22 +138,20 @@ class PmhRecordMaker(RecordMaker):
             response_pub = RecordthresherPub(id='', title=record.title)
             response_pub.normalized_title = record.normalized_title
             response_pub.authors = json.loads(record.authors)
-            response_pub.response_jsonb = unpaywall_api_response.response_jsonb
             db.session().enable_relationship_loading(response_pub)
 
         response_pub.recalculate()
         response_pub.set_results()
 
-        response_pub.updated = unpaywall_api_response.updated
-        response_pub.last_changed_date = unpaywall_api_response.last_changed_date
+        secondary_records = []
+        for loc in response_pub.all_oa_locations:
+            if f"{loc.endpoint_id}:{loc.pmh_id}" == record.pmh_id:
+                continue
+            secondary_records.append(
+                SecondaryRepositoryRecordMaker._make_record_impl(loc, response_pub.title, response_pub.normalized_title)
+            )
 
-        response_pub.decide_if_response_changed(old_response_jsonb)
-
-        unpaywall_api_response.updated = response_pub.updated
-        unpaywall_api_response.last_changed_date = response_pub.last_changed_date
-        unpaywall_api_response.response_jsonb = response_pub.response_jsonb
-
-        return unpaywall_api_response
+        return [sr for sr in secondary_records if sr]
 
     @classmethod
     def _representative_page(cls, pmh_record):

@@ -20,6 +20,7 @@ from app import logger
 from oa_page import publisher_equivalent_endpoint_id
 from page import PageNew
 from queue_main import DbQueue
+from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import PmhRecordMaker
 from util import elapsed
 from util import safe_commit
@@ -27,7 +28,6 @@ from util import safe_commit
 from pub import Pub  # magic
 import endpoint  # magic
 import pmh_record  # magic
-
 
 def _procs_per_worker():
     return int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
@@ -255,7 +255,15 @@ class DbQueueGreenOAScrape(DbQueue):
 
             if recordthresher_record := PmhRecordMaker.make_record(page.pmh_record):
                 db.session.merge(recordthresher_record)
-                db.session.merge(PmhRecordMaker.make_unpaywall_api_response(recordthresher_record))
+                secondary_records = PmhRecordMaker.make_secondary_repository_responses(recordthresher_record)
+                for secondary_record in secondary_records:
+                    db.session.merge(secondary_record)
+                    db.session.merge(
+                        RecordthresherParentRecord(
+                            record_id=secondary_record.id,
+                            parent_record_id=recordthresher_record.id
+                        )
+                    )
 
             safe_commit(db) or logger.info("COMMIT fail")
         else:
@@ -318,12 +326,26 @@ class DbQueueGreenOAScrape(DbQueue):
                     logger.info('saving recordthresher records')
                     merge_and_commit_objects(distinct_records.values())
 
-                    logger.info('making mock unpaywall responses')
-                    unpaywall_responses = [
-                        PmhRecordMaker.make_unpaywall_api_response(r) for r in distinct_records.values()
-                    ]
-                    logger.info('saving mock unpaywall responses')
-                    merge_and_commit_objects(unpaywall_responses)
+                    logger.info('making secondary repository records')
+                    secondary_records = {}
+                    parent_relationships = {}
+
+                    for r in distinct_records.values():
+                        r_secondary_records = PmhRecordMaker.make_secondary_repository_responses(r)
+                        for r_secondary_record in r_secondary_records:
+                            secondary_records[r_secondary_record.id] = r_secondary_record
+                            parent_relationships[r_secondary_record.id] = RecordthresherParentRecord(
+                                record_id=r_secondary_record.id,
+                                parent_record_id=r.id
+                            )
+
+                    if secondary_records:
+                        logger.info('saving secondary repository records')
+                        merge_and_commit_objects(secondary_records.values())
+
+                    if parent_relationships:
+                        logger.info('saving parent_relationships')
+                        merge_and_commit_objects(parent_relationships.values())
 
                 index += 1
                 num_updated += chunk_size
