@@ -17,7 +17,6 @@ from recordthresher.crossref_doi_record import CrossrefDoiRecord
 from recordthresher.record import RecordFulltext
 from recordthresher.util import normalize_author, cleanup_affiliation
 from recordthresher.util import normalize_citation
-from recordthresher.util import parseland_parse
 from util import normalize, normalize_title, NoDoiException
 from .record_maker import RecordMaker
 
@@ -61,6 +60,7 @@ class CrossrefRecordMaker(RecordMaker):
         record.normalized_title = normalize_title(record.title)
         authors = [normalize_author(author) for author in
                    pub.authors] if pub.authors else []
+        authors.append({'is_raw_record': True})
 
         record.authors = authors
 
@@ -245,46 +245,18 @@ class CrossrefRecordMaker(RecordMaker):
         return best_match_idx
 
     @classmethod
-    def _merge_parseland_parse(cls, record, pub):
-        if (
-                pl_parse := parseland_parse(
-                    cls._parseland_api_url(pub))) is not None:
-            pl_authors = pl_parse.get('authors', [])
-            normalized_pl_authors = [normalize(author.get('raw', '')) for author
-                                     in pl_authors]
-
-            for crossref_author_idx, crossref_author in enumerate(
-                    record.authors):
-                best_match_idx = cls._match_pl_author(crossref_author,
-                                                      crossref_author_idx,
-                                                      normalized_pl_authors)
-                if best_match_idx > -1:
-                    pl_author = pl_authors[best_match_idx]
-                    crossref_author['is_corresponding'] = pl_author.get('is_corresponding', '')
-                    crossref_author['affiliation'] = cls._reconcile_affiliations(
-                        crossref_author, pl_author, record.doi)
-
-
-            # In case crossref has no authors and parseland does, use parseland authors
-            # Example doi - 10.7717/peerjcs.1261/table-10
-
-            # *** We do not want to do this yet ***
-
-            # if not record.authors and pl_authors:
-            #     record.set_authors(pl_authors)
-
-            record.abstract = record.abstract or pl_parse.get('abstract')
-            is_oa = bool(pub.response_jsonb.get('oa_locations')) if bool(pub.response_jsonb) else False
-            if is_oa:
-                record_fulltext = (record.fulltext and record.fulltext.fulltext) or pl_parse.get('readable')
-                if record_fulltext:
-                    db.session.merge(
-                        RecordFulltext(recordthresher_id=record.id, fulltext=record_fulltext)
-                    )
+    def _set_record_fulltext(cls, record, pub):
+        is_oa = bool(pub.response_jsonb.get('oa_locations')) if bool(pub.response_jsonb) else False
+        if is_oa:
+            record_fulltext = record.fulltext and record.fulltext.fulltext
+            if record_fulltext:
+                db.session.merge(
+                    RecordFulltext(recordthresher_id=record.id, fulltext=record_fulltext)
+                )
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        cls._merge_parseland_parse(record, pub)
+        cls._set_record_fulltext(record, pub)
 
     @classmethod
     def _best_affiliation(cls, aff_ver1, aff_ver2):
