@@ -9,7 +9,8 @@ from sqlalchemy import text
 from app import db
 from app import logger
 from pub import Pub
-from recordthresher.record_maker import CrossrefRecordMaker
+from recordthresher.record import RecordthresherParentRecord
+from recordthresher.record_maker import CrossrefRecordMaker, PmhRecordMaker
 from recordthresher.record_maker.parseland_record_maker import ParselandRecordMaker
 from util import elapsed
 from util import safe_commit
@@ -67,8 +68,19 @@ class QueueDoiRtRecord:
                         if record := CrossrefRecordMaker.make_record(pub):
                             db.session.merge(record)
                             PROCESSED += 1
+
                             if pl_record := ParselandRecordMaker.make_record(self, update_existing=False):
                                 db.session.merge(pl_record)
+
+                            secondary_records = PmhRecordMaker.make_secondary_repository_responses(record)
+                            for secondary_record in secondary_records:
+                                db.session.merge(secondary_record)
+                                db.session.merge(
+                                    RecordthresherParentRecord(
+                                        record_id=secondary_record.id,
+                                        parent_record_id=record.id
+                                    )
+                                )
 
                 db.session.execute(
                     text('''
