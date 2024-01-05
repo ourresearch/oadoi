@@ -17,6 +17,9 @@ def parseland_api_url(pub):
 class ParselandRecordMaker:
     @classmethod
     def make_record(cls, pub, update_existing=True):
+        if not pub and hasattr(pub, 'id') and pub.id:
+            return None
+
         record_id = shortuuid.encode(
             uuid.UUID(bytes=hashlib.sha256(
                 f'parseland:{pub.id}'.encode('utf-8')).digest()[0:16])
