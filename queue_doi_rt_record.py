@@ -69,7 +69,7 @@ class QueueDoiRtRecord:
                             db.session.merge(record)
                             PROCESSED += 1
 
-                            if pl_record := ParselandRecordMaker.make_record(self, update_existing=False):
+                            if pl_record := ParselandRecordMaker.make_record(pub, update_existing=False):
                                 db.session.merge(pl_record)
 
                             secondary_records = PmhRecordMaker.make_secondary_repository_responses(record)
