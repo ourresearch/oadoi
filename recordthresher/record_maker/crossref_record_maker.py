@@ -15,7 +15,7 @@ from oa_page import doi_repository_ids
 from page import RepoPage
 from recordthresher.crossref_doi_record import CrossrefDoiRecord
 from recordthresher.record import RecordFulltext
-from recordthresher.util import normalize_author, cleanup_affiliation
+from recordthresher.util import normalize_author, cleanup_affiliation, parseland_parse
 from recordthresher.util import normalize_citation
 from util import normalize, normalize_title, NoDoiException
 from .record_maker import RecordMaker
@@ -253,6 +253,37 @@ class CrossrefRecordMaker(RecordMaker):
                 db.session.merge(
                     RecordFulltext(recordthresher_id=record.id, fulltext=record_fulltext)
                 )
+
+    @classmethod
+    def _merge_parseland_parse(cls, record, pub):
+        if (
+            pl_parse := parseland_parse(cls._parseland_api_url(pub))
+        ) is not None:
+            pl_authors = pl_parse.get('authors', [])
+            normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
+
+            for crossref_author_idx, crossref_author in enumerate(record.authors):
+                best_match_idx = cls._match_pl_author(crossref_author,
+                                                      crossref_author_idx,
+                                                      normalized_pl_authors)
+                if best_match_idx > -1:
+                    pl_author = pl_authors[best_match_idx]
+                    crossref_author['is_corresponding'] = pl_author.get('is_corresponding', '')
+                    crossref_author['affiliation'] = cls._reconcile_affiliations(
+                        crossref_author, pl_author, record.doi)
+
+
+            # In case crossref has no authors and parseland does, use parseland authors
+            # Example doi - 10.7717/peerjcs.1261/table-10
+
+            # *** We do not want to do this yet ***
+
+            # if not record.authors and pl_authors:
+            #     record.set_authors(pl_authors)
+
+            record.abstract = record.abstract or pl_parse.get('abstract')
+            is_oa = bool(pub.response_jsonb.get('oa_locations')) if bool(pub.response_jsonb) else False
+
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
