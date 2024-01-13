@@ -60,7 +60,6 @@ class CrossrefRecordMaker(RecordMaker):
         record.normalized_title = normalize_title(record.title)
         authors = [normalize_author(author) for author in
                    pub.authors] if pub.authors else []
-        authors.append({'is_raw_record': True})
 
         record.authors = authors
 
