@@ -63,6 +63,12 @@ class ZytePolicy(db.Model):
     params = Column(JSON, nullable=True, default={})
     priority = Column(Integer, nullable=False, default=1)
 
+    def __str__(self):
+        return f'<ZytePolicy id={self.id} type={self.type} regex={self.regex} profile={self.profile} priority={self.priority}>'
+
+    def __repr__(self):
+        return self.__str__()
+
     def match(self, doi_or_domain):
         return bool(re.search(self.regex, doi_or_domain))
 
@@ -109,10 +115,10 @@ _ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
 BYPASS_POLICY = ZytePolicy(profile='bypass')
 
 
-def make_before_cb(url, logger: logging.Logger):
+def make_before_cb(url, policy, logger: logging.Logger):
     def before_logger(retry_state):
         logger.debug(
-            f'Trying attempt #{retry_state.attempt_number} with URL: {url}')
+            f'Trying attempt #{retry_state.attempt_number} with URL: {url} ({policy})')
 
     return before_logger
 
@@ -267,7 +273,7 @@ class ZyteSession(requests.Session):
     def _send_with_policy(self, request: PreparedRequest,
                           zyte_policy: ZytePolicy, *args, **kwargs):
         r = None
-        retry = self.retry.copy(before=make_before_cb(request.url, self.logger),
+        retry = self.retry.copy(before=make_before_cb(request.url, zyte_policy, self.logger),
                                 after=make_after_cb(request.url, self.logger))
         for atp in retry:
             with atp:
@@ -303,10 +309,10 @@ class ZyteSession(requests.Session):
 
 if __name__ == '__main__':
     s = ZyteSession()
-    url = 'https://doi.org/10.1074/jbc.272.40.25252'
-    policy = ZytePolicy.query.get(1)
+    url = 'https://doi.org/10.1086/109234'
+    # policy = ZytePolicy.query.get()
     # policy = ZytePolicy.get_matching_policies(url=url)[0]
     # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb',
     #                     profile='proxy')
-    r = s.get(url, zyte_policies=policy, fixed_policies=True)
+    r = s.get(url)
     print(r.text)
