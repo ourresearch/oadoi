@@ -4,6 +4,7 @@ import gzip
 import itertools
 import logging
 import os
+import sys
 import time
 from datetime import datetime
 from io import BytesIO
@@ -353,18 +354,19 @@ def get_zyte_policy(pid):
         return ZytePolicy(profile='api', params={"httpResponseBody": True,
                                                  "httpResponseHeaders": True})
     else:
-        return ZytePolicy.query.get(int(pid))
+        policy = ZytePolicy.query.get(int(pid))
+        if not policy:
+            LOGGER.error(
+                'Zyte policy with id {} not found'.format(pid))
+            sys.exit(1)
+        return policy
 
 
 def main():
     args = parse_args()
     config_logger()
-    # japan_journal_of_applied_physics = 'https://openalex.org/P4310313292'
     rescrape = args.rescrape
     zyte_policy = get_zyte_policy(args.policy_id)
-    if not zyte_policy:
-        LOGGER.error('Zyte policy with id {} not found'.format(args.policy_id))
-        return
     cursor = args.cursor
     threads = args.threads
     q = Queue(maxsize=threads + 1)
