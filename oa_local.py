@@ -266,6 +266,10 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '2575-4459' in issns:
         return True
 
+    #  Biographical Memoirs of Fellows of the Royal Society
+    if '0080-4606' in issns and pub_year <= 2018:
+        return True
+
     return False
 
 
