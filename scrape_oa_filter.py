@@ -202,8 +202,8 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
             TOTAL_SEEN += 1
             doi = normalize_doi(result['doi'])
             # IOP probably unnecessary source
-            if doi.startswith('10.1086'):
-                continue
+            # if doi.startswith('10.1086'):
+            #     continue
             try:
                 doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
                                      landing_page_key(result['doi']))
