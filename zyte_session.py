@@ -18,6 +18,8 @@ from redirectors import ALL_REDIRECTORS
 CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
 
+_DEFAULT_ZYTE_PARAMS = {"httpResponseBody": True, "httpResponseHeaders": True}
+
 
 def _zyte_params_to_req(url, zyte_params):
     req = PreparedRequest()
@@ -30,7 +32,7 @@ def _zyte_params_to_req(url, zyte_params):
 def _get_zyte_api_response(url, zyte_params, session: requests.Session = None,
                            **kwargs):
     if not zyte_params:
-        zyte_params = {}
+        zyte_params = _DEFAULT_ZYTE_PARAMS
     zyte_params['url'] = url
     if not session:
         session = requests
