@@ -298,7 +298,7 @@ class ZyteSession(requests.Session):
             with atp:
                 r = zyte_policy.sender(self)(request, *args, **kwargs)
                 r.raise_for_status()
-                if is_bad_landing_page(r.text):
+                if is_bad_landing_page(r.content):
                     raise BadLandingPageException(
                         f'Bad landing page with URL - {r.url}')
                 return r

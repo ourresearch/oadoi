@@ -673,9 +673,9 @@ def is_same_issn(l, r):
 
 def is_bad_landing_page(html):
     return any([
-        'ShieldSquare Captcha' in html,
-        '429 - Too many requests' in html,
-        'We apologize for the inconvenience' in html,
-        '<title>APA PsycNet</title>' in html,
-        'Your request cannot be processed at this time' in html,
-        '/cookieAbsent' in html])
+        b'ShieldSquare Captcha' in html,
+        b'429 - Too many requests' in html,
+        b'We apologize for the inconvenience' in html,
+        b'<title>APA PsycNet</title>' in html,
+        b'Your request cannot be processed at this time' in html,
+        b'/cookieAbsent' in html])
