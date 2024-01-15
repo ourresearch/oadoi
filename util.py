@@ -418,7 +418,7 @@ def str_to_bool(x):
 
 # from http://stackoverflow.com/a/20007730/226013
 ordinal = lambda n: "%d%s" % (
-n, "tsnrhtdd"[(n / 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
+    n, "tsnrhtdd"[(n / 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
 
 
 # from http://farmdev.com/talks/unicode/
@@ -669,3 +669,13 @@ def normalize_issn(issn):
 
 def is_same_issn(l, r):
     return normalize_issn(l) == normalize_issn(r)
+
+
+def is_bad_landing_page(html):
+    return any([
+        b'ShieldSquare Captcha' in html,
+        b'429 - Too many requests' in html,
+        b'We apologize for the inconvenience' in html,
+        b'<title>APA PsycNet</title>' in html,
+        b'Your request cannot be processed at this time' in html,
+        b'/cookieAbsent' in html])

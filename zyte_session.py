@@ -14,6 +14,7 @@ from app import db
 from const import ZYTE_API_URL, ZYTE_API_KEY
 from pdf_util import is_pdf
 from redirectors import ALL_REDIRECTORS
+from util import is_bad_landing_page
 
 CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
@@ -114,6 +115,8 @@ class ZytePolicy(db.Model):
 
 
 _ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
+DEFAULT_FALLBACK_POLICIES = [ZytePolicy(profile='proxy', priority=1),
+                             ZytePolicy(profile='api', priority=2)]
 BYPASS_POLICY = ZytePolicy(profile='bypass')
 
 
@@ -144,6 +147,10 @@ _DEFAULT_RETRY = Retrying(
 )
 
 
+class BadLandingPageException(Exception):
+    pass
+
+
 class ZyteSession(requests.Session):
 
     @classmethod
@@ -163,11 +170,16 @@ class ZyteSession(requests.Session):
         logger.propagate = False
         return logger
 
-    def __init__(self, policies: List[ZytePolicy] = None,
+    def __init__(self,
+                 policies: List[ZytePolicy] = None,
+                 fallback_policies: List[ZytePolicy] = None,
                  retry: Retrying = _DEFAULT_RETRY,
                  logger: logging.Logger = None):
         self.policies = sorted(policies, key=lambda p: p.priority,
                                reverse=False) if policies else None
+        self.fallback_policies = sorted(fallback_policies,
+                                        key=lambda p: p.priority,
+                                        reverse=False) if fallback_policies else []
         self.api_session = requests.Session()
         self.retry = retry
         self.logger = logger if logger else self.make_logger(
@@ -260,7 +272,9 @@ class ZyteSession(requests.Session):
             if not zyte_policies:
                 zyte_policies = [BYPASS_POLICY]
         kwargs['allow_redirects'] = False
-        r = self._send_with_policies(request, zyte_policies, *args, **kwargs)
+        r = self._send_with_policies(request,
+                                     zyte_policies + self.fallback_policies,
+                                     *args, **kwargs)
         while r.is_redirect:
             url = self.get_redirect_target(r)
             req = r.request.copy()
@@ -268,19 +282,25 @@ class ZyteSession(requests.Session):
             if not fixed_policies:
                 zyte_policies = ZytePolicy.get_matching_policies(
                     url=req.url) or [BYPASS_POLICY]
-            r = self._send_with_policies(req, zyte_policies, *args,
+            r = self._send_with_policies(req,
+                                         zyte_policies + self.fallback_policies,
+                                         *args,
                                          **kwargs)
         return r
 
     def _send_with_policy(self, request: PreparedRequest,
                           zyte_policy: ZytePolicy, *args, **kwargs):
         r = None
-        retry = self.retry.copy(before=make_before_cb(request.url, zyte_policy, self.logger),
-                                after=make_after_cb(request.url, self.logger))
+        retry = self.retry.copy(
+            before=make_before_cb(request.url, zyte_policy, self.logger),
+            after=make_after_cb(request.url, self.logger))
         for atp in retry:
             with atp:
                 r = zyte_policy.sender(self)(request, *args, **kwargs)
                 r.raise_for_status()
+                if is_bad_landing_page(r.text):
+                    raise BadLandingPageException(
+                        f'Bad landing page with URL - {r.url}')
                 return r
         return r
 

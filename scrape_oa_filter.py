@@ -29,9 +29,9 @@ from need_rescrape_funcs import ORGS_NEED_RESCRAPE_MAP
 from pdf_util import is_pdf
 from s3_util import get_object, landing_page_key, make_s3, upload_obj, \
     mute_boto_logging
-from util import normalize_doi
+from util import normalize_doi, is_bad_landing_page
 from const import LANDING_PAGE_ARCHIVE_BUCKET
-from zyte_session import ZyteSession, ZytePolicy
+from zyte_session import ZyteSession, ZytePolicy, DEFAULT_FALLBACK_POLICIES
 
 requests.packages.urllib3.disable_warnings()
 
@@ -113,17 +113,6 @@ def inc_success():
         SUCCESS += 1
 
 
-def bad_landing_page(html):
-    return any([
-        b'ShieldSquare Captcha' in html,
-        b'429 - Too many requests' in html,
-        b'We apologize for the inconvenience' in html,
-        b'<title>APA PsycNet</title>' in html,
-        b'<title>Redirecting</title>' in html,
-        b'Your request cannot be processed at this time' in html,
-        b'/cookieAbsent' in html])
-
-
 def pdf_needs_rescrape(contents: bytes):
     reader = BytesIO(contents)
     pdf = None
@@ -154,7 +143,7 @@ def doi_needs_rescrape(obj_details, pub_id, source_id):
         pub_specific_needs_rescrape = pub_needs_rescrape_func(soup)
     if source_needs_rescrape_func := ORGS_NEED_RESCRAPE_MAP.get(source_id):
         source_specific_needs_rescrape = source_needs_rescrape_func(soup)
-    return bad_landing_page(
+    return is_bad_landing_page(
         body) or pub_specific_needs_rescrape or source_specific_needs_rescrape
 
 
@@ -268,8 +257,8 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
     s3 = make_s3()
     zyte_logger = ZyteSession.make_logger(current_thread().name,
                                           logging.DEBUG if debug else logging.INFO)
-    # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb', profile='api', priority=1, params=json.loads('''{"actions": [{"action": "waitForSelector", "selector": {"type": "css", "state": "visible", "value": "#show-more-btn"}}, {"action": "click", "selector": {"type": "css", "value": "#show-more-btn"}}, {"action": "waitForSelector", "timeout": 15, "selector": {"type": "css", "state": "visible", "value": "div.author-collaboration div.author-group"}}], "javascript": true, "browserHtml": true, "httpResponseHeaders": true}'''))
-    s = ZyteSession(logger=zyte_logger)
+    s = ZyteSession(logger=zyte_logger,
+                    fallback_policies=DEFAULT_FALLBACK_POLICIES)
     while True:
         doi, openalex_id = None, None
         try:
