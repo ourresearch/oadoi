@@ -296,7 +296,7 @@ def parse_args():
     parser.add_argument('--txt',
                         help='Path to txt file to refresh DOIs (one per line)',
                         type=str)
-    parser.add_argument('--n_threads', help='Number of threads to use',
+    parser.add_argument('--n_threads', '-n', help='Number of threads to use',
                         type=int, default=10)
     parser.add_argument('--oa_filters', '-f', action='append',
                         help='OpenAlex filters from which to enqueue works to recordthresher refresh')
