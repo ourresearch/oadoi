@@ -50,6 +50,8 @@ def _get_zyte_api_response(url, zyte_params, session: requests.Session = None,
     for header in j.get('httpResponseHeaders', []):
         response.headers[header['name']] = header['value']
     response.request = _zyte_params_to_req(url, zyte_params)
+    if not response.ok and 'meta name="citation_publisher" content="IOP Publishing"' in response.text:
+        response.status_code = 200
     return response
 
 
@@ -179,7 +181,7 @@ class ZyteSession(requests.Session):
                                reverse=False) if policies else None
         self.fallback_policies = sorted(fallback_policies,
                                         key=lambda p: p.priority,
-                                        reverse=False) if fallback_policies else []
+                                        reverse=False) if fallback_policies else [BYPASS_POLICY]
         self.api_session = requests.Session()
         self.retry = retry
         self.logger = logger if logger else self.make_logger(
@@ -269,21 +271,22 @@ class ZyteSession(requests.Session):
         if not zyte_policies:
             zyte_policies = self.policies if self.policies else ZytePolicy.get_matching_policies(
                 url=request.url)
-            if not zyte_policies:
-                zyte_policies = [BYPASS_POLICY]
+
+            zyte_policies = zyte_policies + self.fallback_policies if zyte_policies else self.fallback_policies
+
         kwargs['allow_redirects'] = False
         r = self._send_with_policies(request,
-                                     zyte_policies + self.fallback_policies,
+                                     zyte_policies,
                                      *args, **kwargs)
         while r.is_redirect:
             url = self.get_redirect_target(r)
             req = r.request.copy()
             req.url = url
-            if not fixed_policies:
+            if not fixed_policies and not self.policies:
                 zyte_policies = ZytePolicy.get_matching_policies(
-                    url=req.url) or [BYPASS_POLICY]
+                    url=req.url) or self.fallback_policies
             r = self._send_with_policies(req,
-                                         zyte_policies + self.fallback_policies,
+                                         zyte_policies,
                                          *args,
                                          **kwargs)
         return r
@@ -293,7 +296,8 @@ class ZyteSession(requests.Session):
         r = None
         retry = self.retry.copy(
             before=make_before_cb(request.url, zyte_policy, self.logger),
-            after=make_after_cb(request.url, self.logger))
+            after=make_after_cb(request.url, self.logger),
+            stop=stop_after_attempt(1) if zyte_policy == BYPASS_POLICY else self.retry.stop)
         for atp in retry:
             with atp:
                 r = zyte_policy.sender(self)(request, *args, **kwargs)
@@ -320,6 +324,7 @@ class ZyteSession(requests.Session):
         for p in zyte_policies:
             try:
                 r = self._send_with_policy(request, p, *args, **kwargs)
+                break
             except Exception as e:
                 exc = e
         if r is None:
