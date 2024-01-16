@@ -186,7 +186,7 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         filter_total_count = j['meta']['count']
         LOGGER.debug(
             f'[*] Last cursor: {LAST_CURSOR} | Filter: {_filter} | Filter total count: {filter_total_count}')
-        set_cursor(_filter, LAST_CURSOR)
+        # set_cursor(_filter, LAST_CURSOR)
         for result in results:
             TOTAL_SEEN += 1
             doi = normalize_doi(result['doi'])
