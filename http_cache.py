@@ -23,6 +23,7 @@ from util import DelayedAdapter
 from util import elapsed
 from util import get_link_target
 from util import is_same_publisher
+from zyte_session import get_matching_policies
 
 MAX_PAYLOAD_SIZE_BYTES = 1000 * 1000 * 10  # 10mb
 
@@ -130,13 +131,15 @@ def keep_redirecting(r, publisher):
 
     if r.is_redirect:
         location = r.headers.get('location', '')
-        location = location if location.startswith('http') else urljoin(r.url, location)
-        location = location.replace('http:///', 'http://').replace('https:///', 'https://')
+        location = location if location.startswith('http') else urljoin(r.url,
+                                                                        location)
+        location = location.replace('http:///', 'http://').replace('https:///',
+                                                                   'https://')
         logger.info('30x redirect: {}'.format(location))
 
         if location.startswith(
                 'https://academic.oup.com/crawlprevention/governor') or re.match(
-                r'https?://academic\.oup\.com/.*\.pdf', r.url):
+            r'https?://academic\.oup\.com/.*\.pdf', r.url):
             _log_oup_redirect(r.headers.get('X-Crawlera-Debug-UA'), r.url,
                               location)
 
@@ -192,7 +195,7 @@ def keep_redirecting(r, publisher):
             redirect_url = urljoin(r.request.url, redirect_path)
             if not redirect_url.endswith(
                     'Error/JavaScript.html') and not redirect_url.endswith(
-                    '/?reason=expired'):
+                '/?reason=expired'):
                 logger.info(
                     "redirect_match! redirecting to {}".format(redirect_url))
                 return redirect_url
@@ -264,15 +267,11 @@ def request_ua_headers():
     }
 
 
-def set_zyte_api_profile_before_retry(retry_state):
-    # if we're retrying these domains, use the zyte api profile
-    retry_domains = ["iop.org", "nejm.org", "sciencedirect.com", "wiley.com"]
+def before_retry(retry_state):
     redirected_url = retry_state.outcome.result().url
     logger.info(f"retrying due to {retry_state.outcome.result().status_code}")
-    if any([domain in redirected_url for domain in retry_domains]):
-        logger.info(f"retrying {redirected_url} with zyte api profile")
-        retry_state.kwargs['use_zyte_api_profile'] = True
-        retry_state.kwargs['redirected_url'] = redirected_url
+    retry_state.kwargs['redirected_url'] = redirected_url
+    retry_state.kwargs['attempt_n'] = retry_state.attempt_number
 
 
 def is_retry_status(response):
@@ -282,7 +281,7 @@ def is_retry_status(response):
 @retry(stop=stop_after_attempt(2),
        wait=wait_exponential(multiplier=1, min=4, max=10),
        retry=retry_if_result(is_retry_status),
-       before_sleep=set_zyte_api_profile_before_retry)
+       before_sleep=before_retry)
 def call_requests_get(url=None,
                       headers=None,
                       read_timeout=300,
@@ -295,6 +294,7 @@ def call_requests_get(url=None,
                       cookies=None,
                       use_zyte_api_profile=False,
                       redirected_url=None,
+                      attempt_n=0,
                       logger=logger):
     if redirected_url:
         url = redirected_url
@@ -336,25 +336,19 @@ def call_requests_get(url=None,
     requests_session = requests.Session()
 
     use_crawlera_profile = False
+    zyte_params = None
 
     while following_redirects:
 
-        if not use_crawlera_profile:
-
-            hostname = urlparse(url).hostname
-
-            if not use_zyte_api_profile:
-                for h in ZYTE_PROFILE_HOSTS:
-                    if hostname and hostname.endswith(h):
-                        use_zyte_api_profile = True
-                        logger.info('using zyte profile')
-                        break
-
-                for h in CRAWLERA_PROFILE_HOSTS:
-                    if hostname and hostname.endswith(h):
-                        use_crawlera_profile = True
-                        logger.info('using crawlera profile')
-                        break
+        if policies := get_matching_policies(url):
+            policy = policies[min(attempt_n, len(policies) - 1)]
+            if policy.profile == 'api':
+                logger.info('using zyte profile')
+                use_zyte_api_profile = True
+                zyte_params = policy.params
+            elif policy.profile == 'proxy':
+                logger.info('using crawlera profile')
+                use_crawlera_profile = True
 
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
@@ -378,7 +372,7 @@ def call_requests_get(url=None,
             proxies = {}
 
         if use_zyte_api_profile:
-            zyte_api_response = call_with_zyte_api(url)
+            zyte_api_response = call_with_zyte_api(url, zyte_params)
             good_status_code = zyte_api_response.get('statusCode')
             bad__status_code = zyte_api_response.get('status')
             if good_status_code == 200:
@@ -387,7 +381,10 @@ def call_requests_get(url=None,
                 # make mock requests response object
                 r = ResponseObject(
                     content=b64decode(
-                        zyte_api_response.get('httpResponseBody')),
+                        zyte_api_response.get(
+                            'httpResponseBody')) if 'httpResponseBody' in
+                                                    zyte_api_response else zyte_api_response.get(
+                        'browserHtml').encode(),
                     headers=zyte_api_response.get('httpResponseHeaders'),
                     status_code=zyte_api_response.get('statusCode'),
                     url=zyte_api_response.get('url'),
@@ -505,9 +502,18 @@ def http_get(url,
     return r
 
 
-def call_with_zyte_api(url):
+def call_with_zyte_api(url, params=None):
     zyte_api_url = "https://api.zyte.com/v1/extract"
     zyte_api_key = os.getenv("ZYTE_API_KEY")
+    default_params = {
+        "url": url,
+        "httpResponseHeaders": True,
+        "httpResponseBody": True,
+        "requestHeaders": {"referer": "https://www.google.com/"},
+    }
+    if not params:
+        params = default_params
+    params['url'] = url
     os.environ["HTTP_PROXY"] = ''
     os.environ["HTTPS_PROXY"] = ''
 
@@ -548,12 +554,8 @@ def call_with_zyte_api(url):
                                              "referer": "https://www.google.com/"},
                                      }, verify=False)
     else:
-        response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-            "url": url,
-            "httpResponseHeaders": True,
-            "httpResponseBody": True,
-            "requestHeaders": {"referer": "https://www.google.com/"},
-        }, verify=False)
+        response = requests.post(zyte_api_url, auth=(zyte_api_key, ''),
+                                 json=params, verify=False)
     return response.json()
 
 
@@ -573,3 +575,10 @@ def get_cookies_with_zyte_api(url):
     cookies = cookies_response.get("experimental", {}).get("responseCookies",
                                                            {})
     return cookies
+
+
+if __name__ == '__main__':
+    # r = http_get('https://doi.org/10.1088/1475-7516/2010/04/014')
+    # print(r.status_code)
+    r = http_get('https://doi.org/10.1086/111605')
+    print(r.status_code)
