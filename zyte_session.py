@@ -1,13 +1,16 @@
 import logging
 import os
 import re
+import threading
+import time
 from base64 import standard_b64decode
 from threading import current_thread
 from typing import List
 
 import requests
 from requests import Request, PreparedRequest, Response
-from sqlalchemy import Column, String, JSON, Enum, Integer
+from sqlalchemy import Column, Integer, Enum, String, JSON, ForeignKey
+from sqlalchemy.orm import relationship
 from tenacity import Retrying, stop_after_attempt, wait_exponential
 
 from app import db
@@ -20,6 +23,114 @@ CRAWLERA_PROXY = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
 
 _DEFAULT_ZYTE_PARAMS = {"httpResponseBody": True, "httpResponseHeaders": True}
+
+
+class ZytePolicy(db.Model):
+    __tablename__ = 'zyte_policies'
+
+    id = Column(Integer, primary_key=True)
+    type = Column(
+        Enum('url', 'doi', name='zyte_policy_type_enum'),
+        nullable=False, default='url')
+    regex = Column(String(50), nullable=False)
+    profile = Column(Enum('proxy', 'api', 'bypass', name='zyte_profile_enum'),
+                     nullable=False, default='proxy')
+    params = Column(JSON, nullable=True, default={})
+    priority = Column(Integer, default=1, nullable=False)
+
+    parent_id = Column(Integer, ForeignKey('zyte_policies.id'), nullable=True)
+    parent = relationship('ZytePolicy', remote_side=[id])
+
+    # children = relationship('ZytePolicy', backref='parent', remote_side=[id])
+
+    def __str__(self):
+        return f'<ZytePolicy id={self.id} type={self.type} regex={self.regex} profile={self.profile} priority={self.priority}>'
+
+    def __repr__(self):
+        return self.__str__()
+
+    def match(self, doi_or_domain):
+        return bool(re.search(self.regex, doi_or_domain))
+
+    def sender(self, session):
+        def _sender(request: PreparedRequest,
+                    *args,
+                    **kwargs, ):
+            if self.profile == 'api':
+                return _get_zyte_api_response(request.url,
+                                              self.params,
+                                              session=session.api_session,
+                                              **kwargs)
+            elif self.profile == 'proxy':
+                proxies = {'http': CRAWLERA_PROXY, 'https': CRAWLERA_PROXY}
+                kwargs['proxies'] = proxies
+                kwargs['verify'] = False
+                request.headers['X-Crawlera-Profile'] = 'desktop'
+                return super(session.__class__, session).send(request,
+                                                              *args,
+                                                              **kwargs)
+            elif self.profile == 'bypass':
+                return super(session.__class__, session).send(request,
+                                                              *args,
+                                                              **kwargs)
+            else:
+                raise ValueError(f'Invalid ZyteProfile type: {self.type}')
+
+        return _sender
+
+
+_ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
+_REFRESH_LOCK = threading.Lock()  # Lock to ensure thread safety
+_REFRESH_THREAD = None  # Reference to the refresh thread
+DEFAULT_FALLBACK_POLICIES = [ZytePolicy(profile='proxy', id=1000),
+                             ZytePolicy(profile='api', parent_id=1000)]
+BYPASS_POLICY = ZytePolicy(profile='bypass')
+
+
+def _refresh_policies():
+    global _ALL_POLICIES
+    while True:
+        _ALL_POLICIES = ZytePolicy.query.all()
+        time.sleep(5 * 60)
+
+
+def start_refresh_thread():
+    global _REFRESH_THREAD
+    global _REFRESH_LOCK
+    with _REFRESH_LOCK:
+        # Check if the thread is already running
+        if _REFRESH_THREAD is None or not _REFRESH_THREAD.is_alive():
+            _REFRESH_THREAD = threading.Thread(target=_refresh_policies)
+            _REFRESH_THREAD.start()
+
+
+def get_matching_policies(url):
+    matching_policies = [policy for policy in _ALL_POLICIES if
+                         policy.match(url)]
+    if not matching_policies:
+        return []
+    parent_policies = sorted(
+        [policy for policy in matching_policies if policy.parent_id is None],
+        key=lambda policy: (
+            policy.type == 'api' and policy.params is not None,
+            policy.type == 'api',
+            policy.type == 'proxy'
+        )
+    )
+    if len(parent_policies) > 1 and parent_policies[0].params is not None and parent_policies[1].params is not None:
+        raise Exception(
+            f'Colliding policies for URL: {url} - {parent_policies}')
+    parent_policy = parent_policies[0]
+    retry_policies = sorted(
+        [policy for policy in matching_policies if
+         policy.parent_id == parent_policy.id],
+        key=lambda policy: (
+            policy.type == 'api' and policy.params is not None,
+            policy.type == 'api',
+            policy.type == 'proxy'
+        )
+    )
+    return [parent_policy] + retry_policies
 
 
 def _zyte_params_to_req(url, zyte_params):
@@ -53,73 +164,6 @@ def _get_zyte_api_response(url, zyte_params, session: requests.Session = None,
     if not response.ok and 'meta name="citation_publisher" content="IOP Publishing"' in response.text:
         response.status_code = 200
     return response
-
-
-class ZytePolicy(db.Model):
-    __tablename__ = 'zyte_policies'
-
-    id = Column(Integer, primary_key=True)
-    type = Column(
-        Enum('url', 'doi', name='zyte_policy_type_enum'),
-        nullable=False, default='url')
-    regex = Column(String(50), nullable=False)
-    profile = Column(Enum('proxy', 'api', 'bypass', name='zyte_profile_enum'),
-                     nullable=False, default='proxy')
-    params = Column(JSON, nullable=True, default={})
-    priority = Column(Integer, nullable=False, default=1)
-
-    def __str__(self):
-        return f'<ZytePolicy id={self.id} type={self.type} regex={self.regex} profile={self.profile} priority={self.priority}>'
-
-    def __repr__(self):
-        return self.__str__()
-
-    def match(self, doi_or_domain):
-        return bool(re.search(self.regex, doi_or_domain))
-
-    @classmethod
-    def get_matching_policies(cls, url=None, doi=None):
-        if url is None and doi is None:
-            raise ValueError('URL and DOI parameters cannot both be None')
-        policies = []
-        for policy in _ALL_POLICIES:
-            if url and policy.type == 'url' and policy.match(url):
-                policies.append(policy)
-            elif doi and policy.type == 'doi' and policy.match(doi):
-                policies.append(policy)
-        return sorted(policies, key=lambda p: p.priority, reverse=False)
-
-    def sender(self, session):
-        def _sender(request: PreparedRequest,
-                    *args,
-                    **kwargs, ):
-            if self.profile == 'api':
-                return _get_zyte_api_response(request.url,
-                                              self.params,
-                                              session=session.api_session,
-                                              **kwargs)
-            elif self.profile == 'proxy':
-                proxies = {'http': CRAWLERA_PROXY, 'https': CRAWLERA_PROXY}
-                kwargs['proxies'] = proxies
-                kwargs['verify'] = False
-                request.headers['X-Crawlera-Profile'] = 'desktop'
-                return super(session.__class__, session).send(request,
-                                                              *args,
-                                                              **kwargs)
-            elif self.profile == 'bypass':
-                return super(session.__class__, session).send(request,
-                                                              *args,
-                                                              **kwargs)
-            else:
-                raise ValueError(f'Invalid ZyteProfile type: {self.type}')
-
-        return _sender
-
-
-_ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
-DEFAULT_FALLBACK_POLICIES = [ZytePolicy(profile='proxy', priority=1),
-                             ZytePolicy(profile='api', priority=2)]
-BYPASS_POLICY = ZytePolicy(profile='bypass')
 
 
 def make_before_cb(url, policy, logger: logging.Logger):
@@ -181,7 +225,8 @@ class ZyteSession(requests.Session):
                                reverse=False) if policies else None
         self.fallback_policies = sorted(fallback_policies,
                                         key=lambda p: p.priority,
-                                        reverse=False) if fallback_policies else [BYPASS_POLICY]
+                                        reverse=False) if fallback_policies else [
+            BYPASS_POLICY]
         self.api_session = requests.Session()
         self.retry = retry
         self.logger = logger if logger else self.make_logger(
@@ -199,6 +244,8 @@ class ZyteSession(requests.Session):
                             fixed_policies=fixed_policies, **kwargs)
 
     def get_redirect_target(self, resp):
+        if is_pdf(resp.content):
+            return None
         for redirector in ALL_REDIRECTORS:
             if target := redirector(resp):
                 return target
@@ -258,6 +305,11 @@ class ZyteSession(requests.Session):
 
         return resp
 
+    def _req_policies(self, req: PreparedRequest):
+        zyte_policies = self.policies if self.policies else get_matching_policies(
+            url=req.url)
+        return zyte_policies + self.fallback_policies if zyte_policies else self.fallback_policies
+
     def send(
             self,
             request,
@@ -269,11 +321,7 @@ class ZyteSession(requests.Session):
         if not isinstance(zyte_policies, list) and zyte_policies is not None:
             zyte_policies = [zyte_policies]
         if not zyte_policies:
-            zyte_policies = self.policies if self.policies else ZytePolicy.get_matching_policies(
-                url=request.url)
-
-            zyte_policies = zyte_policies + self.fallback_policies if zyte_policies else self.fallback_policies
-
+            zyte_policies = self._req_policies(request)
         kwargs['allow_redirects'] = False
         r = self._send_with_policies(request,
                                      zyte_policies,
@@ -283,8 +331,7 @@ class ZyteSession(requests.Session):
             req = r.request.copy()
             req.url = url
             if not fixed_policies and not self.policies:
-                zyte_policies = ZytePolicy.get_matching_policies(
-                    url=req.url) or self.fallback_policies
+                zyte_policies = self._req_policies(req)
             r = self._send_with_policies(req,
                                          zyte_policies,
                                          *args,
@@ -297,7 +344,8 @@ class ZyteSession(requests.Session):
         retry = self.retry.copy(
             before=make_before_cb(request.url, zyte_policy, self.logger),
             after=make_after_cb(request.url, self.logger),
-            stop=stop_after_attempt(1) if zyte_policy == BYPASS_POLICY else self.retry.stop)
+            stop=stop_after_attempt(
+                1) if zyte_policy == BYPASS_POLICY else self.retry.stop)
         for atp in retry:
             with atp:
                 r = zyte_policy.sender(self)(request, *args, **kwargs)
@@ -335,11 +383,5 @@ class ZyteSession(requests.Session):
 
 
 if __name__ == '__main__':
-    s = ZyteSession()
-    url = 'https://doi.org/10.1086/109234'
-    # policy = ZytePolicy.query.get()
-    # policy = ZytePolicy.get_matching_policies(url=url)[0]
-    # policy = ZytePolicy(type='url', regex='10\.1016/j\.physletb',
-    #                     profile='proxy')
-    r = s.get(url)
-    print(r.text)
+    print(
+        get_matching_policies('https://www.nejm.org/doi/10.1056/NEJMoa2034577'))
