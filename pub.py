@@ -1282,7 +1282,7 @@ class Pub(db.Model):
             license = oa_local.find_normalized_license(freetext_license)
             oa_date = manuscript_license['date'] or self.issued
             if freetext_license and not license:
-                license = "publisher-specific, author manuscript"
+                license = "publisher-specific-oa"
                 publisher_specific_license = freetext_license
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
