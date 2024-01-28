@@ -143,6 +143,7 @@ class CrossrefRecordMaker(RecordMaker):
             pub.recalculate(quiet=True, ask_preprint=False)
         except NoDoiException as e:
             print(f'failed to recalculate {pub.id} due to NoDoiException (deleted DOI?): {e}')
+            db.session.expire(record)
             return None
 
         doi_oa_location = None
