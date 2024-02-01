@@ -126,8 +126,21 @@ def _log_oup_redirect(user_agent, requested_url, redirect_url):
     )
 
 
+def chooser_redirect(r):
+    if '<title>Chooser</title>' in r.text_small():
+        if links := re.findall(
+                r'<div class="resource-line">.*?<a\s+href="(.*?)".*?</div>',
+                r.text_small(), re.DOTALL):
+            return links[0]
+    return None
+
+
 def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
+
+    if target := chooser_redirect(r):
+        logger.info('Chooser redirect: {}'.format(target))
+        return target
 
     if r.is_redirect:
         location = r.headers.get('location', '')
@@ -580,5 +593,5 @@ def get_cookies_with_zyte_api(url):
 if __name__ == '__main__':
     # r = http_get('https://doi.org/10.1088/1475-7516/2010/04/014')
     # print(r.status_code)
-    r = http_get('https://doi.org/10.1086/111605')
+    r = http_get('https://doi.org/10.51952/9781529223972')
     print(r.status_code)
