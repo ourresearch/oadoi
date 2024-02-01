@@ -62,25 +62,34 @@ class QueueDoiRtRecord:
                     sleep(5)
                     continue
 
+                seen_record_ids = set()
+
                 for doi in dois:
                     logger.info(f'making RecordThresher record for DOI {doi}')
                     if pub := Pub.query.get(doi):
                         if record := CrossrefRecordMaker.make_record(pub):
-                            db.session.merge(record)
-                            PROCESSED += 1
+                            if record.id not in seen_record_ids:
+                                db.session.merge(record)
+                                seen_record_ids.add(record.id)
 
-                            if pl_record := ParselandRecordMaker.make_record(pub, update_existing=False):
-                                db.session.merge(pl_record)
+                                if pl_record := ParselandRecordMaker.make_record(pub, update_existing=False):
+                                    if pl_record.id not in seen_record_ids:
+                                        db.session.merge(pl_record)
+                                        seen_record_ids.add(pl_record.id)
 
-                            secondary_records = PmhRecordMaker.make_secondary_repository_responses(record)
-                            for secondary_record in secondary_records:
-                                db.session.merge(secondary_record)
-                                db.session.merge(
-                                    RecordthresherParentRecord(
-                                        record_id=secondary_record.id,
-                                        parent_record_id=record.id
+                                secondary_records = PmhRecordMaker.make_secondary_repository_responses(record)
+                                for secondary_record in secondary_records:
+                                    if secondary_record.id not in seen_record_ids:
+                                        db.session.merge(secondary_record)
+                                        seen_record_ids.add(secondary_record.id)
+
+                                    db.session.merge(
+                                        RecordthresherParentRecord(
+                                            record_id=secondary_record.id,
+                                            parent_record_id=record.id
+                                        )
                                     )
-                                )
+                    PROCESSED += 1
 
                 db.session.execute(
                     text('''

@@ -12,6 +12,7 @@ from app import logger
 from recordthresher.pmh_record_record import PmhRecordRecord
 from recordthresher.util import ARXIV_ID_PATTERN
 from recordthresher.util import normalize_author
+from util import NoDoiException
 from .record_maker import RecordMaker
 
 
@@ -140,8 +141,13 @@ class PmhRecordMaker(RecordMaker):
             response_pub.authors = json.loads(record.authors)
             db.session().enable_relationship_loading(response_pub)
 
-        response_pub.recalculate()
-        response_pub.set_results()
+        try:
+            response_pub.recalculate()
+            response_pub.set_results()
+        except NoDoiException:
+            logger.error(f'NoDoiException on {response_pub}')
+            return []
+
 
         secondary_records = []
         for loc in response_pub.all_oa_locations:
