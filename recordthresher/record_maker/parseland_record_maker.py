@@ -41,7 +41,7 @@ class ParselandRecordMaker:
 
         pl_record = pl_record or CrossrefParselandRecord(id=record_id)
         pl_record.authors = (pl_authors and json.dumps(pl_authors)) or '[]'
-        pl_record.published_date = pl_response.get('pubslished_date')
+        pl_record.published_date = pl_response.get('published_date')
         pl_record.genre = pl_response.get('genre')
         pl_record.abstract = pl_response.get('abstract')
         pl_record.doi = pub.id
