@@ -738,7 +738,7 @@ class Pub(db.Model):
                 db.session.merge(secondary_record)
                 db.session.merge(RecordthresherParentRecord(record_id=secondary_record.id, parent_record_id=rt_record.id))
 
-            if pl_record := ParselandRecordMaker.make_record(self, update_existing=False):
+            if pl_record := ParselandRecordMaker.make_record(self):
                 db.session.merge(pl_record)
             return True
         return False

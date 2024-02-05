@@ -72,7 +72,7 @@ class QueueDoiRtRecord:
                                 db.session.merge(record)
                                 seen_record_ids.add(record.id)
 
-                                if pl_record := ParselandRecordMaker.make_record(pub, update_existing=False):
+                                if pl_record := ParselandRecordMaker.make_record(pub):
                                     if pl_record.id not in seen_record_ids:
                                         db.session.merge(pl_record)
                                         seen_record_ids.add(pl_record.id)
