@@ -9,7 +9,7 @@ from threading import Thread, Lock
 import requests
 from pyalex import Works, config
 from sqlalchemy import func, text
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, PendingRollbackError
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app import app, db, logger
@@ -228,6 +228,9 @@ def refresh_sql(chunk_size=10):
                     if pub.create_or_update_recordthresher_record():
                         db.session.commit()
                     processed = True
+                except PendingRollbackError:
+                    db.session.rollback()
+                    logger.exception('[*] Rolled back transaction')
                 except Exception as e:
                     logger.exception(
                         f'[!] Error updating record: {r.doi} - {e}')
