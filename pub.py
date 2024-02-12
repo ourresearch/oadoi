@@ -693,6 +693,10 @@ class Pub(db.Model):
                 logger.info(
                     f"need to refresh gold or hybrid because parseland is bad response {self.id}")
                 return False
+            elif self.issn_l == '1687-8507':
+                logger.info(
+                    f"need to refresh gold or hybrid because of the journal {self.id}")
+                return False
             return True
 
     def refresh(self, session_id=None):
