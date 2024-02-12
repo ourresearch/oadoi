@@ -69,6 +69,9 @@ class NullPoolSQLAlchemy(SQLAlchemy):
 db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
 
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+oa_db_engine = create_engine(openalex_db_url)
+
+
 
 # do compression.  has to be above flask debug toolbar so it can override this.
 compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
