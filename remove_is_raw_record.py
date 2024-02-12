@@ -1,3 +1,5 @@
+from sqlalchemy import text
+
 from app import oa_db_engine
 from util import chunks
 
@@ -9,6 +11,7 @@ with oa_db_engine.connect() as db_conn:
     chunk_size = 10_000
     print(f'[*] Removing raw record marker from {len(all_records)} records...')
     for i, chunk in enumerate(chunks(all_records, chunk_size)):
-        db_conn.execute('''UPDATE ins.recordthresher_record SET authors = json_remove_array_element(authors::json, '{"is_raw_record": true}') WHERE id IN :chunk''', (tuple(chunk), ))
+        db_conn.execute(text('''UPDATE ins.recordthresher_record SET authors = json_remove_array_element(authors::json, '{"is_raw_record": true}') WHERE id IN :chunk'''),
+                        {'chunk': tuple(chunk)})
         page += 1
         print(f'[*] Removed raw record marker from {page*chunk_size}/{len(all_records)} records')
