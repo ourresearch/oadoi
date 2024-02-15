@@ -19,8 +19,7 @@ args = parse_args()
 
 with oa_db_engine.connect() as db_conn:
     print(f'[*] Fetching raw record marker IDs...')
-    all_records = db_conn.execute(
-        "SELECT id FROM ins.recordthresher_record WHERE authors LIKE '%is_raw_record%'").fetchall()
+    all_records = db_conn.execute(text("SELECT id FROM ins.recordthresher_record WHERE authors LIKE '%is_raw_record%';")).fetchall()
     all_records = [record[0] for record in all_records[args.start_index:]]
     page = 0
     chunk_size = 10_000
