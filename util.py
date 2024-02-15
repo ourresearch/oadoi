@@ -18,6 +18,7 @@ from lxml import html
 from requests.adapters import HTTPAdapter
 from sqlalchemy import exc
 from sqlalchemy import sql
+from tenacity import retry, stop_after_attempt, wait_exponential
 from unidecode import unidecode
 
 from convert_http_to_https import fix_url_scheme
@@ -679,3 +680,19 @@ def is_bad_landing_page(html):
         b'<title>APA PsycNet</title>' in html,
         b'Your request cannot be processed at this time' in html,
         b'/cookieAbsent' in html])
+
+
+def print_openalex_error(retry_state):
+    if retry_state.outcome.failed:
+        print(
+            f'[!] Error making OpenAlex API call (attempt #{retry_state.attempt_number}): {retry_state.outcome.exception()}')
+
+
+@retry(stop=stop_after_attempt(10),
+       wait=wait_exponential(multiplier=1, min=4, max=256),
+       retry_error_callback=print_openalex_error)
+def get_openalex_json(url, params):
+    r = requests.get(url, params=params,
+                     verify=False)
+    r.raise_for_status()
+    return r.json()

@@ -6,18 +6,13 @@ from datetime import datetime
 from queue import Queue, Empty
 from threading import Thread, Lock
 
-import requests
 from pyalex import Works, config
-from sqlalchemy import func, text
+from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound, PendingRollbackError
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app import app, db, logger
-import endpoint  # magic
-from recordthresher.pubmed_record import PubmedRecord  # magic
 from pub import Pub
-from recordthresher.record import Record
-from util import normalize_doi
+from util import normalize_doi, get_openalex_json
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
@@ -49,22 +44,6 @@ def add_seen_doi(doi):
     global SEEN_LOCK
     with SEEN_LOCK:
         SEEN_DOIS.add(doi)
-
-
-def print_openalex_error(retry_state):
-    if retry_state.outcome.failed:
-        print(
-            f'[!] Error making OpenAlex API call (attempt #{retry_state.attempt_number}): {retry_state.outcome.exception()}')
-
-
-@retry(stop=stop_after_attempt(10),
-       wait=wait_exponential(multiplier=1, min=4, max=256),
-       retry_error_callback=print_openalex_error)
-def get_openalex_json(url, params):
-    r = requests.get(url, params=params,
-                     verify=False)
-    r.raise_for_status()
-    return r.json()
 
 
 def put_dois_api(q: Queue):
@@ -141,23 +120,6 @@ def print_stats(q: Queue = None):
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
         time.sleep(5)
-
-
-# def main():
-#     n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
-#     q = Queue(maxsize=n_threads*2 + 10)
-#     logger.info(f'[*] Starting recordthresher refresh with {n_threads} threads')
-#     Thread(target=print_stats, args=(q, ), daemon=True).start()
-#     with app.app_context():
-#         for _ in range(round(n_threads / 25)):
-#             Thread(target=put_dois_api, args=(q,)).start()
-#         threads = []
-#         for _ in range(n_threads):
-#             t = Thread(target=process_pubs_loop, args=(q,))
-#             t.start()
-#             threads.append(t)
-#         for t in threads:
-#             t.join()
 
 
 def refresh_api():
