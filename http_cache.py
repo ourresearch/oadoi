@@ -388,7 +388,7 @@ def call_requests_get(url=None,
             zyte_api_response = call_with_zyte_api(url, zyte_params)
             good_status_code = zyte_api_response.get('statusCode')
             bad__status_code = zyte_api_response.get('status')
-            if good_status_code == 200:
+            if good_status_code < 400:
                 logger.info(
                     f"zyte api good status code for {url}: {good_status_code}")
                 # make mock requests response object
