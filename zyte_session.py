@@ -117,9 +117,10 @@ def get_matching_policies(url):
             policy.type == 'proxy'
         )
     )
-    if len(parent_policies) > 1 and parent_policies[0].params is not None and parent_policies[1].params is not None:
+    if len(parent_policies) > 1 and parent_policies[0].params is not None and \
+            parent_policies[1].params is not None:
         raise Exception(
-            f'Colliding policies for URL: {url} - {parent_policies}')
+            f'Colliding Zyte HTTP policies for URL: {url} - {parent_policies}')
     parent_policy = parent_policies[0]
     retry_policies = sorted(
         [policy for policy in matching_policies if
@@ -217,31 +218,13 @@ class ZyteSession(requests.Session):
         return logger
 
     def __init__(self,
-                 policies: List[ZytePolicy] = None,
-                 fallback_policies: List[ZytePolicy] = None,
                  retry: Retrying = _DEFAULT_RETRY,
                  logger: logging.Logger = None):
-        self.policies = sorted(policies, key=lambda p: p.priority,
-                               reverse=False) if policies else None
-        self.fallback_policies = sorted(fallback_policies,
-                                        key=lambda p: p.priority,
-                                        reverse=False) if fallback_policies else [
-            BYPASS_POLICY]
         self.api_session = requests.Session()
         self.retry = retry
         self.logger = logger if logger else self.make_logger(
             current_thread().name)
         super().__init__()
-
-    def get(
-            self,
-            url,
-            zyte_policies=None,
-            fixed_policies=False,
-            **kwargs,
-    ):
-        return self.request('GET', url, zyte_policies=zyte_policies,
-                            fixed_policies=fixed_policies, **kwargs)
 
     def get_redirect_target(self, resp):
         if is_pdf(resp.content):
@@ -251,91 +234,27 @@ class ZyteSession(requests.Session):
                 return target
         return super().get_redirect_target(resp)
 
-    def request(
-            self,
-            method,
-            url,
-            params=None,
-            data=None,
-            headers=None,
-            cookies=None,
-            files=None,
-            auth=None,
-            timeout=None,
-            allow_redirects=True,
-            proxies=None,
-            hooks=None,
-            stream=None,
-            verify=None,
-            cert=None,
-            json=None,
-            zyte_policies=None,
-            # Do not change policy on redirects
-            fixed_policies=False
-    ):
-        req = Request(
-            method=method.upper(),
-            url=url,
-            headers=headers,
-            files=files,
-            data=data or {},
-            json=json,
-            params=params or {},
-            auth=auth,
-            cookies=cookies,
-            hooks=hooks,
-        )
-        prep = self.prepare_request(req)
-
-        proxies = proxies or {}
-
-        settings = self.merge_environment_settings(
-            prep.url, proxies, stream, verify, cert
-        )
-
-        # Send the request.
-        send_kwargs = {
-            'timeout': timeout,
-            'allow_redirects': allow_redirects,
-            'zyte_policies': zyte_policies,
-            'fixed_policies': fixed_policies
-        }
-        send_kwargs.update(settings)
-        resp = self.send(prep, **send_kwargs)
-
-        return resp
-
-    def _req_policies(self, req: PreparedRequest):
-        zyte_policies = self.policies if self.policies else get_matching_policies(
-            url=req.url)
-        return zyte_policies + self.fallback_policies if zyte_policies else self.fallback_policies
-
     def send(
             self,
             request,
             *args,
-            zyte_policies: List[ZytePolicy] = None,
-            fixed_policies: bool = False,
             **kwargs,
     ):
-        if not isinstance(zyte_policies, list) and zyte_policies is not None:
-            zyte_policies = [zyte_policies]
-        if not zyte_policies:
-            zyte_policies = self._req_policies(request)
+        zyte_policies = get_matching_policies(request.url) or [BYPASS_POLICY]
         kwargs['allow_redirects'] = False
-        r = self._send_with_policies(request,
-                                     zyte_policies,
-                                     *args, **kwargs)
-        while r.is_redirect:
+        r, policy = self._send_with_policies(request,
+                                             zyte_policies,
+                                             *args, **kwargs)
+        # API profile should follow all redirects, so if profile is API, do not keep redirecting even in case of 3XX status code
+        while r.is_redirect and policy.profile != 'api':
             url = self.get_redirect_target(r)
             req = r.request.copy()
             req.url = url
-            if not fixed_policies and not self.policies:
-                zyte_policies = self._req_policies(req)
-            r = self._send_with_policies(req,
-                                         zyte_policies,
-                                         *args,
-                                         **kwargs)
+            zyte_policies = get_matching_policies(req.url)
+            r, policy = self._send_with_policies(req,
+                                                 zyte_policies,
+                                                 *args,
+                                                 **kwargs)
         return r
 
     def _send_with_policy(self, request: PreparedRequest,
@@ -369,19 +288,22 @@ class ZyteSession(requests.Session):
                             zyte_policies: List[ZytePolicy], *args, **kwargs):
         r = None
         exc = None
+        successful_policy = None
         for p in zyte_policies:
             try:
                 r = self._send_with_policy(request, p, *args, **kwargs)
+                successful_policy = p
                 break
             except Exception as e:
                 exc = e
         if r is None:
             raise exc
         if is_pdf(r.content):
-            return r
-        return self._modify_response_for_redirect(r)
+            return r, successful_policy
+        return self._modify_response_for_redirect(r), successful_policy
 
 
 if __name__ == '__main__':
-    print(
-        get_matching_policies('https://www.nejm.org/doi/10.1056/NEJMoa2034577'))
+    s = ZyteSession()
+    with open('./test.html', 'w') as f:
+        f.write(s.get('https://doi.org/10.2196/jmir.6.3.e34').text)
