@@ -251,22 +251,18 @@ def enqueue_for_refresh_worker(q: Queue):
                     chunk = []
 
 
-def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
-                        zyte_policy=None, debug=False):
+def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False):
     global LAST_DOI
     s3 = make_s3()
     zyte_logger = ZyteSession.make_logger(current_thread().name,
                                           logging.DEBUG if debug else logging.INFO)
-    s = ZyteSession(logger=zyte_logger,
-                    fallback_policies=DEFAULT_FALLBACK_POLICIES)
+    s = ZyteSession(logger=zyte_logger,)
     while True:
         doi, openalex_id = None, None
         try:
             doi, openalex_id = q.get(timeout=5 * 60)
             url = doi if doi.startswith('http') else f'https://doi.org/{doi}'
-            r = s.get(url,
-                      zyte_policies=zyte_policy if zyte_policy else None,
-                      fixed_policies=True if zyte_policy else False)
+            r = s.get(url)
             r.raise_for_status()
             html = r.content
             upload_obj(LANDING_PAGE_ARCHIVE_BUCKET,
@@ -334,28 +330,10 @@ def parse_args():
     return args
 
 
-def get_zyte_policy(pid):
-    if pid is None:
-        return None
-    elif pid == 'proxy':
-        return ZytePolicy(profile='proxy')
-    elif pid == 'api':
-        return ZytePolicy(profile='api', params={"httpResponseBody": True,
-                                                 "httpResponseHeaders": True})
-    else:
-        policy = ZytePolicy.query.get(int(pid))
-        if not policy:
-            LOGGER.error(
-                'Zyte policy with id {} not found'.format(pid))
-            sys.exit(1)
-        return policy
-
-
 def main():
     args = parse_args()
     config_logger()
     rescrape = args.rescrape
-    zyte_policy = get_zyte_policy(args.policy_id)
     cursor = args.cursor
     threads = args.threads
     q = Queue(maxsize=threads + 1)
@@ -374,7 +352,6 @@ def main():
             break
         t = Thread(target=process_dois_worker, args=(q, refresh_q),
                    kwargs=dict(rescrape=args.rescrape,
-                               zyte_policy=zyte_policy,
                                debug=args.debug), )
         t.start()
         consumers.append(t)
