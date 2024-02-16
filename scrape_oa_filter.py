@@ -230,6 +230,7 @@ def enqueue_dois_for_refresh(dois_chunk, conn: Connection):
     stmnt = text(
         'INSERT INTO recordthresher.refresh_queue (SELECT * FROM pub WHERE id IN :dois) ON CONFLICT (id) DO UPDATE SET in_progress = FALSE;')
     conn.execute(stmnt, dois=tuple(dois_chunk))
+    conn.connection.commit()
 
 
 def enqueue_for_refresh_worker(q: Queue):

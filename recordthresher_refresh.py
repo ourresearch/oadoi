@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from queue import Queue, Empty
 from threading import Thread, Lock
+from typing import List
 
 from pyalex import Works, config
 from sqlalchemy import text
@@ -13,7 +14,9 @@ from sqlalchemy.exc import NoResultFound, PendingRollbackError
 from app import app, db, logger
 from pub import Pub
 from util import normalize_doi, get_openalex_json
-from endpoint import Endpoint #magic
+from endpoint import Endpoint  # magic
+
+from app import oa_db_engine
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
@@ -26,6 +29,8 @@ SEEN_LOCK = Lock()
 DB_SESSION_LOCK = Lock()
 
 DUPE_COUNT = 0
+
+ENQUEUE_SLOW_QUEUE_CHUNK_SIZE = 100
 
 
 def db_commit():
@@ -91,14 +96,27 @@ def put_dois_db(q: Queue):
         offset += page_size
 
 
+def enqueue_slow_queue(dois_chunk: List[str], conn):
+    stmnt = text(
+        'INSERT INTO queue.run_once_add_most_things(work_id) (SELECT work_id FROM ins.recordthresher_record WHERE doi IN :dois) ON CONFLICT (work_id) DO UPDATE SET started = NULL;')
+    conn.execute(stmnt, dois=tuple(dois_chunk))
+    conn.connection.commit()
+
+
 def process_pubs_loop(q: Queue):
     global PROCESSED_COUNT
+    oa_db_conn = oa_db_engine.connect()
+    dois = []
     while True:
         pub = None
         try:
             pub = q.get(timeout=60 * 5)
             if pub.create_or_update_recordthresher_record():
                 db_commit()
+            dois.append(pub.id)
+            if len(dois) >= ENQUEUE_SLOW_QUEUE_CHUNK_SIZE:
+                enqueue_slow_queue(dois, oa_db_conn)
+                dois = []
             with PROCESSED_LOCK:
                 PROCESSED_COUNT += 1
         except Empty:
@@ -108,6 +126,7 @@ def process_pubs_loop(q: Queue):
                 logger.exception(
                     f'[!] Error updating recordthresher record: {pub.doi}')
             logger.exception(traceback.format_exc())
+    oa_db_conn.close()
     logger.info('Exiting process pubs loop')
 
 
