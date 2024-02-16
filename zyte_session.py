@@ -286,6 +286,8 @@ class ZyteSession(requests.Session):
 
     def _send_with_policies(self, request: PreparedRequest,
                             zyte_policies: List[ZytePolicy], *args, **kwargs):
+        if not zyte_policies:
+            zyte_policies = [BYPASS_POLICY]
         r = None
         exc = None
         successful_policy = None
