@@ -13,6 +13,7 @@ from sqlalchemy.exc import NoResultFound, PendingRollbackError
 from app import app, db, logger
 from pub import Pub
 from util import normalize_doi, get_openalex_json
+from endpoint import Endpoint #magic
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
