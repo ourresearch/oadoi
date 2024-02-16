@@ -4,7 +4,6 @@ import gzip
 import itertools
 import logging
 import os
-import sys
 import time
 from datetime import datetime
 from io import BytesIO
@@ -12,26 +11,24 @@ from pathlib import Path
 from queue import Queue, Empty
 from threading import Thread, Lock, current_thread
 
-import pdftotext
-from sqlalchemy import text
-from sqlalchemy.engine import Connection
-
-from app import db_engine
-
 import boto3
+import pdftotext
 import redis
 import requests
 from bs4 import BeautifulSoup
+from sqlalchemy import text
+from sqlalchemy.engine import Connection
 from tenacity import stop_after_attempt, retry, \
     wait_exponential
 
+from app import db_engine
+from const import LANDING_PAGE_ARCHIVE_BUCKET
 from need_rescrape_funcs import ORGS_NEED_RESCRAPE_MAP
 from pdf_util import is_pdf
 from s3_util import get_object, landing_page_key, make_s3, upload_obj, \
     mute_boto_logging
 from util import normalize_doi, is_bad_landing_page
-from const import LANDING_PAGE_ARCHIVE_BUCKET
-from zyte_session import ZyteSession, ZytePolicy, DEFAULT_FALLBACK_POLICIES
+from zyte_session import ZyteSession
 
 requests.packages.urllib3.disable_warnings()
 

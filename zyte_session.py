@@ -82,9 +82,10 @@ class ZytePolicy(db.Model):
 _ALL_POLICIES: List[ZytePolicy] = ZytePolicy.query.all()
 _REFRESH_LOCK = threading.Lock()  # Lock to ensure thread safety
 _REFRESH_THREAD = None  # Reference to the refresh thread
-DEFAULT_FALLBACK_POLICIES = [ZytePolicy(profile='proxy', id=1000),
-                             ZytePolicy(profile='api', parent_id=1000)]
+DEFAULT_NO_MATCH_POLICIES = (ZytePolicy(profile='proxy', id=1000),
+                             ZytePolicy(profile='api', parent_id=1000))
 BYPASS_POLICY = ZytePolicy(profile='bypass')
+NO_MATCH_POLICIES_TRY_BYPASS = [BYPASS_POLICY] + list(DEFAULT_NO_MATCH_POLICIES)
 
 
 def _refresh_policies():
@@ -219,8 +220,10 @@ class ZyteSession(requests.Session):
 
     def __init__(self,
                  retry: Retrying = _DEFAULT_RETRY,
-                 logger: logging.Logger = None):
+                 logger: logging.Logger = None,
+                 no_match_policies: List[ZytePolicy] = DEFAULT_NO_MATCH_POLICIES):
         self.api_session = requests.Session()
+        self.no_match_policies = no_match_policies
         self.retry = retry
         self.logger = logger if logger else self.make_logger(
             current_thread().name)
@@ -240,7 +243,7 @@ class ZyteSession(requests.Session):
             *args,
             **kwargs,
     ):
-        zyte_policies = get_matching_policies(request.url) or [BYPASS_POLICY]
+        zyte_policies = get_matching_policies(request.url) or self.no_match_policies
         kwargs['allow_redirects'] = False
         r, policy = self._send_with_policies(request,
                                              zyte_policies,
@@ -250,7 +253,7 @@ class ZyteSession(requests.Session):
             url = self.get_redirect_target(r)
             req = r.request.copy()
             req.url = url
-            zyte_policies = get_matching_policies(req.url)
+            zyte_policies = get_matching_policies(req.url) or self.no_match_policies
             r, policy = self._send_with_policies(req,
                                                  zyte_policies,
                                                  *args,
@@ -286,8 +289,6 @@ class ZyteSession(requests.Session):
 
     def _send_with_policies(self, request: PreparedRequest,
                             zyte_policies: List[ZytePolicy], *args, **kwargs):
-        if not zyte_policies:
-            zyte_policies = [BYPASS_POLICY]
         r = None
         exc = None
         successful_policy = None
