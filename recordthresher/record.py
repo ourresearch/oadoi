@@ -78,10 +78,6 @@ class Record(db.Model):
         self._original_json = {}
         super(Record, self).__init__(**kwargs)
 
-    @orm.reconstructor
-    def init_on_load(self):
-        self._original_json = {}
-
     __mapper_args__ = {'polymorphic_on': record_type}
 
     def __repr__(self):
