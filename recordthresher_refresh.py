@@ -98,36 +98,16 @@ def put_dois_db(q: Queue):
 
 def enqueue_slow_queue(dois_chunk: List[str], conn):
     stmnt = text(
-        'INSERT INTO queue.run_once_work_add_most_things(work_id) (SELECT work_id FROM ins.recordthresher_record WHERE doi IN :dois) ON CONFLICT (work_id) DO UPDATE SET started = NULL;')
+        '''INSERT INTO queue.run_once_work_add_most_things(work_id)
+           SELECT DISTINCT work_id FROM (
+                SELECT work_id
+                FROM ins.recordthresher_record
+                WHERE doi IN :dois
+            ) subquery
+            ON CONFLICT (work_id) DO UPDATE SET started = NULL;
+            ''')
     conn.execute(stmnt, dois=tuple(dois_chunk))
     conn.connection.commit()
-
-
-def process_pubs_loop(q: Queue):
-    global PROCESSED_COUNT
-    oa_db_conn = oa_db_engine.connect()
-    dois = []
-    while True:
-        pub = None
-        try:
-            pub = q.get(timeout=60 * 5)
-            if pub.create_or_update_recordthresher_record():
-                db_commit()
-            dois.append(pub.id)
-            if len(dois) >= ENQUEUE_SLOW_QUEUE_CHUNK_SIZE:
-                enqueue_slow_queue(dois, oa_db_conn)
-                dois = []
-            with PROCESSED_LOCK:
-                PROCESSED_COUNT += 1
-        except Empty:
-            break
-        except Exception:
-            if pub:
-                logger.exception(
-                    f'[!] Error updating recordthresher record: {pub.doi}')
-            logger.exception(traceback.format_exc())
-    oa_db_conn.close()
-    logger.info('Exiting process pubs loop')
 
 
 def print_stats(q: Queue = None):
@@ -185,7 +165,21 @@ def refresh_api():
                         PROCESSED_COUNT += 1
 
 
-def refresh_sql(chunk_size=10):
+def enqueue_slow_queue_worker(q: Queue):
+    dois = []
+    with oa_db_engine.connect() as oa_db_conn:
+        while True:
+            try:
+                doi = q.get(timeout=5 * 60)
+                dois.append(doi)
+                if len(dois) >= ENQUEUE_SLOW_QUEUE_CHUNK_SIZE:
+                    enqueue_slow_queue(list(set(dois)), oa_db_conn)
+                    dois = []
+            except Empty:
+                return
+
+
+def refresh_sql(slow_queue_q: Queue, chunk_size=10):
     global PROCESSED_COUNT
     query = f'''WITH queue as (
             SELECT * FROM recordthresher.refresh_queue WHERE in_progress = false
@@ -198,8 +192,6 @@ def refresh_sql(chunk_size=10):
             RETURNING *
             '''
     rows = True
-    dois = []
-    oa_db_conn = oa_db_engine.connect()
     with app.app_context():
         while rows:
             rows = db.session.execute(text(query)).all()
@@ -212,16 +204,13 @@ def refresh_sql(chunk_size=10):
                     if pub.create_or_update_recordthresher_record():
                         db.session.commit()
                     processed = True
-                    dois.append(pub.id)
-                    if len(dois) >= ENQUEUE_SLOW_QUEUE_CHUNK_SIZE:
-                        enqueue_slow_queue(dois, oa_db_conn)
-                        dois = []
+                    slow_queue_q.put(r.id)
                 except PendingRollbackError:
                     db.session.rollback()
                     logger.exception('[*] Rolled back transaction')
                 except Exception as e:
                     logger.exception(
-                        f'[!] Error updating record: {r.doi} - {e}')
+                        f'[!] Error updating record: {r.id} - {e}')
                     logger.exception(traceback.format_exc())
                 finally:
                     id_ = r['id']
@@ -229,7 +218,6 @@ def refresh_sql(chunk_size=10):
                     db.session.execute(text(del_query).bindparams(id_=id_))
                     if processed:
                         PROCESSED_COUNT += 1
-    oa_db_conn.close()
 
 
 def filter_string_to_dict(oa_filter_str):
@@ -317,10 +305,12 @@ if __name__ == '__main__':
         for t in threads:
             t.join()
     else:
+        slow_queue_q = Queue(maxsize=args.n_threads)
+        Thread(target=enqueue_slow_queue_worker, args=(slow_queue_q,)).start()
         Thread(target=print_stats, daemon=True).start()
         threads = []
         for _ in range(args.n_threads):
-            t = Thread(target=refresh_sql)
+            t = Thread(target=refresh_sql, args=(slow_queue_q,))
             t.start()
             threads.append(t)
 
