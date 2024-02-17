@@ -98,7 +98,7 @@ def put_dois_db(q: Queue):
 
 def enqueue_slow_queue(dois_chunk: List[str], conn):
     stmnt = text(
-        'INSERT INTO queue.run_once_add_most_things(work_id) (SELECT work_id FROM ins.recordthresher_record WHERE doi IN :dois) ON CONFLICT (work_id) DO UPDATE SET started = NULL;')
+        'INSERT INTO queue.run_once_work_add_most_things(work_id) (SELECT work_id FROM ins.recordthresher_record WHERE doi IN :dois) ON CONFLICT (work_id) DO UPDATE SET started = NULL;')
     conn.execute(stmnt, dois=tuple(dois_chunk))
     conn.connection.commit()
 
