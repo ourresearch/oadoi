@@ -193,7 +193,7 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None):
         # set_cursor(_filter, LAST_CURSOR)
         for result in results:
             doi = normalize_doi(result['doi'])
-            if doi in seen:
+            if not doi or doi in seen:
                 continue
             try:
                 seen.add(doi)
