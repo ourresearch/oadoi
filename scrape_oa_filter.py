@@ -243,7 +243,7 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False)
             work = q.get(timeout=5 * 60)
             doi, openalex_id = work['doi'], work['id']
             doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
-                                 landing_page_key(work['doi']))
+                                 landing_page_key(work['doi']), s3=s3)
             pub_id = \
                 work['primary_location']['source'][
                     'host_organization'].split(
