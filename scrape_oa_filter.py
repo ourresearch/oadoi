@@ -49,6 +49,7 @@ SUCCESS_LOCK = Lock()
 NEEDS_RESCRAPE_COUNT = 0
 
 TOTAL_SEEN = 0
+TOTAL_SEEN_LOCK = Lock()
 
 UNPAYWALL_S3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
                             aws_secret_access_key=AWS_SECRET)
@@ -97,6 +98,13 @@ def config_logger():
 
 
 def inc_total():
+    global TOTAL_SEEN
+    global TOTAL_SEEN_LOCK
+    with TOTAL_SEEN_LOCK:
+        TOTAL_SEEN += 1
+
+
+def inc_attempted():
     global TOTAL_ATTEMPTED
     global TOTAL_ATTEMPTED_LOCK
     with TOTAL_ATTEMPTED_LOCK:
@@ -163,7 +171,6 @@ def get_openalex_json(url, params):
 
 
 def enqueue_dois(_filter: str, q: Queue, resume_cursor=None):
-    global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
     global LAST_CURSOR
     seen = set()
@@ -185,7 +192,6 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None):
             f'[*] Last cursor: {LAST_CURSOR} | Filter: {_filter} | Filter total count: {filter_total_count}')
         # set_cursor(_filter, LAST_CURSOR)
         for result in results:
-            TOTAL_SEEN += 1
             doi = normalize_doi(result['doi'])
             if doi in seen:
                 continue
@@ -239,8 +245,10 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False)
                                           logging.DEBUG if debug else logging.INFO)
     s = ZyteSession(logger=zyte_logger,)
     while True:
+        attempted = False
         try:
             work = q.get(timeout=5 * 60)
+            inc_total()
             doi, openalex_id = work['doi'], work['id']
             doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
                                  landing_page_key(work['doi']), s3=s3)
@@ -257,6 +265,7 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False)
                 continue
             if rescrape:
                 NEEDS_RESCRAPE_COUNT += 1
+            attempted = True
             url = doi if doi.startswith('http') else f'https://doi.org/{doi}'
             r = s.get(url)
             r.raise_for_status()
@@ -272,14 +281,13 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False)
         except Empty:
             if TOTAL_ATTEMPTED > 10_000:
                 break
-            else:
-                continue
         except Exception as e:
             msg = str(e)
             LOGGER.error(f'[!] Error processing DOI ({doi}) - {msg}')
             LOGGER.exception(e)
         finally:
-            inc_total()
+            if attempted:
+                inc_attempted()
     LOGGER.debug('[*] Exiting process DIOs loop')
 
 
