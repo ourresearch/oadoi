@@ -198,6 +198,8 @@ def refresh_sql(chunk_size=10):
             RETURNING *
             '''
     rows = True
+    dois = []
+    oa_db_conn = oa_db_engine.connect()
     with app.app_context():
         while rows:
             rows = db.session.execute(text(query)).all()
@@ -210,6 +212,10 @@ def refresh_sql(chunk_size=10):
                     if pub.create_or_update_recordthresher_record():
                         db.session.commit()
                     processed = True
+                    dois.append(pub.id)
+                    if len(dois) >= ENQUEUE_SLOW_QUEUE_CHUNK_SIZE:
+                        enqueue_slow_queue(dois, oa_db_conn)
+                        dois = []
                 except PendingRollbackError:
                     db.session.rollback()
                     logger.exception('[*] Rolled back transaction')
@@ -223,6 +229,7 @@ def refresh_sql(chunk_size=10):
                     db.session.execute(text(del_query).bindparams(id_=id_))
                     if processed:
                         PROCESSED_COUNT += 1
+    oa_db_conn.close()
 
 
 def filter_string_to_dict(oa_filter_str):
