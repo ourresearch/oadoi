@@ -162,7 +162,7 @@ def get_openalex_json(url, params):
     return j
 
 
-def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
+def enqueue_dois(_filter: str, q: Queue, resume_cursor=None):
     global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
     global LAST_CURSOR
@@ -187,29 +187,11 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         for result in results:
             TOTAL_SEEN += 1
             doi = normalize_doi(result['doi'])
-            # IOP probably unnecessary source
-            # if doi.startswith('10.1086'):
-            #     continue
+            if doi in seen:
+                continue
             try:
-                doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
-                                     landing_page_key(result['doi']))
-                pub_id = \
-                    result['primary_location']['source'][
-                        'host_organization'].split(
-                        '/')[-1]
-                source_id = \
-                result['primary_location']['source']['id'].split('/')[
-                    -1]
-                if doi in seen:
-                    continue
-                if doi_obj and rescrape and not doi_needs_rescrape(doi_obj,
-                                                                   pub_id,
-                                                                   source_id):
-                    continue
-                if rescrape:
-                    NEEDS_RESCRAPE_COUNT += 1
                 seen.add(doi)
-                q.put((doi, result['id']))
+                q.put(result)
             except Exception as e:
                 LOGGER.warning(f'[*] Error enqueueing doi: {doi} - {e}')
 
@@ -251,14 +233,30 @@ def enqueue_for_refresh_worker(q: Queue):
 
 def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False):
     global LAST_DOI
+    global NEEDS_RESCRAPE_COUNT
     s3 = make_s3()
     zyte_logger = ZyteSession.make_logger(current_thread().name,
                                           logging.DEBUG if debug else logging.INFO)
     s = ZyteSession(logger=zyte_logger,)
     while True:
-        doi, openalex_id = None, None
         try:
-            doi, openalex_id = q.get(timeout=5 * 60)
+            work = q.get(timeout=5 * 60)
+            doi, openalex_id = work['doi'], work['id']
+            doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
+                                 landing_page_key(work['doi']))
+            pub_id = \
+                work['primary_location']['source'][
+                    'host_organization'].split(
+                    '/')[-1]
+            source_id = \
+                work['primary_location']['source']['id'].split('/')[
+                    -1]
+            if doi_obj and rescrape and not doi_needs_rescrape(doi_obj,
+                                                               pub_id,
+                                                               source_id):
+                continue
+            if rescrape:
+                NEEDS_RESCRAPE_COUNT += 1
             url = doi if doi.startswith('http') else f'https://doi.org/{doi}'
             r = s.get(url)
             r.raise_for_status()
@@ -341,7 +339,7 @@ def main():
     for filter_ in args.filter:
         Thread(target=enqueue_dois,
                args=(filter_, q,),
-               kwargs=dict(rescrape=rescrape, resume_cursor=cursor)).start()
+               kwargs=dict(resume_cursor=cursor)).start()
     Thread(target=enqueue_for_refresh_worker, args=(refresh_q,),
            daemon=True).start()
     consumers = []
