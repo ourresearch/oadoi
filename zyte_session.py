@@ -248,7 +248,7 @@ class ZyteSession(requests.Session):
         r, policy = self._send_with_policies(request,
                                              zyte_policies,
                                              *args, **kwargs)
-        self.logger.debug(f'Got {r.status_code} request from URL: {r.url}')
+        self.logger.debug(f'Got {r.status_code} response from URL: {r.url}')
         # API profile should follow all redirects, so if profile is API, do not keep redirecting even in case of 3XX status code
         while r.is_redirect and policy.profile != 'api':
             url = self.get_redirect_target(r)
@@ -259,7 +259,7 @@ class ZyteSession(requests.Session):
                                                  zyte_policies,
                                                  *args,
                                                  **kwargs)
-            self.logger.debug(f'Got {r.status_code} request from URL: {r.url}')
+            self.logger.debug(f'Got {r.status_code} response from URL: {r.url}')
         if is_bad_landing_page(r.content):
             raise BadLandingPageException(
                 f'Bad landing page with URL - {r.url}')
