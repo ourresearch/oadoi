@@ -58,7 +58,7 @@ def enqueue_works_missing_affs():
                 TOTAL_SEEN += ENQUEUE_CHUNK_SIZE
                 hrs_running = round((datetime.now() - STARTED).total_seconds() / (60 * 60), 3)
                 seen_rate = round(TOTAL_SEEN/ hrs_running, 2) if hrs_running else 0
-                LOGGER.info(f'Enqueued {r.rowcount} works | Total enqueued: {TOTAL_ENQUEUED_WORKS} | Total seen: {TOTAL_SEEN} | Seen rate: {seen_rate}/hr | Hrs running: {hrs_running} hrs')
+                print(f'[*] Enqueued {r.rowcount} works | Total enqueued: {TOTAL_ENQUEUED_WORKS} | Total seen: {TOTAL_SEEN} | Seen rate: {seen_rate}/hr | Hrs running: {hrs_running} hrs')
                 dois = []
 
 
