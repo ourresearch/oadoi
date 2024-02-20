@@ -15,7 +15,7 @@ TOTAL_SEEN = 0
 STARTED = datetime.now()
 
 
-ENQUEUE_CHUNK_SIZE = 200
+ENQUEUE_CHUNK_SIZE = 100
 
 LOGGER: logging.Logger = make_default_logger('passive_enqueue_affs')
 
@@ -27,6 +27,7 @@ def works_no_affs_iterator(filter_=DEFAULT_FILTER):
         'cursor': '*',
         'per-page': '200',
         'select': 'id,doi',
+        'mailto': 'dev@ourresearch.org'
     }
     while has_more:
         j = get_openalex_json('https://api.openalex.org/works', params=params)
@@ -48,17 +49,21 @@ def enqueue_works_missing_affs():
         for work in no_affs_iterator:
             dois.append(normalize_doi(work['doi']))
             if len(dois) >= ENQUEUE_CHUNK_SIZE:
-                stmnt = text("""INSERT INTO queue.run_once_work_add_most_things(work_id) (SELECT work_id FROM ins.recordthresher_record WHERE work_id != -1 and record_type = 'crossref_doi' AND doi in (SELECT doi
+                stmnt = text("""SELECT work_id FROM ins.recordthresher_record WHERE work_id != -1 and record_type = 'crossref_doi' AND doi in (SELECT doi
                                                                  FROM ins.recordthresher_record
                                                                  WHERE record_type = 'crossref_parseland' AND EXISTS (SELECT 1
                                                                                FROM jsonb_array_elements(authors::jsonb) AS author
-                                                                               WHERE jsonb_array_length(author -> 'affiliations') > 0) AND doi IN :dois)) ON CONFLICT (work_id) DO NOTHING;""")
+                                                                               WHERE jsonb_array_length(author -> 'affiliations') > 0) AND doi IN :dois)""")
                 r = db_conn.execute(stmnt, dois=tuple(dois))
+                work_ids = [row[0] for row in r.fetchall()]
+                work_ids_tmpl = ','.join(['(%s)'] * len(work_ids))
+                stmnt = db_conn.connection.cursor().mogrify(f'INSERT INTO queue.run_once_work_add_most_things(work_id) VALUES {work_ids_tmpl} ON CONFLICT(work_id) DO NOTHING;', work_ids)
+                db_conn.execute(stmnt.decode())
                 TOTAL_ENQUEUED_WORKS += r.rowcount
                 TOTAL_SEEN += ENQUEUE_CHUNK_SIZE
                 hrs_running = round((datetime.now() - STARTED).total_seconds() / (60 * 60), 3)
                 seen_rate = round(TOTAL_SEEN/ hrs_running, 2) if hrs_running else 0
-                print(f'[*] Enqueued {r.rowcount} works | Total enqueued: {TOTAL_ENQUEUED_WORKS} | Total seen: {TOTAL_SEEN} | Seen rate: {seen_rate}/hr | Hrs running: {hrs_running} hrs')
+                LOGGER.info(f'[*] Enqueued {len(work_ids)} works | Total enqueued: {TOTAL_ENQUEUED_WORKS} | Total seen: {TOTAL_SEEN} | Seen rate: {seen_rate}/hr | Hrs running: {hrs_running} hrs')
                 dois = []
 
 

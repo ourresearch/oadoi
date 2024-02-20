@@ -63,9 +63,6 @@ def update_fulltexts():
                         print(e)
                 if len(updates) > 0 and ((len(updates) % CHUNK_SIZE) == 0):
                     updates_template = ','.join(['%s'] * len(updates))
-                    # updates_formatted = ', '.join(
-                    #     [cursor.mogrify('(%s, %s)', update).decode() for update in
-                    #      updates])
                     query = cursor.mogrify(
                         f'INSERT INTO mid.tmp_cleaned_fulltext (recordthresher_id, fulltext) VALUES {updates_template};',
                         updates)
