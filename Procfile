@@ -19,4 +19,4 @@ recordthresher_refresh_enqueue_top_25: bash run_recordthresher_refresh_enqueue_t
 crossref_snapshot_sync: bash run_crossref_snapshot_sync.sh
 parse_pdfs: bash run_pdf_parse_worker.sh
 download_pdfs: bash run_pdf_download_worker.sh
-scrape_aps_dynamic: python scrape_aps_dynamic.py -dt 50
+passive_enqueue_missing_affs: python3 passive_enqueue_missing_affs.py
