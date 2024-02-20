@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from queue import Queue, Empty
 
 from sqlalchemy import text
 
@@ -47,7 +46,7 @@ def enqueue_works_missing_affs():
     no_affs_iterator = works_no_affs_iterator()
     with oa_db_engine.connect() as db_conn:
         for work in no_affs_iterator:
-            dois.append(normalize_doi(work['doi']))
+            dois.append(work['doi'].split('.org/')[-1])
             if len(dois) >= ENQUEUE_CHUNK_SIZE:
                 stmnt = text("""SELECT work_id FROM ins.recordthresher_record WHERE work_id != -1 and record_type = 'crossref_doi' AND doi in (SELECT doi
                                                                  FROM ins.recordthresher_record
