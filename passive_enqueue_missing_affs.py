@@ -59,7 +59,7 @@ def enqueue_works_missing_affs():
                 work_ids_tmpl = ','.join(['(%s)'] * len(work_ids))
                 stmnt = db_conn.connection.cursor().mogrify(f'INSERT INTO queue.run_once_work_add_most_things(work_id) VALUES {work_ids_tmpl} ON CONFLICT(work_id) DO NOTHING;', work_ids)
                 db_conn.execute(stmnt.decode())
-                TOTAL_ENQUEUED_WORKS += r.rowcount
+                TOTAL_ENQUEUED_WORKS += len(work_ids)
                 TOTAL_SEEN += ENQUEUE_CHUNK_SIZE
                 hrs_running = round((datetime.now() - STARTED).total_seconds() / (60 * 60), 3)
                 seen_rate = round(TOTAL_SEEN/ hrs_running, 2) if hrs_running else 0
