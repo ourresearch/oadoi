@@ -18,8 +18,7 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
-from tenacity import stop_after_attempt, retry, \
-    wait_exponential
+from util import get_openalex_json, make_default_logger
 
 from app import db_engine
 from const import LANDING_PAGE_ARCHIVE_BUCKET
@@ -57,12 +56,14 @@ UNPAYWALL_S3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
 LAST_CURSOR = None
 LAST_DOI = None
 
-LOGGER: logging.Logger = None
+LOGGER: logging.Logger = make_default_logger('scrape_oa_filter')
 
 REDIS = redis.Redis.from_url(os.getenv('REDIS_URL'))
 REDIS_LOCK = Lock()
 
 REFRESH_QUEUE_CHUNK_SIZE = 50
+
+mute_boto_logging()
 
 
 def set_cursor(filter_, cursor):
@@ -76,25 +77,6 @@ def get_cursor(filter_):
         if isinstance(cursor, bytes):
             return cursor.decode()
         return cursor
-
-
-def config_logger():
-    mute_boto_logging()
-    global LOGGER
-    LOGGER = logging.getLogger('oa_filter_scraper')
-    LOGGER.setLevel(logging.DEBUG)
-    # fh = logging.FileHandler(f'log_{org_id}.log', 'w')
-    # fh.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        '[%(name)s | %(asctime)s] %(levelname)s - %(message)s')
-    # fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # LOGGER.addHandler(fh)
-    LOGGER.addHandler(ch)
-    LOGGER.propagate = False
-    return LOGGER
 
 
 def inc_total():
@@ -158,16 +140,6 @@ class RateLimitException(Exception):
         self.message = f'RateLimitException for {doi}'
         self.html = html
         super().__init__(self.message)
-
-
-@retry(stop=stop_after_attempt(5),
-       wait=wait_exponential(multiplier=1, min=4, max=30))
-def get_openalex_json(url, params):
-    r = requests.get(url, params=params,
-                     verify=False)
-    r.raise_for_status()
-    j = r.json()
-    return j
 
 
 def enqueue_dois(_filter: str, q: Queue, resume_cursor=None):
@@ -237,13 +209,14 @@ def enqueue_for_refresh_worker(q: Queue):
                     chunk = []
 
 
-def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False, debug=False):
+def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
+                        debug=False):
     global LAST_DOI
     global NEEDS_RESCRAPE_COUNT
     s3 = make_s3()
     zyte_logger = ZyteSession.make_logger(current_thread().name,
                                           logging.DEBUG if debug else logging.INFO)
-    s = ZyteSession(logger=zyte_logger,)
+    s = ZyteSession(logger=zyte_logger, )
     while True:
         attempted = False
         try:
