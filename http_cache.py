@@ -288,7 +288,7 @@ def before_retry(retry_state):
 
 
 def is_retry_status(response):
-    return response.status_code in [429, 500, 502, 503, 504, 520]
+    return response.status_code in {429, 500, 502, 503, 504, 520, 403}
 
 
 @retry(stop=stop_after_attempt(2),
@@ -593,5 +593,5 @@ def get_cookies_with_zyte_api(url):
 if __name__ == '__main__':
     # r = http_get('https://doi.org/10.1088/1475-7516/2010/04/014')
     # print(r.status_code)
-    r = http_get('https://doi.org/10.51952/9781529223972')
+    r = http_get('https://doi.org/10.1002/jum.15761')
     print(r.status_code)
