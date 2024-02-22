@@ -1,6 +1,7 @@
 aiohttp==3.7.4.post0
 async-timeout==3.0.1
 attrs==21.2.0
+backoff==2.2.1
 beautifulsoup4==4.9.3
 blinker==1.4
 boto==2.49.0
