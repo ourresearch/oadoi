@@ -28,8 +28,8 @@ from app import db
 from tracking.models import ArxivTrack, OpenAlexRecordTrack
 
 
-@backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_time=30)
-@backoff.on_predicate(backoff.expo, lambda x: x.status_code >= 429, max_time=30)
+@backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_time=240)
+@backoff.on_predicate(backoff.expo, lambda x: x.status_code >= 429, max_time=240)
 def make_request(url, params=None):
     if params is None:
         return requests.get(url)
