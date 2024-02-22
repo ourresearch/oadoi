@@ -138,6 +138,7 @@ def main(args):
                 created_at=now,
                 note="arxiv investigation",
                 origin="arxiv_oai_pmh",
+                active=True,
             )
             db.session.add(openalex_rec)
 
