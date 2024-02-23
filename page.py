@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 import datetime
 import gzip
 import random
@@ -922,25 +919,6 @@ class Page(db.Model):
         return "<Page ( {} ) {} doi:{} '{}...'>".format(self.pmh_id, self.url,
                                                         self.doi,
                                                         self.title[0:20])
-
-
-# legacy, just used for matching
-class BaseMatch(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    base_id = db.Column(db.Text)
-    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
-    url = db.Column(db.Text)
-    scrape_updated = db.Column(db.DateTime)
-    scrape_evidence = db.Column(db.Text)
-    scrape_pdf_url = db.Column(db.Text)
-    scrape_metadata_url = db.Column(db.Text)
-    scrape_version = db.Column(db.Text)
-    scrape_license = db.Column(db.Text)
-    updated = db.Column(db.DateTime)
-
-    @property
-    def is_open(self):
-        return self.scrape_metadata_url or self.scrape_pdf_url
 
 
 def _scrape_version_override():
