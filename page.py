@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 import datetime
 import gzip
 import random
@@ -23,8 +20,6 @@ from pdf_to_text import convert_pdf_to_txt_pages
 from pdf_util import PDFVersion, save_pdf, enqueue_pdf_parsing
 from util import clean_url, is_pmc
 from webpage import PmhRepoWebpage, PublisherWebpage
-
-DEBUG_BASE = False
 
 
 class PmhVersionFirstAvailable(db.Model):
@@ -479,8 +474,6 @@ class PageBase(db.Model):
                 self.scrape_version, self.scrape_license, self.url, self.id))
             return True
 
-        # print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
-
         return False
 
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
@@ -782,165 +775,6 @@ class PageNew(PageBase):
         if pdf_content:
             save_pdf(self.doi, pdf_content, version)
         enqueue_pdf_parsing(self.doi, version)
-
-
-class Page(db.Model):
-    url = db.Column(db.Text, primary_key=True)
-    id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
-    source = db.Column(db.Text)
-    doi = db.Column(db.Text, db.ForeignKey("pub.id"))
-    title = db.Column(db.Text)
-    normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
-    authors = db.Column(JSONB)
-
-    scrape_updated = db.Column(db.DateTime)
-    scrape_evidence = db.Column(db.Text)
-    scrape_pdf_url = db.Column(db.Text)
-    scrape_metadata_url = db.Column(db.Text)
-    scrape_version = db.Column(db.Text)
-    scrape_license = db.Column(db.Text)
-
-    error = db.Column(db.Text)
-    updated = db.Column(db.DateTime)
-
-    started = db.Column(db.DateTime)
-    finished = db.Column(db.DateTime)
-    rand = db.Column(db.Numeric)
-
-    def __init__(self, **kwargs):
-        self.error = ""
-        self.updated = datetime.datetime.utcnow().isoformat()
-        super(self.__class__, self).__init__(**kwargs)
-
-    @property
-    def first_available(self):
-        return None
-
-    @property
-    def pmh_id(self):
-        return self.id
-
-    @property
-    def bare_pmh_id(self):
-        return self.id
-
-    @property
-    def is_open(self):
-        return self.scrape_metadata_url or self.scrape_pdf_url
-
-    @property
-    def is_pmc(self):
-        if not self.url:
-            return False
-        if "ncbi.nlm.nih.gov/pmc" in self.url:
-            return True
-        if "europepmc.org/articles/" in self.url:
-            return True
-        return False
-
-    @property
-    def repo_id(self):
-        if not self.pmh_id or not ":" in self.pmh_id:
-            return None
-        return self.pmh_id.split(":")[1]
-
-    @property
-    def endpoint_id(self):
-        if not self.pmh_id or not ":" in self.pmh_id:
-            return None
-        return self.pmh_id.split(":")[1]
-
-    @property
-    def pmcid(self):
-        if not self.is_pmc:
-            return None
-        return self.url.rsplit("/", 1)[1].lower()
-
-    @property
-    def is_preprint_repo(self):
-        preprint_url_fragments = [
-            "precedings.nature.com",
-            "10.15200/winn.",
-            "/peerj.preprints",
-            ".figshare.",
-            "10.1101/",  # biorxiv
-            "10.15363/"  # thinklab
-        ]
-        for url_fragment in preprint_url_fragments:
-            if self.url and url_fragment in self.url.lower():
-                return True
-        return False
-
-    @property
-    def repository_display_name(self):
-        return self.repo_id
-
-    def update_with_local_info(self):
-        pass
-
-    # examples
-    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi
-    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3606428&resulttype=core&format=json&tool=oadoi
-    def set_info_for_pmc_page(self):
-        if not self.pmcid:
-            return
-
-        url_template = "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
-        url = url_template.format(self.pmcid)
-
-        # try:
-        r = http_get(url)
-        data = r.json()
-        result_list = data["resultList"]["result"]
-        if not result_list:
-            return
-        result = result_list[0]
-        has_pdf = result.get("hasPDF", None)
-        is_author_manuscript = result.get("authMan", None)
-        is_open_access = result.get("isOpenAccess", None)
-        raw_license = result.get("license", None)
-
-        self.scrape_metadata_url = "http://europepmc.org/articles/{}".format(
-            self.pmcid)
-        if has_pdf == "Y":
-            self.scrape_pdf_url = "http://europepmc.org/articles/{}?pdf=render".format(
-                self.pmcid)
-        if is_author_manuscript == "Y":
-            self.scrape_version = "acceptedVersion"
-        else:
-            self.scrape_version = "publishedVersion"
-        if raw_license:
-            self.scrape_license = find_normalized_license(raw_license)
-        elif is_open_access == "Y":
-            self.scrape_license = "unspecified-oa"
-
-        # except Exception as e:
-        #     self.error += u"Exception in set_info_for_pmc_page"
-        #     logger.info(u"Exception in set_info_for_pmc_page")
-
-    def __repr__(self):
-        return "<Page ( {} ) {} doi:{} '{}...'>".format(self.pmh_id, self.url,
-                                                        self.doi,
-                                                        self.title[0:20])
-
-
-# legacy, just used for matching
-class BaseMatch(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    base_id = db.Column(db.Text)
-    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
-    url = db.Column(db.Text)
-    scrape_updated = db.Column(db.DateTime)
-    scrape_evidence = db.Column(db.Text)
-    scrape_pdf_url = db.Column(db.Text)
-    scrape_metadata_url = db.Column(db.Text)
-    scrape_version = db.Column(db.Text)
-    scrape_license = db.Column(db.Text)
-    updated = db.Column(db.DateTime)
-
-    @property
-    def is_open(self):
-        return self.scrape_metadata_url or self.scrape_pdf_url
 
 
 def _scrape_version_override():
