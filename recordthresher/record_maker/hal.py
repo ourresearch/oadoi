@@ -12,7 +12,7 @@ class HalRecordMaker(PmhRecordMaker):
     @classmethod
     def _representative_page(cls, pmh_record):
         for repo_page in pmh_record.pages:
-            if re.search(r'/hal-[0-9]+$', repo_page.url):
+            if re.search(r'/hal-[0-9]+$', repo_page.url) or re.search(r'/tel-[0-9]+$', repo_page.url):
                 return repo_page
 
         return None
