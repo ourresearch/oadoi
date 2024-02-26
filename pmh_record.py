@@ -683,9 +683,17 @@ class PmhRecord(db.Model):
                         page.RepoPage.normalized_title == normalized_title
                     ).count()
 
-                    if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
-                        logger.info("not allowing title matches because too many with this title: {}".format(normalized_title))
-                    elif self.bare_pmh_id and self.bare_pmh_id.startswith('oai:mdpi.com:'):
+                    if (
+                            num_pages_with_this_normalized_title >= 20
+                            and normalized_title not in title_match_limit_exceptions()
+                            and "oai:HAL:" not in self.bare_pmh_id
+                    ):
+                        logger.info(
+                            "not allowing title matches because too many with this title: {}".format(
+                                normalized_title
+                            )
+                        )
+                    elif self.bare_pmh_id and self.bare_pmh_id.startswith("oai:mdpi.com:"):
                         # publisher site, don't match to other DOIs by title
                         pass
                     else:
