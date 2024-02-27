@@ -7,7 +7,7 @@ from sqlalchemy import text
 from app import db
 from app import logger
 from recordthresher.datacite import DataCiteRaw
-from recordthresher.datacite_record import DataCiteRecord
+from recordthresher.datacite_doi_record import DataCiteDoiRecord
 from util import elapsed
 from util import safe_commit
 
@@ -26,7 +26,7 @@ class QueueDataCiteRecords:
         if single_id:
             doi = DataCiteRaw.query.filter(DataCiteRaw == single_id).scalar().id
 
-            if record := DataCiteRecord.from_doi(doi):
+            if record := DataCiteDoiRecord.from_doi(doi):
                 db.session.merge(record)
 
             safe_commit(db) or logger.info("COMMIT fail")
@@ -44,7 +44,7 @@ class QueueDataCiteRecords:
                     continue
 
                 for doi in dois:
-                    if record := DataCiteRecord.from_doi(doi):
+                    if record := DataCiteDoiRecord.from_doi(doi):
                         db.session.merge(record)
 
                 db.session.execute(

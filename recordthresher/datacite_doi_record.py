@@ -8,10 +8,10 @@ from recordthresher.datacite import DataCiteRaw
 from util import clean_doi, normalize_title
 
 
-class DataCiteRecord(Record):
+class DataCiteDoiRecord(Record):
     __tablename__ = None
 
-    __mapper_args__ = {'polymorphic_identity': 'datacite_record'}
+    __mapper_args__ = {'polymorphic_identity': 'datacite_doi'}
 
     @staticmethod
     def from_doi(doi):
@@ -26,10 +26,10 @@ class DataCiteRecord(Record):
             uuid.UUID(bytes=hashlib.sha256(f'datacite_record:{doi}'.encode('utf-8')).digest()[0:16])
         )
 
-        record = DataCiteRecord.query.get(id=record_id)
+        record = DataCiteDoiRecord.query.get(id=record_id)
 
         if not record:
-            record = DataCiteRecord(id=record_id)
+            record = DataCiteDoiRecord(id=record_id)
 
         # doi
         record.doi = datacite_work['id']
@@ -40,8 +40,17 @@ class DataCiteRecord(Record):
 
         # authors
         record.authors = []
-        for author in datacite_work['attributes'].get('creators', []):
-            record.authors.append(author['name'])
+        for datacite_author in datacite_work['attributes'].get('creators', []):
+            record_author = {
+                'name': datacite_author.get('name', None),
+                'family': datacite_author.get('familyName', None),
+                'given': datacite_author.get('givenName', None),
+                'affiliation': [{"name": aff} for aff in datacite_author.get('affiliation', None)]
+            }
+            for name_identifier in datacite_author.get('nameIdentifiers', []):
+                if name_identifier['nameIdentifierScheme'] == 'ORCID':
+                    record_author['orcid'] = name_identifier['nameIdentifier']
+            record.authors.append(record_author)
 
         # abstract
         descriptions = datacite_work['attributes'].get('descriptions', [])
@@ -52,7 +61,9 @@ class DataCiteRecord(Record):
         record.published_date = datacite_work['attributes'].get('published', None)
 
         # genre
-        record.genre = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
+        genre = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
+        genre = genre.lower().strip() if genre else None
+        record.genre = genre
 
         # publisher
         record.publisher = datacite_work['attributes'].get('publisher', None)
