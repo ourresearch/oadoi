@@ -24,7 +24,7 @@ class QueueDataCiteRecords:
             limit = float("inf")
 
         if single_id:
-            doi = DataCiteRaw.query.filter(DataCiteRaw == single_id).scalar().id
+            doi = DataCiteRaw.query.filter(DataCiteRaw.id == single_id).scalar().id
 
             if record := DataCiteDoiRecord.from_doi(doi):
                 db.session.merge(record)
@@ -77,7 +77,7 @@ class QueueDataCiteRecords:
 
         queue_query = text("""
             with queue_chunk as (
-                select pmid
+                select doi
                 from recordthresher.datacite_record_queue
                 where started is null
                 order by rand
@@ -100,9 +100,9 @@ class QueueDataCiteRecords:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pmid', nargs="?", type=str, help="pmid you want to update")
-    parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many pmids to update")
-    parser.add_argument('--chunk', "-ch", nargs="?", default=500, type=int, help="how many pmids to update at once")
+    parser.add_argument('--doi', nargs="?", type=str, help="doi you want to update")
+    parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many dois to update")
+    parser.add_argument('--chunk', "-ch", nargs="?", default=500, type=int, help="how many dois to update at once")
 
     parsed_args = parser.parse_args()
 

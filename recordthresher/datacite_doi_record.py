@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import json
 import uuid
 
 import shortuuid
@@ -20,7 +21,8 @@ class DataCiteDoiRecord(Record):
         if not doi:
             return None
 
-        datacite_work = DataCiteRaw.query.get(doi)
+        datacite_row = DataCiteRaw.query.get(doi)
+        datacite_work = datacite_row.datacite_api_raw if datacite_row else None
         if not datacite_work:
             return None
 
@@ -28,13 +30,13 @@ class DataCiteDoiRecord(Record):
             uuid.UUID(bytes=hashlib.sha256(f'datacite_record:{doi}'.encode('utf-8')).digest()[0:16])
         )
 
-        record = DataCiteDoiRecord.query.get(id=record_id)
+        record = DataCiteDoiRecord.query.get(record_id)
 
         if not record:
             record = DataCiteDoiRecord(id=record_id)
 
         # doi
-        record.doi = clean_doi(datacite_work['doi'])
+        record.doi = clean_doi(datacite_work['id'])
 
         # title
         record.title = datacite_work['attributes']['titles'][0]['title'] if datacite_work['attributes']['titles'] else None
@@ -78,3 +80,5 @@ class DataCiteDoiRecord(Record):
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
+
+        print(record)
