@@ -31,9 +31,11 @@ class DataCiteDoiRecord(Record):
         )
 
         record = DataCiteDoiRecord.query.get(record_id)
+        is_new = False
 
         if not record:
             record = DataCiteDoiRecord(id=record_id)
+            is_new = True
 
         # doi
         record.doi = clean_doi(datacite_work['id'])
@@ -62,10 +64,14 @@ class DataCiteDoiRecord(Record):
         record.abstract = abstract
 
         # published date
-        record.published_date = datacite_work['attributes'].get('published', None)
+        for date in datacite_work['attributes'].get('dates', []):
+            if date['dateType'] == 'Issued':
+                if date['date'] and len(date['date']) == 4:
+                    record.published_date = f'{date["date"]}-01-01'
+                record.published_date = date['date']
 
         # genre
-        genre = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
+        genre = datacite_work['attributes'].get('types', {}).get('bibtex', None)
         genre = genre.lower().strip() if genre else None
         record.genre = genre
 
@@ -80,10 +86,24 @@ class DataCiteDoiRecord(Record):
             if rights.get('rightsIdentifier', None):
                 record.open_license = rights.get('rightsIdentifier', None)
 
+        # funders
+        record.funders = []
+        for funder in datacite_work['attributes'].get('fundingReferences', []):
+            record_funder = {
+                'name': funder.get('funderName', None),
+                'award': funder.get('awardNumber', None),
+                'doi': funder.get('funderIdentifier', None)
+            }
+            record.funders.append(record_funder)
+
         record.authors = json.dumps(record.authors)
+        record.funders = json.dumps(record.funders)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
-        logger.info(f'created record {record.id} from doi {doi}')
+        if is_new:
+            logger.info(f'created record {record.id} from doi {doi}')
+        else:
+            logger.info(f'updated record {record.id} from doi {doi}')
         return record
