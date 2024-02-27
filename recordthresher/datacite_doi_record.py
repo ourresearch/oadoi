@@ -1,8 +1,10 @@
+import datetime
 import hashlib
 import uuid
 
 import shortuuid
 
+from app import db
 from recordthresher.record import Record
 from recordthresher.datacite import DataCiteRaw
 from util import clean_doi, normalize_title
@@ -32,7 +34,7 @@ class DataCiteDoiRecord(Record):
             record = DataCiteDoiRecord(id=record_id)
 
         # doi
-        record.doi = datacite_work['id']
+        record.doi = clean_doi(datacite_work['doi'])
 
         # title
         record.title = datacite_work['attributes']['titles'][0]['title'] if datacite_work['attributes']['titles'] else None
@@ -73,3 +75,6 @@ class DataCiteDoiRecord(Record):
 
         # license
         record.open_license = datacite_work['attributes'].get('rightsList', [{}])[0].get('rightsIdentifier', None)
+
+        if db.session.is_modified(record):
+            record.updated = datetime.datetime.utcnow().isoformat()
