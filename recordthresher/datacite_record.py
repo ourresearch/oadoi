@@ -1,3 +1,8 @@
+import hashlib
+import uuid
+
+import shortuuid
+
 from recordthresher.record import Record
 from recordthresher.datacite import DataCiteRaw
 from util import clean_doi, normalize_title
@@ -13,43 +18,47 @@ class DataCiteRecord(Record):
         if not doi:
             return None
 
-        datacite_raw = DataCiteRaw.query.get(doi)
-        if not datacite_raw:
+        datacite_work = DataCiteRaw.query.get(doi)
+        if not datacite_work:
             return None
 
-        record = DataCiteRecord.query.get(id=doi)
+        record_id = shortuuid.encode(
+            uuid.UUID(bytes=hashlib.sha256(f'datacite_record:{doi}'.encode('utf-8')).digest()[0:16])
+        )
+
+        record = DataCiteRecord.query.get(id=record_id)
 
         if not record:
-            record = DataCiteRecord(id=doi)
+            record = DataCiteRecord(id=record_id)
 
         # doi
-        record.doi = datacite_raw['id']
+        record.doi = datacite_work['id']
 
         # title
-        record.title = datacite_raw['attributes']['titles'][0]['title'] if datacite_raw['attributes']['titles'] else None
+        record.title = datacite_work['attributes']['titles'][0]['title'] if datacite_work['attributes']['titles'] else None
         record.normalized_title = normalize_title(record.title)
 
         # authors
         record.authors = []
-        for author in datacite_raw['attributes'].get('creators', []):
+        for author in datacite_work['attributes'].get('creators', []):
             record.authors.append(author['name'])
 
         # abstract
-        descriptions = datacite_raw['attributes'].get('descriptions', [])
+        descriptions = datacite_work['attributes'].get('descriptions', [])
         abstract = next((d['description'] for d in descriptions if d['descriptionType'] == 'Abstract'), None)
         record.abstract = abstract
 
         # published date
-        record.published_date = datacite_raw['attributes'].get('published', None)
+        record.published_date = datacite_work['attributes'].get('published', None)
 
         # genre
-        record.genre = datacite_raw['attributes'].get('types', {}).get('resourceTypeGeneral', None)
+        record.genre = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
 
         # publisher
-        record.publisher = datacite_raw['attributes'].get('publisher', None)
+        record.publisher = datacite_work['attributes'].get('publisher', None)
 
         # webpage url
-        record.record_webpage_url = datacite_raw['attributes'].get('url', None)
+        record.record_webpage_url = datacite_work['attributes'].get('url', None)
 
         # license
-        record.open_license = datacite_raw['attributes'].get('rightsList', [{}])[0].get('rightsIdentifier', None)
+        record.open_license = datacite_work['attributes'].get('rightsList', [{}])[0].get('rightsIdentifier', None)
