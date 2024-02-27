@@ -5,7 +5,7 @@ import uuid
 
 import shortuuid
 
-from app import db
+from app import db, logger
 from recordthresher.record import Record
 from recordthresher.datacite import DataCiteRaw
 from util import clean_doi, normalize_title
@@ -76,9 +76,14 @@ class DataCiteDoiRecord(Record):
         record.record_webpage_url = datacite_work['attributes'].get('url', None)
 
         # license
-        record.open_license = datacite_work['attributes'].get('rightsList', [{}])[0].get('rightsIdentifier', None)
+        for rights in datacite_work['attributes'].get('rightsList', []):
+            if rights.get('rightsIdentifier', None):
+                record.open_license = rights.get('rightsIdentifier', None)
+
+        record.authors = json.dumps(record.authors)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
-        print(record)
+        logger.info(f'created record {record.id} from doi {doi}')
+        return record
