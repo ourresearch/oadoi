@@ -10,18 +10,27 @@ from app import logger
 ARXIV_ID_PATTERN = r'arXiv:\d{4}\.\d{4,5}(?:v\d+)?'
 
 
-def parseland_response(parseland_api_url):
+def pdf_parser_response(url):
+    return parse_api_response(url, parser_name='pdf parser')
+
+
+def parseland_response(url):
+    return parseland_response(url)
+
+
+def parse_api_response(url, parser_name='parseland'):
     start = time.time()
-    logger.info(f'trying {parseland_api_url}')
+    logger.info(f'trying {url}')
     try:
-        response = requests.get(parseland_api_url, verify=False)
+        response = requests.get(url, verify=False)
         response_time = f'{time.time() - start:.2f}'
     except Exception as e:
         logger.exception(e)
         return None
 
     if response.ok:
-        logger.info(f'got a 200 response from parseland in {response_time} seconds')
+        logger.info(
+            f'got a 200 response from {parser_name} in {response_time} seconds')
         try:
             parseland_json = response.json()
             message = parseland_json.get('message', None)
@@ -32,14 +41,15 @@ def parseland_response(parseland_api_url):
             elif isinstance(message, dict):
                 return message
             else:
-                logger.error("can't recognize parseland response format")
+                logger.error(f"can't recognize {parser_name} response format")
                 return None
 
         except ValueError as e:
             logger.error("response isn't valid json")
             return None
     else:
-        logger.warning(f'got error response from parseland in {response_time} seconds: {response}')
+        logger.warning(
+            f'got error response from {parser_name} in {response_time} seconds: {response}')
 
 
 def parseland_parse(parseland_api_url):
