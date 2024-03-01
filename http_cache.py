@@ -29,9 +29,6 @@ MAX_PAYLOAD_SIZE_BYTES = 1000 * 1000 * 10  # 10mb
 
 os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
 
-ZYTE_PROFILE_HOSTS = os.getenv('ZYTE_PROFILE_HOSTS').split(';')
-CRAWLERA_PROFILE_HOSTS = os.getenv('CRAWLERA_PROFILE_HOSTS').split(';')
-
 
 @dataclass
 class ResponseObject:
