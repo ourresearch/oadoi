@@ -28,7 +28,7 @@ class PmhRecordMaker(RecordMaker):
     @staticmethod
     def is_high_quality(pmh_record):
         prefixes = [
-            'oai:HAL:hal-',
+            'oai:HAL:',
             'oai:arXiv.org:',
             'oai:doaj.org/article:',
             'cdr.lib.unc.edu:',
@@ -54,7 +54,7 @@ class PmhRecordMaker(RecordMaker):
             return None
 
         if not PmhRecordMaker.is_high_quality(pmh_record):
-            logger.info(f'not making a recordthresher record for {pmh_record}')
+            logger.info(f'not making a recordthresher record for {pmh_record} because it is not high quality')
             return None
 
         if best_page := cls._representative_page(pmh_record):
