@@ -26,7 +26,7 @@ class PDFRecordMaker:
 
         record_id = shortuuid.encode(
             uuid.UUID(bytes=hashlib.sha256(
-                f'grobid_pdf:{pub.id}'.encode('utf-8')).digest()[0:16])
+                f'pdf:{pub.id}'.encode('utf-8')).digest()[0:16])
         )
 
         pdf_record = PDFRecord.query.get(record_id)
