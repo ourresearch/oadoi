@@ -7,7 +7,7 @@ import shortuuid
 
 from app import logger
 from recordthresher.crossref_parseland_record import CrossrefParselandRecord
-from recordthresher.util import parseland_response
+from recordthresher.util import parser_response
 
 
 def parseland_api_url(pub):
@@ -31,7 +31,7 @@ class ParselandRecordMaker:
             logger.info(f"not updating existing parseland record {pl_record.id}")
             return None
 
-        pl_response = parseland_response(parseland_api_url(pub))
+        pl_response = parser_response(parseland_api_url(pub))
 
         if not pl_response:
             logger.info(f"didn't get a parseland response for {pub.id}, not making record")

@@ -14,8 +14,8 @@ def pdf_parser_response(url):
     return parse_api_response(url, parser_name='pdf parser')
 
 
-def parseland_response(url):
-    return parseland_response(url)
+def parser_response(url):
+    return parse_api_response(url)
 
 
 def parse_api_response(url, parser_name='parseland'):
@@ -55,7 +55,7 @@ def parse_api_response(url, parser_name='parseland'):
 def parseland_parse(parseland_api_url):
     parse = None
 
-    if response := parseland_response(parseland_api_url):
+    if response := parser_response(parseland_api_url):
         parse = {'authors': [], 'published_date': None, 'genre': None,
                  'abstract': None}
 
