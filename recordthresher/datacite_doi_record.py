@@ -42,7 +42,6 @@ class DataCiteDoiRecord(Record):
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
-        logger.info(f'updated record {record.id} from datacite doi {doi}')
         return record
 
     @classmethod
@@ -58,6 +57,9 @@ class DataCiteDoiRecord(Record):
         record = cls.query.get(record_id)
         if not record:
             record = cls(id=record_id)
+            logger.info(f'creating record {record.id} from datacite doi {doi}')
+        else:
+            logger.info(f'updating record {record.id} from datacite doi {doi}')
         return record
 
     def set_doi(self, datacite_work):
