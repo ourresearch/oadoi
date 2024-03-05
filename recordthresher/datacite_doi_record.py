@@ -73,7 +73,7 @@ class DataCiteDoiRecord(Record):
                 'name': datacite_author.get('name', None),
                 'family': datacite_author.get('familyName', None),
                 'given': datacite_author.get('givenName', None),
-                'affiliation': [{"name": aff} for aff in datacite_author.get('affiliation', None)]
+                'affiliation': [aff for aff in datacite_author.get('affiliation', None)]
             }
             for name_identifier in datacite_author.get('nameIdentifiers', []):
                 if name_identifier['nameIdentifierScheme'] == 'ORCID':
@@ -88,13 +88,20 @@ class DataCiteDoiRecord(Record):
         self.abstract = abstract
 
     def set_published_date(self, datacite_work):
+        published_date = None
         for date in datacite_work['attributes'].get('dates', []):
             if date['dateType'] == 'Issued':
                 if date['date'] and len(date['date'].strip()) == 4:
-                    self.published_date = f'{date["date"].strip()}-01-01'
+                    published_date = f'{date["date"].strip()}-01-01'
                 else:
-                    self.published_date = date['date'].strip()
-                print("published_date: ", self.published_date)
+                    published_date = date['date'].strip()
+
+        if not published_date:
+            # fall back to publicationYear
+            published_year = datacite_work['attributes'].get('publicationYear', None)
+            published_date = f'{published_year}-01-01' if published_year else None
+        self.published_date = published_date
+        print("published_date: ", self.published_date)
 
     def set_genre(self, datacite_work):
         genre = datacite_work['attributes'].get('types', {}).get('bibtex', None)
