@@ -38,6 +38,7 @@ class DataCiteDoiRecord(Record):
         record.record_webpage_url = datacite_work['attributes'].get('url', None)
         record.set_license(datacite_work)
         record.set_funders(datacite_work)
+        record.set_repo_id(datacite_work)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
@@ -104,7 +105,7 @@ class DataCiteDoiRecord(Record):
         print("published_date: ", self.published_date)
 
     def set_genre(self, datacite_work):
-        genre = datacite_work['attributes'].get('types', {}).get('bibtex', None)
+        genre = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
         genre = genre.lower().strip() if genre else None
         self.genre = genre
         print("genre: ", self.genre)
@@ -125,3 +126,7 @@ class DataCiteDoiRecord(Record):
             self.funders.append(record_funder)
         self.funders = json.dumps(self.funders)
         print(f"funders: {self.funders}")
+
+    def set_repo_id(self, datacite_work):
+        self.repo_id = datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None)
+        print(f"repo_id: {self.repo_id}")
