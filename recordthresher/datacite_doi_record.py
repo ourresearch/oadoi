@@ -28,7 +28,7 @@ class DataCiteDoiRecord(Record):
 
         record = cls.get_or_create_record(doi)
 
-        record.set_doi(datacite_work)
+        record.doi = clean_doi(datacite_work['id'])
         record.set_title(datacite_work)
         record.set_authors(datacite_work)
         record.set_abstract(datacite_work)
@@ -62,9 +62,6 @@ class DataCiteDoiRecord(Record):
             logger.info(f'updating record {record.id} from datacite doi {doi}')
         return record
 
-    def set_doi(self, datacite_work):
-        self.doi = clean_doi(datacite_work['id'])
-
     def set_title(self, datacite_work):
         self.title = datacite_work['attributes']['titles'][0]['title'] if datacite_work['attributes']['titles'] else None
         self.normalized_title = normalize_title(self.title)
@@ -83,6 +80,7 @@ class DataCiteDoiRecord(Record):
                     record_author['orcid'] = name_identifier['nameIdentifier']
             self.authors.append(record_author)
         self.authors = json.dumps(self.authors)
+        print(f"authors: {self.authors}")
 
     def set_abstract(self, datacite_work):
         descriptions = datacite_work['attributes'].get('descriptions', [])
@@ -92,14 +90,17 @@ class DataCiteDoiRecord(Record):
     def set_published_date(self, datacite_work):
         for date in datacite_work['attributes'].get('dates', []):
             if date['dateType'] == 'Issued':
-                if date['date'] and len(date['date']) == 4:
-                    self.published_date = f'{date["date"]}-01-01'
-                self.published_date = date['date']
+                if date['date'] and len(date['date'].strip()) == 4:
+                    self.published_date = f'{date["date"].strip()}-01-01'
+                else:
+                    self.published_date = date['date'].strip()
+                print("published_date: ", self.published_date)
 
     def set_genre(self, datacite_work):
         genre = datacite_work['attributes'].get('types', {}).get('bibtex', None)
         genre = genre.lower().strip() if genre else None
         self.genre = genre
+        print("genre: ", self.genre)
 
     def set_license(self, datacite_work):
         for rights in datacite_work['attributes'].get('rightsList', []):
@@ -116,3 +117,4 @@ class DataCiteDoiRecord(Record):
             }
             self.funders.append(record_funder)
         self.funders = json.dumps(self.funders)
+        print(f"funders: {self.funders}")

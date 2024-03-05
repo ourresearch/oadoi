@@ -26,7 +26,7 @@ class QueueDataCiteRecords:
         if single_id:
             doi = DataCiteRaw.query.filter(DataCiteRaw.id == single_id).scalar().id
 
-            if record := DataCiteDoiRecord.from_doi(doi):
+            if record := DataCiteDoiRecord.from_doi(DataCiteDoiRecord, doi):
                 db.session.merge(record)
 
             safe_commit(db) or logger.info("COMMIT fail")
@@ -44,7 +44,7 @@ class QueueDataCiteRecords:
                     continue
 
                 for doi in dois:
-                    if record := DataCiteDoiRecord.from_doi(doi):
+                    if record := DataCiteDoiRecord.from_doi(DataCiteDoiRecord, doi):
                         db.session.merge(record)
 
                 db.session.execute(
