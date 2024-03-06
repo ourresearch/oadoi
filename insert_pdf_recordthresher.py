@@ -39,8 +39,6 @@ def insert_pdf_records_loop():
             db.session.bulk_save_objects(pdf_records)
             db.session.commit()
             INSERTED += CHUNK_SIZE
-            if INSERTED > 100:
-                break
 
 
 def print_stats():
