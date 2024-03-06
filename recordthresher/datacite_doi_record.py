@@ -23,7 +23,8 @@ class DataCiteDoiRecord(Record):
 
         datacite_work = cls.get_datacite_work(doi)
 
-        if not datacite_work:
+        datacite_type = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
+        if not datacite_work or not datacite_type or datacite_type.lower().strip() in ['physical-object', 'image']:
             return None
 
         record = cls.get_or_create_record(doi)
@@ -87,6 +88,7 @@ class DataCiteDoiRecord(Record):
         descriptions = datacite_work['attributes'].get('descriptions', [])
         abstract = next((d['description'] for d in descriptions if d['descriptionType'] == 'Abstract'), None)
         self.abstract = abstract
+        print(f"abstract: {self.abstract}")
 
     def set_published_date(self, datacite_work):
         published_date = None
@@ -111,9 +113,18 @@ class DataCiteDoiRecord(Record):
         print("genre: ", self.genre)
 
     def set_license(self, datacite_work):
+        open_license = None
         for rights in datacite_work['attributes'].get('rightsList', []):
             if rights.get('rightsIdentifier', None):
-                self.open_license = rights.get('rightsIdentifier', None)
+                open_license = rights.get('rightsIdentifier', None)
+
+        if not open_license:
+            for rights in datacite_work['attributes'].get('rightsList', []):
+                if rights.get('rights', None):
+                    open_license = rights.get('rights', None)
+
+        self.open_license = open_license
+        print(f"open_license: {self.open_license}")
 
     def set_funders(self, datacite_work):
         self.funders = []
