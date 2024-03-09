@@ -39,8 +39,10 @@ def insert_pdf_records_loop():
                                              abstract=abstract,
                                              citations=json.dumps(references)))
             db.session.bulk_save_objects(pdf_records)
-            conn.execute(text('DELETE FROM public.tmp_pdf_recordthresher_queue WHERE doi IN :dois'),
-                               params={'dois': tuple([record.doi for record in pdf_records])})
+            conn.execute(text(
+                'DELETE FROM public.tmp_pdf_recordthresher_queue WHERE doi IN :dois'),
+                         dois=tuple(
+                             [record.doi for record in pdf_records]))
             db.session.commit()
             conn.connection.commit()
             INSERTED += CHUNK_SIZE
@@ -50,8 +52,8 @@ def print_stats():
     start = datetime.now()
     while True:
         now = datetime.now()
-        hrs_elapsed = (now - start).total_seconds()/(60*60)
-        rate = round(INSERTED/hrs_elapsed, 2) if hrs_elapsed > 0 else 0
+        hrs_elapsed = (now - start).total_seconds() / (60 * 60)
+        rate = round(INSERTED / hrs_elapsed, 2) if hrs_elapsed > 0 else 0
         print(f'Inserted - {INSERTED} | Rate - {rate}/hr')
         time.sleep(5)
 
