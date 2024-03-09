@@ -29,6 +29,7 @@ def insert_pdf_records_loop():
     with oa_db_engine.connect() as conn:
         while True:
             rows = conn.execute(stmnt).fetchall()
+            conn.connection.commit()
             if not rows:
                 break
             pdf_records = []
