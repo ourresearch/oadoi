@@ -3,6 +3,8 @@ import time
 from datetime import datetime
 from threading import Thread
 
+from sqlalchemy import text
+
 from recordthresher.pdf_record import PDFRecord
 from app import oa_db_engine, db
 
@@ -37,7 +39,7 @@ def insert_pdf_records_loop():
                                              abstract=abstract,
                                              citations=json.dumps(references)))
             db.session.bulk_save_objects(pdf_records)
-            db.session.execute('DELETE FROM public.tmp_pdf_recordthresher_queue WHERE doi IN :dois', dois=tuple([record.doi for record in pdf_records]))
+            db.session.execute(text('DELETE FROM public.tmp_pdf_recordthresher_queue WHERE doi IN :dois'), dois=tuple([record.doi for record in pdf_records]))
             db.session.commit()
             INSERTED += CHUNK_SIZE
 
