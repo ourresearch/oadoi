@@ -38,7 +38,9 @@ class PDFRecordMaker:
 
         r_json = pdf_parser_response(pdf_parse_api_url(pub))
 
-        if not r_json:
+        has_data = any([bool(r_json.get(key)) for key in r_json.keys()])
+
+        if not r_json or not has_data:
             logger.info(
                 f"didn't get a pdf parse response for {pub.id}, not making record")
             return None
