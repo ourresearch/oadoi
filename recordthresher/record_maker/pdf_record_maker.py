@@ -15,7 +15,7 @@ PDF_PARSER_API_KEY = os.getenv('OPENALEX_PDF_PARSER_API_KEY')
 
 
 def pdf_parse_api_url(pub):
-    return f'{PDF_PARSER_URL}?doi={pub.id}&api_key={PDF_PARSER_API_KEY}'
+    return f'{PDF_PARSER_URL}?doi={pub.id}&api_key={PDF_PARSER_API_KEY}&include_raw=false'
 
 
 class PDFRecordMaker:
@@ -37,8 +37,9 @@ class PDFRecordMaker:
             return None
 
         r_json = pdf_parser_response(pdf_parse_api_url(pub))
+        msg = r_json.get('message', {}) or {}
 
-        has_data = any([bool(r_json.get(key)) for key in r_json.keys()])
+        has_data = any([bool(msg.get(key)) for key in r_json.keys()])
 
         if not r_json or not has_data:
             logger.info(
