@@ -39,7 +39,7 @@ class PDFRecordMaker:
         r_json = pdf_parser_response(pdf_parse_api_url(pub))
         msg = r_json.get('message', {}) or {}
 
-        has_data = any([bool(msg.get(key)) for key in r_json.keys()])
+        has_data = any([bool(msg.get(key)) for key in msg.keys()])
 
         if not r_json or not has_data:
             logger.info(
