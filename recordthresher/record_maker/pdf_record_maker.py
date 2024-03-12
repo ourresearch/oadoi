@@ -15,7 +15,7 @@ PDF_PARSER_API_KEY = os.getenv('OPENALEX_PDF_PARSER_API_KEY')
 
 
 def pdf_parse_api_url(pub):
-    return f'https://{PDF_PARSER_URL}?doi={pub.id}&api_key={PDF_PARSER_API_KEY}'
+    return f'{PDF_PARSER_URL}?doi={pub.id}&api_key={PDF_PARSER_API_KEY}'
 
 
 class PDFRecordMaker:
@@ -26,7 +26,7 @@ class PDFRecordMaker:
 
         record_id = shortuuid.encode(
             uuid.UUID(bytes=hashlib.sha256(
-                f'pdf:{pub.id}'.encode('utf-8')).digest()[0:16])
+                f'parsed_pdf:{pub.id}'.encode('utf-8')).digest()[0:16])
         )
 
         pdf_record = PDFRecord.query.get(record_id)
@@ -44,13 +44,13 @@ class PDFRecordMaker:
             return None
 
         authors = r_json.get('authors')
-
+        references = r_json.get('references')
         pdf_record = pdf_record or PDFRecord(id=record_id)
         pdf_record.authors = (authors and json.dumps(authors)) or '[]'
         pdf_record.published_date = r_json.get('published_date')
         pdf_record.genre = r_json.get('genre')
         pdf_record.abstract = r_json.get('abstract')
-        pdf_record.citations = r_json.get('references')
+        pdf_record.citations = (references and json.dumps(references)) or '[]'
         pdf_record.doi = pub.id
         pdf_record.work_id = -1
         pdf_record.updated = datetime.datetime.utcnow().isoformat()

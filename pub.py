@@ -43,6 +43,7 @@ from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import CrossrefRecordMaker
 from recordthresher.record_maker.parseland_record_maker import ParselandRecordMaker
 from recordthresher.record_maker import PmhRecordMaker
+from recordthresher.record_maker.pdf_record_maker import PDFRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
 from util import is_pmc, clamp, clean_doi, normalize_doi
@@ -744,6 +745,8 @@ class Pub(db.Model):
 
             if pl_record := ParselandRecordMaker.make_record(self):
                 db.session.merge(pl_record)
+            if pdf_record := PDFRecordMaker.make_record(self):
+                db.session.merge(pdf_record)
             return True
         return False
 
