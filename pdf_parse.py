@@ -52,6 +52,8 @@ libs_to_mum = [
     's3transfer'
 ]
 
+LAST_SUCCESSFUL_DOI = None
+
 DEBUG = False
 
 for lib in libs_to_mum:
@@ -178,6 +180,7 @@ def insert_pdf_recordthresher_record(doi, pdf_response):
 
 
 def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
+    global LAST_SUCCESSFUL_DOI
     s3 = make_s3()
     known_keys = {'authors', 'fulltext', 'references', 'raw', 'abstract'}
     while True:
@@ -222,6 +225,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
                 s3.upload_fileobj(BytesIO(gzipped),
                                   Key=version.grobid_s3_key(doi),
                                   Bucket=GROBID_XML_BUCKET)
+            LAST_SUCCESSFUL_DOI = doi
             inc_successful()
         except Empty:
             break
@@ -250,7 +254,7 @@ def print_stats():
         success_pct = round(SUCCESSFUL * 100 / TOTAL_ATTEMPTED,
                             2) if TOTAL_ATTEMPTED else 0
         logger.info(
-            f'Total attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESSFUL} | Success %: {success_pct} | Duplicates: {DUPE_COUNT} | Already parsed: {ALREADY_PARSED_COUNT} | Rate: {rate_per_hr}/hr')
+            f'Total attempted: {TOTAL_ATTEMPTED} | Successful: {SUCCESSFUL} | Success %: {success_pct} | Duplicates: {DUPE_COUNT} | Already parsed: {ALREADY_PARSED_COUNT} | Last DOI: {LAST_SUCCESSFUL_DOI} | Rate: {rate_per_hr}/hr')
         time.sleep(5)
 
 
