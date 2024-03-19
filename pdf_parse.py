@@ -10,6 +10,7 @@ from io import BytesIO
 from queue import Queue, Empty
 from threading import Thread, Lock
 from urllib.parse import urljoin
+from endpoint import Endpoint # magic
 
 import boto3
 import botocore
@@ -19,9 +20,10 @@ from requests import HTTPError
 from sqlalchemy import create_engine, text
 from tenacity import retry, stop_after_attempt, retry_if_exception_type
 
-from app import app, logger
+from app import app, logger, db
 from const import GROBID_XML_BUCKET
 from pdf_util import PDFVersion
+from recordthresher.record_maker.pdf_record_maker import PDFRecordMaker
 
 OADOI_DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 OPENALEX_DB_ENGINE = create_engine(os.getenv('OPENALEX_DATABASE_URL'))
@@ -49,6 +51,8 @@ libs_to_mum = [
     'botocore',
     's3transfer'
 ]
+
+DEBUG = False
 
 for lib in libs_to_mum:
     logging.getLogger(lib).setLevel(logging.CRITICAL)
@@ -105,9 +109,10 @@ def grobid_pdf_exists(key, s3):
 
 
 def enqueue_from_db_loop(pdf_doi_q: Queue):
-    query = '''WITH queue as (
+    chunk = 1 if DEBUG else 50
+    query = f'''WITH queue as (
                 SELECT * FROM recordthresher.pdf_update_ingest WHERE started IS NULL
-                LIMIT 50
+                LIMIT {chunk}
                 FOR UPDATE SKIP LOCKED
                 )
                 UPDATE recordthresher.pdf_update_ingest enqueued
@@ -116,13 +121,15 @@ def enqueue_from_db_loop(pdf_doi_q: Queue):
                 RETURNING *;
                 '''
     rows = True
+    pdf_doi_q.put(('10.1021/ac504173b.s001', PDFVersion.from_version_str('submitted')))
     with OADOI_DB_ENGINE.connect() as conn:
         while rows:
             rows = conn.execute(
                 text(query).execution_options(autocommit=True,
                                               autoflush=True)).all()
             for row in rows:
-                pdf_doi_q.put((row['doi'], PDFVersion.from_version_str(row['pdf_version'])))
+                pdf_doi_q.put((row['doi'],
+                               PDFVersion.from_version_str(row['pdf_version'])))
             if not rows:
                 break
 
@@ -146,10 +153,15 @@ def process_db_statements_loop(db_q: Queue):
     oadoi_conn = OADOI_DB_ENGINE.connect()
     openalex_conn = OPENALEX_DB_ENGINE.connect()
     conns = {'OADOI': oadoi_conn, 'OPENALEX': openalex_conn}
+    counts = {'OADOI': 0, 'OPENALEX': 0}
     while True:
         try:
             stmnt, conn_name, force_commit = db_q.get(timeout=120)
             conns[conn_name].execute(stmnt)
+            counts[conn_name] += 1
+            if counts[conn_name] % 20 == 0:
+                conns[conn_name].connection.commit()
+                counts[conn_name] = 0
         except Empty:
             logger.debug('Exiting process_db_statements_loop')
             break
@@ -157,6 +169,12 @@ def process_db_statements_loop(db_q: Queue):
             logger.exception("Error executing db statement", exc_info=True)
     oadoi_conn.close()
     openalex_conn.close()
+
+
+def insert_pdf_recordthresher_record(doi, pdf_response):
+    if record := PDFRecordMaker.make_pdf_record(doi, pdf_response):
+        db.session.merge(record)
+        db.session.commit()
 
 
 def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
@@ -175,29 +193,34 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
                 inc_already_parsed()
                 continue
             parsed = fetch_parsed_pdf_response(doi, version)['message']
+            if DEBUG:
+                print(f'{doi}, {version.value} - {parsed}')
             if parsed.get('fulltext'):
-                soup = BeautifulSoup(parsed['fulltext'], parser='lxml', features='lxml')
+                soup = BeautifulSoup(parsed['fulltext'], parser='lxml',
+                                     features='lxml')
                 stmnt = text(
                     '''INSERT INTO mid.record_fulltext (recordthresher_id, fulltext) SELECT r.id, :fulltext FROM (SELECT id FROM ins.recordthresher_record WHERE doi = :doi AND record_type = 'crossref_doi') r ON CONFLICT(recordthresher_id) DO UPDATE SET fulltext = :fulltext;''').bindparams(
-                        fulltext=soup.get_text(separator=' '),
-                        doi=doi)
+                    fulltext=soup.get_text(separator=' '),
+                    doi=doi)
                 db_q.put((stmnt, 'OPENALEX', False))
             other_obj = {}
             for k, v in parsed.items():
                 if k not in known_keys:
                     other_obj[k] = v
             stmnt = text(
-                'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references", other) VALUES (:doi, :authors, :abstract, :references, :other) ON CONFLICT (doi) DO NOTHING').bindparams(
+                'INSERT INTO public.pdf_parsed (doi, authors, abstract, "references", other) VALUES (:doi, :authors, :abstract, :references, :other) ON CONFLICT (doi) DO NOTHING').bindparams(
                 doi=doi,
                 authors=json.dumps(parsed.get('authors')),
                 abstract=parsed.get('abstract'),
                 references=json.dumps(parsed.get('references')),
                 other=json.dumps(other_obj)
             )
-            db_q.put((stmnt, 'OADOI', False))
+            insert_pdf_recordthresher_record(doi, parsed)
+            db_q.put((stmnt, 'OPENALEX', False))
             if raw := parsed.get('raw'):
                 gzipped = base64.decodebytes(raw.encode())
-                s3.upload_fileobj(BytesIO(gzipped), Key=version.grobid_s3_key(doi),
+                s3.upload_fileobj(BytesIO(gzipped),
+                                  Key=version.grobid_s3_key(doi),
                                   Bucket=GROBID_XML_BUCKET)
             inc_successful()
         except Empty:
@@ -232,10 +255,18 @@ def print_stats():
 
 
 def parse_args():
+    global DEBUG
     parser = ArgumentParser()
+    parser.add_argument('--debug', '-d', default=False,
+                        help='Debug single thread', action='store_true')
     parser.add_argument('--n_threads', '-t', type=int, default=10,
                         help='Number of threads to fetch GROBID responses with')
     args = parser.parse_args()
+    if args.debug:
+        os.environ['OPENALEX_PDF_PARSER_URL'] = 'http://localhost:5000'
+        args.n_threads = 1
+        DEBUG = True
+        return args
     env_n_threads = os.getenv('PDF_PARSE_N_THREADS')
     if env_n_threads:
         args.n_threads = int(env_n_threads)
