@@ -42,6 +42,8 @@ class PDFRecordMaker:
             return None
 
         parsed_pdf_json = pdf_parser_response(pdf_parse_api_url(pub))
+        if not parsed_pdf_json:
+            return None
         return cls.make_pdf_record(pub.id,
                                    parsed_pdf_json,
                                    pdf_record)
