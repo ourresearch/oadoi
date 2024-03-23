@@ -164,10 +164,10 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None):
             f'[*] Last cursor: {LAST_CURSOR} | Filter: {_filter} | Filter total count: {filter_total_count}')
         # set_cursor(_filter, LAST_CURSOR)
         for result in results:
-            doi = normalize_doi(result['doi'])
-            if not doi or doi in seen:
-                continue
             try:
+                doi = normalize_doi(result['doi'], True)
+                if not doi or doi in seen:
+                    continue
                 seen.add(doi)
                 q.put(result)
             except Exception as e:
@@ -225,13 +225,8 @@ def process_dois_worker(q: Queue, refresh_q: Queue, rescrape=False,
             doi, openalex_id = work['doi'], work['id']
             doi_obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET,
                                  landing_page_key(work['doi']), s3=s3)
-            pub_id = \
-                work['primary_location']['source'][
-                    'host_organization'].split(
-                    '/')[-1]
-            source_id = \
-                work['primary_location']['source']['id'].split('/')[
-                    -1]
+            pub_id = ((work['primary_location']['source'] or {}).get('host_organization') or '').split('/')[-1]
+            source_id = ((work['primary_location']['source'] or {}).get('id') or '').split('/')[-1]
             if doi_obj and rescrape and not doi_needs_rescrape(doi_obj,
                                                                pub_id,
                                                                source_id):

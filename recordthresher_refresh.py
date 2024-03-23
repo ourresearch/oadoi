@@ -239,7 +239,8 @@ def enqueue_from_api(oa_filters):
         while True:
             try:
                 page = next(pager)
-                dois = tuple({normalize_doi(work['doi']) for work in page})
+                dois = tuple({normalize_doi(work['doi'], True) for work in page})
+                dois = tuple([doi for doi in dois if doi])
                 stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
                 db.session.execute(text(stmnt).bindparams(dois=dois))
                 db.session.commit()
