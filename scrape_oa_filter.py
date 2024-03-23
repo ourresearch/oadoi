@@ -309,8 +309,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    config_logger()
-    rescrape = args.rescrape
     cursor = args.cursor
     threads = args.threads
     q = Queue(maxsize=threads + 1)
