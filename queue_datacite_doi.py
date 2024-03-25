@@ -14,6 +14,12 @@ from util import safe_commit
 import endpoint  # magic
 
 
+"""
+Ingest a DataCite DOI record into the database with this command:
+heroku local:run python -- queue_datacite_doi.py --doi 10.5281/zenodo.123456
+"""
+
+
 class QueueDataCiteRecords:
     def worker_run(self, **kwargs):
         single_id = kwargs.get("doi", None)

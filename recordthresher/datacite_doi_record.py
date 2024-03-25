@@ -10,6 +10,11 @@ from recordthresher.record import Record
 from recordthresher.datacite import DataCiteRaw
 from util import clean_doi, normalize_title
 
+"""
+Ingest a DataCite DOI record into the database with this command:
+heroku local:run python -- queue_datacite_doi.py --doi 10.5281/zenodo.123456
+"""
+
 
 class DataCiteDoiRecord(Record):
     __tablename__ = None
@@ -24,7 +29,10 @@ class DataCiteDoiRecord(Record):
         datacite_work = cls.get_datacite_work(doi)
 
         datacite_type = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
-        if not datacite_work or not datacite_type or datacite_type.lower().strip() in ['physical-object', 'image']:
+        is_active = datacite_work['attributes'].get('isActive', None)
+
+        # skip it if
+        if not datacite_work or not datacite_type or datacite_type.lower().strip() in ['physical-object', 'image'] and not is_active:
             return None
 
         record = cls.get_or_create_record(doi)
@@ -141,3 +149,4 @@ class DataCiteDoiRecord(Record):
     def set_repo_id(self, datacite_work):
         self.repo_id = datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None)
         print(f"repo_id: {self.repo_id}")
+
