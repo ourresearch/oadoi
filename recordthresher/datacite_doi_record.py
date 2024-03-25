@@ -7,7 +7,7 @@ import shortuuid
 
 from app import db, logger
 from recordthresher.record import Record
-from recordthresher.datacite import DataCiteRaw, DataCiteRelatedDOI, DataCiteClients
+from recordthresher.datacite import DataCiteRaw, DataCiteVersion, DataCiteClient
 from util import clean_doi, normalize_title
 
 """
@@ -70,7 +70,7 @@ class DataCiteDoiRecord(Record):
         record.set_funders(datacite_work)
         record.set_repository_id(datacite_work)
         record.set_arxiv_id(datacite_work)
-        record.save_related_dois(datacite_work)
+        record.save_related_versions(datacite_work)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
@@ -171,7 +171,7 @@ class DataCiteDoiRecord(Record):
 
     def set_repository_id(self, datacite_work):
         client_id = datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None)
-        repository = DataCiteClients.query.get(client_id)
+        repository = DataCiteClient.query.get(client_id)
         self.repository_id = repository.endpoint_id if repository else None
         print(f"repository_id: {self.repository_id}")
 
@@ -180,12 +180,12 @@ class DataCiteDoiRecord(Record):
         self.arxiv_id = f"arXiv:{raw_id}" if raw_id and not raw_id.startswith("arXiv:") else None
         print(f"arxiv_id: {self.arxiv_id}")
 
-    def save_related_dois(self, datacite_work):
+    def save_related_versions(self, datacite_work):
         related_dois = []
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
-            if related_identifier['relatedIdentifierType'] == 'DOI':
+            if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] == 'IsVersionOf' or related_identifier['relationType'] == 'IsNewVersionOf':
                 related_dois.append(related_identifier['relatedIdentifier'])
         for doi in related_dois:
-            related_doi = DataCiteRelatedDOI(datacite_doi=self.doi, related_doi=doi)
+            related_doi = DataCiteVersion(datacite_doi=self.doi, related_doi=doi)
             db.session.merge(related_doi)
         print(f"related_dois: {related_dois}")
