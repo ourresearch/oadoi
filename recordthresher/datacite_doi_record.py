@@ -7,7 +7,7 @@ import shortuuid
 
 from app import db, logger
 from recordthresher.record import Record
-from recordthresher.datacite import DataCiteRaw
+from recordthresher.datacite import DataCiteRaw, DataCiteRelatedDOI, DataCiteClients
 from util import clean_doi, normalize_title
 
 """
@@ -68,7 +68,9 @@ class DataCiteDoiRecord(Record):
         record.record_webpage_url = datacite_work['attributes'].get('url', None)
         record.set_license(datacite_work)
         record.set_funders(datacite_work)
-        record.set_repo_id(datacite_work)
+        record.set_repository_id(datacite_work)
+        record.set_arxiv_id(datacite_work)
+        record.save_related_dois(datacite_work)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
@@ -167,7 +169,23 @@ class DataCiteDoiRecord(Record):
         self.funders = json.dumps(self.funders)
         print(f"funders: {self.funders}")
 
-    def set_repo_id(self, datacite_work):
-        self.repo_id = datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None)
-        print(f"repo_id: {self.repo_id}")
+    def set_repository_id(self, datacite_work):
+        client_id = datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None)
+        repository = DataCiteClients.query.get(client_id)
+        self.repository_id = repository.endpoint_id if repository else None
+        print(f"repository_id: {self.repository_id}")
 
+    def set_arxiv_id(self, datacite_work):
+        raw_id = next((id['identifier'] for id in datacite_work['attributes'].get('identifiers', []) if id['identifierType'] == 'arXiv'), None)
+        self.arxiv_id = f"arXiv:{raw_id}" if raw_id and not raw_id.startswith("arXiv:") else None
+        print(f"arxiv_id: {self.arxiv_id}")
+
+    def save_related_dois(self, datacite_work):
+        related_dois = []
+        for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
+            if related_identifier['relatedIdentifierType'] == 'DOI':
+                related_dois.append(related_identifier['relatedIdentifier'])
+        for doi in related_dois:
+            related_doi = DataCiteRelatedDOI(datacite_doi=self.doi, related_doi=doi)
+            db.session.merge(related_doi)
+        print(f"related_dois: {related_dois}")
