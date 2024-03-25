@@ -52,8 +52,9 @@ class DataCiteDoiRecord(Record):
             not datacite_work
             or not datacite_type
             or datacite_type.lower().strip() not in ALLOWED_DATACITE_TYPES
-            and not is_active
+            or not is_active
         ):
+            logger.info(f"skipping doi {doi} with type {datacite_type} and is_active {is_active}")
             return None
 
         record = cls.get_or_create_record(doi)
@@ -67,6 +68,7 @@ class DataCiteDoiRecord(Record):
         record.publisher = datacite_work['attributes'].get('publisher', None)
         record.record_webpage_url = datacite_work['attributes'].get('url', None)
         record.set_license(datacite_work)
+        record.set_citations(datacite_work)
         record.set_funders(datacite_work)
         record.set_repository_id(datacite_work)
         record.set_arxiv_id(datacite_work)
@@ -157,6 +159,14 @@ class DataCiteDoiRecord(Record):
         self.open_license = open_license
         print(f"open_license: {self.open_license}")
 
+    def set_citations(self, datacite_work):
+        citations = []
+        for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
+            if related_identifier['relationType'] == 'References':
+                citations.append(related_identifier['relatedIdentifier'])
+        self.citations = json.dumps(citations)
+        print(f"citations: {self.citations}")
+
     def set_funders(self, datacite_work):
         self.funders = []
         for funder in datacite_work['attributes'].get('fundingReferences', []):
@@ -182,8 +192,9 @@ class DataCiteDoiRecord(Record):
 
     def save_related_versions(self, datacite_work):
         related_dois = []
+        version_keys = ['IsVersionOf', 'IsNewVersionOf', 'HasVersion']
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
-            if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] == 'IsVersionOf' or related_identifier['relationType'] == 'IsNewVersionOf':
+            if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in version_keys:
                 related_dois.append(related_identifier['relatedIdentifier'])
         for doi in related_dois:
             related_doi = DataCiteVersion(datacite_doi=self.doi, related_doi=doi)
