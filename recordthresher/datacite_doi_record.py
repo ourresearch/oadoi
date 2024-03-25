@@ -15,6 +15,22 @@ Ingest a DataCite DOI record into the database with this command:
 heroku local:run python -- queue_datacite_doi.py --doi 10.5281/zenodo.123456
 """
 
+ALLOWED_DATACITE_TYPES = [
+    "book",
+    "book-chapter",
+    "collection",
+    "conference-paper",
+    "conference-proceeding",
+    "dataset",
+    "dissertation",
+    "journal-article",
+    "model",
+    "preprint",
+    "report",
+    "software",
+    "text",
+]
+
 
 class DataCiteDoiRecord(Record):
     __tablename__ = None
@@ -32,7 +48,12 @@ class DataCiteDoiRecord(Record):
         is_active = datacite_work['attributes'].get('isActive', None)
 
         # skip it if
-        if not datacite_work or not datacite_type or datacite_type.lower().strip() in ['physical-object', 'image'] and not is_active:
+        if (
+            not datacite_work
+            or not datacite_type
+            or datacite_type.lower().strip() not in ALLOWED_DATACITE_TYPES
+            and not is_active
+        ):
             return None
 
         record = cls.get_or_create_record(doi)
