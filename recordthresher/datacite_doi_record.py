@@ -67,6 +67,7 @@ class DataCiteDoiRecord(Record):
         record.set_genre(datacite_work)
         record.publisher = datacite_work['attributes'].get('publisher', None)
         record.record_webpage_url = datacite_work['attributes'].get('url', None)
+        record.set_oa(datacite_work)
         record.set_license(datacite_work)
         record.set_citations(datacite_work)
         record.set_funders(datacite_work)
@@ -160,6 +161,14 @@ class DataCiteDoiRecord(Record):
         genre = genre.lower().strip() if genre else None
         self.genre = genre
         print("genre: ", self.genre)
+
+    def set_oa(self, datacite_work):
+        oa = None
+        for rights in datacite_work['attributes'].get('rightsList', []):
+            if rights.get('rights', None):
+                oa = 'open' in rights.get('rights', '').lower()
+        self.is_oa = oa
+        print(f"is_oa: {self.is_oa}")
 
     def set_license(self, datacite_work):
         open_license = None
