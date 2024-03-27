@@ -108,24 +108,26 @@ class DataCiteDoiRecord(Record):
             # author name
             record_author = {
                 'name': datacite_author.get('name', None),
+                'raw': datacite_author.get('name', None),
                 'family': datacite_author.get('familyName', None),
                 'given': datacite_author.get('givenName', None)
             }
 
             # orcid
+            record_author['orcid'] = None
             for name_identifier in datacite_author.get('nameIdentifiers', []):
                 if name_identifier['nameIdentifierScheme'] == 'ORCID':
                     record_author['orcid'] = name_identifier['nameIdentifier']
 
             # affiliations
-            record_author['affiliations'] = []
+            record_author['affiliation'] = []
             for affiliation in datacite_author.get('affiliation', []):
                 formatted_affiliation = {}
                 formatted_affiliation['name'] = affiliation.get('name', None) or affiliation.get('affiliation', None)
                 ror = affiliation.get('affiliationIdentifier', None) if affiliation.get('affiliationIdentifierScheme') == 'ROR' else None
                 if ror:
                     formatted_affiliation['ror'] = ror
-                record_author['affiliations'].append(formatted_affiliation)
+                record_author['affiliation'].append(formatted_affiliation)
 
             self.authors.append(record_author)
         self.authors = json.dumps(self.authors)
