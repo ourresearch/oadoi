@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import json
 import uuid
+import requests
 
 import shortuuid
 
@@ -167,6 +168,14 @@ class DataCiteDoiRecord(Record):
         for rights in datacite_work['attributes'].get('rightsList', []):
             if rights.get('rights', None):
                 oa = 'open' in rights.get('rights', '').lower()
+
+        # zenodo
+        if not oa and datacite_work['attributes'].get('publisher', '').lower() == 'zenodo':
+            zenodo_id = datacite_work['id'].split('.')[-1]
+            logger.info(f"checking zenodo API with record {zenodo_id} for open access")
+            r = requests.get(f"https://zenodo.org/api/records/{zenodo_id}")
+            if r.status_code == 200:
+                oa = r.json().get('metadata', {}).get('access_right', '').lower() == 'open'
         self.is_oa = oa
         print(f"is_oa: {self.is_oa}")
 
