@@ -179,3 +179,14 @@ class RecordthresherParentRecord(db.Model):
 
 Record.fulltext = db.relationship(RecordFulltext, lazy='selectin', viewonly=True, uselist=False)
 
+
+class RecordRelatedVersion(db.Model):
+    __tablename__ = 'record_related_version'
+    __table_args__ = (
+        db.UniqueConstraint('doi', 'related_version_doi', name='datacite_related_unique'),
+        {'schema': 'ins'}
+    )
+    __bind_key__ = 'openalex'
+
+    doi = db.Column(db.Text, primary_key=True)
+    related_version_doi = db.Column(db.Text, primary_key=True)

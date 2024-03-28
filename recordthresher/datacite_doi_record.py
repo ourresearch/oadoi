@@ -7,8 +7,8 @@ import requests
 import shortuuid
 
 from app import db, logger
-from recordthresher.record import Record
-from recordthresher.datacite import DataCiteRaw, DataCiteVersion, DataCiteClient
+from recordthresher.record import Record, RecordRelatedVersion
+from recordthresher.datacite import DataCiteRaw, DataCiteClient
 from util import clean_doi, normalize_title
 
 """
@@ -231,6 +231,6 @@ class DataCiteDoiRecord(Record):
             if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in version_keys:
                 related_dois.append(related_identifier['relatedIdentifier'])
         for doi in related_dois:
-            related_doi = DataCiteVersion(datacite_doi=self.doi, related_doi=doi)
+            related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi)
             db.session.merge(related_doi)
         print(f"related_dois: {related_dois}")
