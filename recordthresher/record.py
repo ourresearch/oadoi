@@ -190,3 +190,4 @@ class RecordRelatedVersion(db.Model):
 
     doi = db.Column(db.Text, primary_key=True)
     related_version_doi = db.Column(db.Text, primary_key=True)
+    type = db.Column(db.Text, nullable=False)

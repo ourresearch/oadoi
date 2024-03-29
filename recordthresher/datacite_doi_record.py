@@ -74,7 +74,7 @@ class DataCiteDoiRecord(Record):
         record.set_funders(datacite_work)
         record.set_repository_id(datacite_work)
         record.set_arxiv_id(datacite_work)
-        record.save_related_versions(datacite_work)
+        record.save_related_dois(datacite_work)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
@@ -224,13 +224,16 @@ class DataCiteDoiRecord(Record):
         self.arxiv_id = f"arXiv:{raw_id}" if raw_id and not raw_id.startswith("arXiv:") else None
         print(f"arxiv_id: {self.arxiv_id}")
 
-    def save_related_versions(self, datacite_work):
+    def save_related_dois(self, datacite_work):
         related_dois = []
         version_keys = ['IsVersionOf', 'IsNewVersionOf', 'HasVersion']
+        supplement_keys = ['IsSupplementTo', 'IsSupplementedBy']
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
             if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in version_keys:
-                related_dois.append(related_identifier['relatedIdentifier'])
-        for doi in related_dois:
-            related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi)
+                related_dois.append((related_identifier['relatedIdentifier'], 'version'))
+            elif related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in supplement_keys:
+                related_dois.append((related_identifier['relatedIdentifier'], 'supplement'))
+        for doi, type in related_dois:
+            related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi, type=type)
             db.session.merge(related_doi)
         print(f"related_dois: {related_dois}")
