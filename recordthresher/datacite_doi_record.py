@@ -1,9 +1,10 @@
 import datetime
 import hashlib
 import json
+import re
+
 import uuid
 import requests
-
 import shortuuid
 
 from app import db, logger
@@ -176,6 +177,16 @@ class DataCiteDoiRecord(Record):
             r = requests.get(f"https://zenodo.org/api/records/{zenodo_id}")
             if r.status_code == 200:
                 oa = r.json().get('metadata', {}).get('access_right', '').lower() == 'open'
+
+        # figshare
+        if not oa and datacite_work['attributes'].get('publisher', '').lower() == 'figshare':
+            match = re.search(r'figshare\.(\d+)', datacite_work['id'])
+            if match:
+                figshare_id = match.group(1)
+                logger.info(f"checking figshare API with record {figshare_id} for open access")
+                r = requests.get(f"https://api.figshare.com/v2/articles/{figshare_id}")
+                if r.status_code == 200:
+                    oa = r.json().get('is_public', False)
         self.is_oa = oa
         print(f"is_oa: {self.is_oa}")
 
