@@ -237,13 +237,16 @@ class DataCiteDoiRecord(Record):
 
     def save_related_dois(self, datacite_work):
         related_dois = []
-        version_keys = ['IsVersionOf', 'IsNewVersionOf', 'HasVersion']
+        version_keys = ['IsVersionOf', 'IsNewVersionOf', 'HasVersion', 'IsPreviousVersionOf']
         supplement_keys = ['IsSupplementTo', 'IsSupplementedBy']
+        part_keys = ['IsPartOf', 'HasPart']
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
             if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in version_keys:
                 related_dois.append((related_identifier['relatedIdentifier'], 'version'))
             elif related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in supplement_keys:
                 related_dois.append((related_identifier['relatedIdentifier'], 'supplement'))
+            elif related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in part_keys:
+                related_dois.append((related_identifier['relatedIdentifier'], 'part'))
         for doi, type in related_dois:
             related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi, type=type)
             db.session.merge(related_doi)
