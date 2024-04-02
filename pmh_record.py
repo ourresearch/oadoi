@@ -203,7 +203,8 @@ class PmhRecord(db.Model):
             self.authors = []
 
         identifier_doi_matches = oai_tag_match("identifier.doi", pmh_input_record, return_list=True)
-        self.urls = self.get_good_urls(identifier_matches)
+        identifier_uri_matches = oai_tag_match("identifier.uri", pmh_input_record, return_list=True)
+        self.urls = self.get_good_urls(identifier_matches + identifier_uri_matches)
 
         if not self.urls:
             self.urls = self.get_good_urls(self.relations)
@@ -238,12 +239,18 @@ class PmhRecord(db.Model):
         if self.pmh_id and self.pmh_id.startswith('oai:escholarship.mcgill.ca:'):
             possible_dois += oai_tag_match('source', pmh_input_record, return_list=True)
 
+        self.set_doi(possible_dois)
+
+        self.doi = self._doi_override_by_id().get(self.bare_pmh_id, self.doi)
+        self.title = self._title_override_by_id().get(self.bare_pmh_id, self.title)
+
+    def set_doi(self, possible_dois):
         if possible_dois:
             for possible_doi in possible_dois:
                 if (
-                    is_doi_url(possible_doi)
-                    or possible_doi.startswith("doi:")
-                    or re.findall(r"10\.\d", possible_doi)
+                        is_doi_url(possible_doi)
+                        or possible_doi.startswith("doi:")
+                        or re.findall(r"10\.\d", possible_doi)
                 ):
                     try:
                         doi_candidate = clean_doi(possible_doi)
@@ -275,9 +282,6 @@ class PmhRecord(db.Model):
                             self.doi = doi_candidate
                     except NoDoiException:
                         pass
-
-        self.doi = self._doi_override_by_id().get(self.bare_pmh_id, self.doi)
-        self.title = self._title_override_by_id().get(self.bare_pmh_id, self.title)
 
     @staticmethod
     def _title_override_by_id():
@@ -469,7 +473,7 @@ class PmhRecord(db.Model):
         # may or may not be open, and we are handling through hybrid path
 
         use_doi_url_id_prefixes = [
-            'cdr.lib.unc.edu:'
+            'cdr.lib.unc.edu:',
         ]
 
         use_doi_url = False
