@@ -568,6 +568,9 @@ class PublisherWebpage(Webpage):
         if re.search(r'^https?://(www\.)?molbiolcell\.org/', self.r.url) and link.href and link.href.endswith('special_issues'):
             return True
 
+        if re.search(r'^https?://(www\.)?englishjournal\.net/', self.r.url) and link.href and link.href.endswith('AuthorshipResponsibility.pdf'):
+            return True
+
         return False
 
     def _trust_pdf_landing_pages(self):
