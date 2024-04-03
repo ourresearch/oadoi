@@ -48,6 +48,7 @@ class DataCiteDoiRecord(Record):
 
         datacite_type = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
         is_active = datacite_work['attributes'].get('isActive', None)
+        has_identical_doi = cls.is_identical_doi(datacite_work)
 
         # skip it if
         if (
@@ -55,8 +56,9 @@ class DataCiteDoiRecord(Record):
             or not datacite_type
             or datacite_type.lower().strip() not in ALLOWED_DATACITE_TYPES
             or not is_active
+            or has_identical_doi
         ):
-            logger.info(f"skipping doi {doi} with type {datacite_type} and is_active {is_active}")
+            logger.info(f"skipping datacite doi {doi}. type: {datacite_type} is_active: {is_active} has_identical_doi: {has_identical_doi}")
             return None
 
         record = cls.get_or_create_record(doi)
@@ -251,3 +253,9 @@ class DataCiteDoiRecord(Record):
             related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi, type=type)
             db.session.merge(related_doi)
         print(f"related_dois: {related_dois}")
+
+    @staticmethod
+    def is_identical_doi(datacite_work):
+        for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
+            if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] == 'IsIdenticalTo':
+                return True
