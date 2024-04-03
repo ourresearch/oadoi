@@ -729,6 +729,10 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace('/doi/epdf/', '/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace('/doi/epdf/', '/doi/pdf/')
 
+                if (re.match(r'https?://(www\.)?onlinelibrary.wiley.com/doi/epdf/10\..+', pdf_url)):
+                    pdf_url = pdf_url.replace('/epdf/', '/pdfdirect/')
+                    pdf_download_link.href = pdf_download_link.href.replace('/epdf/', '/pdfdirect/')
+
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
