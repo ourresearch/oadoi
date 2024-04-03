@@ -55,17 +55,17 @@ class QueueDataCiteRecords:
 
                 db.session.execute(
                     text('''
-                        delete from recordthresher.datacite_record_queue q
+                        delete from recordthresher.datacite_doi_record_queue q
                         using recordthresher.datacite w
-                        where q.doi = w.doi
-                        and q.started > w.created
+                        where q.doi = w.id
+                        and q.started > w.created_date
                         and q.doi = any(:dois)
                     ''').bindparams(dois=dois)
                 )
 
                 db.session.execute(
                     text('''
-                        update recordthresher.datacite_record_queue q
+                        update recordthresher.datacite_doi_record_queue q
                         set started = null
                         where q.doi = any(:dois)
                     ''').bindparams(dois=dois)
@@ -84,13 +84,13 @@ class QueueDataCiteRecords:
         queue_query = text("""
             with queue_chunk as (
                 select doi
-                from recordthresher.datacite_record_queue
+                from recordthresher.datacite_doi_record_queue
                 where started is null
                 order by rand
                 limit :chunk
                 for update skip locked
             )
-            update recordthresher.datacite_record_queue q
+            update recordthresher.datacite_doi_record_queue q
             set started = now()
             from queue_chunk
             where q.doi = queue_chunk.doi
