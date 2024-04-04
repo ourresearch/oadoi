@@ -121,8 +121,8 @@ class DataCiteDoiRecord(Record):
             # orcid
             record_author['orcid'] = None
             for name_identifier in datacite_author.get('nameIdentifiers', []):
-                if name_identifier['nameIdentifierScheme'] == 'ORCID':
-                    record_author['orcid'] = name_identifier['nameIdentifier']
+                if name_identifier.get('nameIdentifierScheme') and name_identifier['nameIdentifierScheme'] == 'ORCID':
+                    record_author['orcid'] = name_identifier.get('nameIdentifier')
 
             # affiliations
             record_author['affiliation'] = []
