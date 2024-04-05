@@ -238,21 +238,29 @@ class DataCiteDoiRecord(Record):
         print(f"arxiv_id: {self.arxiv_id}")
 
     def save_related_dois(self, datacite_work):
-        related_dois = []
+        unique_related_dois = set()
         version_keys = ['IsVersionOf', 'IsNewVersionOf', 'HasVersion', 'IsPreviousVersionOf']
         supplement_keys = ['IsSupplementTo', 'IsSupplementedBy']
         part_keys = ['IsPartOf', 'HasPart']
+
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
-            if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in version_keys:
-                related_dois.append((related_identifier['relatedIdentifier'], 'version'))
-            elif related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in supplement_keys:
-                related_dois.append((related_identifier['relatedIdentifier'], 'supplement'))
-            elif related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] in part_keys:
-                related_dois.append((related_identifier['relatedIdentifier'], 'part'))
-        for doi, type in related_dois:
+            if related_identifier['relatedIdentifierType'] == 'DOI':
+                relation_type = None
+                if related_identifier['relationType'] in version_keys:
+                    relation_type = 'version'
+                elif related_identifier['relationType'] in supplement_keys:
+                    relation_type = 'supplement'
+                elif related_identifier['relationType'] in part_keys:
+                    relation_type = 'part'
+
+                if relation_type:
+                    unique_related_dois.add((related_identifier['relatedIdentifier'], relation_type))
+
+        for doi, type in unique_related_dois:
             related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi, type=type)
             db.session.merge(related_doi)
-        print(f"related_dois: {related_dois}")
+
+        print(f"Unique related_dois: {unique_related_dois}")
 
     @staticmethod
     def is_identical_doi(datacite_work):
