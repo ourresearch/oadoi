@@ -10,7 +10,7 @@ import shortuuid
 from app import db, logger
 from recordthresher.record import Record, RecordRelatedVersion
 from recordthresher.datacite import DataCiteRaw, DataCiteClient
-from util import clean_doi, normalize_title
+from util import clean_doi, normalize_title, is_valid_date_string
 
 """
 Ingest a DataCite DOI record into the database with this command:
@@ -153,11 +153,12 @@ class DataCiteDoiRecord(Record):
                 else:
                     published_date = date['date'].strip()
 
-        if not published_date:
+        if not published_date or not is_valid_date_string(published_date):
             # fall back to publicationYear
             published_year = datacite_work['attributes'].get('publicationYear', None)
             published_date = f'{published_year}-01-01' if published_year else None
-        self.published_date = published_date
+
+        self.published_date = published_date if is_valid_date_string(published_date) else None
         print("published_date: ", self.published_date)
 
     def set_genre(self, datacite_work):

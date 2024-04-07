@@ -713,3 +713,11 @@ def make_default_logger(name):
     logger.addHandler(ch)
     logger.propagate = False
     return logger
+
+
+def is_valid_date_string(date_string):
+    try:
+        datetime.datetime.strptime(date_string, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
