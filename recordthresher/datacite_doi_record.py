@@ -257,6 +257,11 @@ class DataCiteDoiRecord(Record):
                     unique_related_dois.add((related_identifier['relatedIdentifier'], relation_type))
 
         for doi, type in unique_related_dois:
+            existing_record = RecordRelatedVersion.query.filter_by(doi=self.doi, related_version_doi=doi, type=type).first()
+            if existing_record:
+                print(f"related_doi {doi} already exists for {self.doi} with type {type}")
+                continue
+            print(f"adding related_doi {doi} for {self.doi} with type {type}")
             related_doi = RecordRelatedVersion(doi=self.doi, related_version_doi=doi, type=type)
             db.session.merge(related_doi)
 
