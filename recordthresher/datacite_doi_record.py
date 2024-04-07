@@ -209,9 +209,13 @@ class DataCiteDoiRecord(Record):
 
     def set_citations(self, datacite_work):
         citations = []
-        for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
-            if related_identifier['relationType'] == 'References':
-                citations.append(related_identifier['relatedIdentifier'])
+        for related_identifier in datacite_work["attributes"].get("relatedIdentifiers", []):
+            if (
+                    related_identifier.get("relationType")
+                    and related_identifier["relationType"] == "References"
+                    and related_identifier.get("relatedIdentifier")
+            ):
+                citations.append(related_identifier["relatedIdentifier"])
         self.citations = json.dumps(citations)
         print(f"citations: {self.citations}")
 
