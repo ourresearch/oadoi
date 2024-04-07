@@ -246,14 +246,14 @@ class DataCiteDoiRecord(Record):
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
             if related_identifier['relatedIdentifierType'] == 'DOI':
                 relation_type = None
-                if related_identifier['relationType'] in version_keys:
+                if related_identifier.get('relationType') and related_identifier['relationType'] in version_keys:
                     relation_type = 'version'
-                elif related_identifier['relationType'] in supplement_keys:
+                elif related_identifier.get('relationType') and related_identifier['relationType'] in supplement_keys:
                     relation_type = 'supplement'
-                elif related_identifier['relationType'] in part_keys:
+                elif related_identifier.get('relationType') and related_identifier['relationType'] in part_keys:
                     relation_type = 'part'
 
-                if relation_type:
+                if relation_type and related_identifier.get('relatedIdentifier'):
                     unique_related_dois.add((related_identifier['relatedIdentifier'], relation_type))
 
         for doi, type in unique_related_dois:
