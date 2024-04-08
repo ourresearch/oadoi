@@ -182,7 +182,7 @@ class DataCiteDoiRecord(Record):
                 oa = r.json().get('metadata', {}).get('access_right', '').lower() == 'open'
 
         # figshare
-        if not oa and datacite_work['attributes'].get('publisher', '').lower() == 'figshare':
+        if not oa and '.figshare.' in datacite_work['id']:
             match = re.search(r'figshare\.(\d+)', datacite_work['id'])
             if match:
                 figshare_id = match.group(1)
