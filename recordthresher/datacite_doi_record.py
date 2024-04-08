@@ -190,6 +190,12 @@ class DataCiteDoiRecord(Record):
                 r = requests.get(f"https://api.figshare.com/v2/articles/{figshare_id}")
                 if r.status_code == 200:
                     oa = r.json().get('is_public', False)
+
+        # OA publishers
+        oa_publishers = ['unite community', 'estonian university of life sciences']
+        if not oa and datacite_work['attributes'].get('publisher', '').lower() in oa_publishers:
+            oa = True
+
         self.is_oa = oa
         print(f"is_oa: {self.is_oa}")
 
