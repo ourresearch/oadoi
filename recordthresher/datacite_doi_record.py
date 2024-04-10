@@ -164,6 +164,8 @@ class DataCiteDoiRecord(Record):
     def set_genre(self, datacite_work):
         genre = datacite_work['attributes'].get('types', {}).get('resourceTypeGeneral', None)
         genre = genre.lower().strip() if genre else None
+        if genre == 'text':
+            genre = 'journal-article'
         self.genre = genre
         print("genre: ", self.genre)
 
@@ -192,7 +194,7 @@ class DataCiteDoiRecord(Record):
                     oa = r.json().get('is_public', False)
 
         # OA publishers
-        oa_publishers = ['unite community', 'estonian university of life sciences']
+        oa_publishers = ['unite community', 'estonian university of life sciences', 'arxiv']
         if not oa and datacite_work['attributes'].get('publisher', '').lower() in oa_publishers:
             oa = True
 
