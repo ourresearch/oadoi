@@ -219,7 +219,7 @@ class DataCiteDoiRecord(Record):
         elif "closed" in raw_license.lower():
             open_license = None
         else:
-            open_license = None
+            open_license = "unspecified-oa"
 
         self.open_license = open_license
         print(f"open_license: {self.open_license}")
