@@ -8,6 +8,7 @@ import requests
 import shortuuid
 
 from app import db, logger
+from oa_local import find_normalized_license
 from recordthresher.record import Record, RecordRelatedVersion
 from recordthresher.datacite import DataCiteRaw, DataCiteClient
 from util import clean_doi, normalize_title, is_valid_date_string
@@ -202,15 +203,23 @@ class DataCiteDoiRecord(Record):
         print(f"is_oa: {self.is_oa}")
 
     def set_license(self, datacite_work):
-        open_license = None
+        raw_license = None
         for rights in datacite_work['attributes'].get('rightsList', []):
             if rights.get('rightsIdentifier', None):
-                open_license = rights.get('rightsIdentifier', None)
+                raw_license = rights.get('rightsIdentifier', None)
 
-        if not open_license:
+        if not raw_license:
             for rights in datacite_work['attributes'].get('rightsList', []):
                 if rights.get('rights', None):
-                    open_license = rights.get('rights', None)
+                    raw_license = rights.get('rights', None)
+
+        # normalize the license
+        if raw_license:
+            open_license = find_normalized_license(raw_license)
+        elif "closed" in raw_license.lower():
+            open_license = None
+        else:
+            open_license = None
 
         self.open_license = open_license
         print(f"open_license: {self.open_license}")
