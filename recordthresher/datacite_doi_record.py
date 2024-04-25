@@ -195,7 +195,12 @@ class DataCiteDoiRecord(Record):
                     oa = r.json().get('is_public', False)
 
         # OA publishers
-        oa_publishers = ['unite community', 'estonian university of life sciences', 'arxiv']
+        oa_publishers = [
+            'unite community',
+            'estonian university of life sciences',
+            'arxiv',
+            'fiz karlsruhe - leibniz institute for information infrastructure'
+        ]
         if not oa and datacite_work['attributes'].get('publisher', '').lower() in oa_publishers:
             oa = True
 
@@ -216,10 +221,12 @@ class DataCiteDoiRecord(Record):
         # normalize the license
         if raw_license:
             open_license = find_normalized_license(raw_license)
-        elif "closed" in raw_license.lower():
+        elif raw_license and "closed" in raw_license.lower():
             open_license = None
-        else:
+        elif self.is_oa:
             open_license = "unspecified-oa"
+        else:
+            open_license = None
 
         self.open_license = open_license
         print(f"open_license: {self.open_license}")
