@@ -204,6 +204,11 @@ class DataCiteDoiRecord(Record):
         if not oa and datacite_work['attributes'].get('publisher', '').lower() in oa_publishers:
             oa = True
 
+        # OA clients
+        oa_clients = ['gbif.gbif']
+        if not oa and datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None) in oa_clients:
+            oa = True
+
         self.is_oa = oa
         print(f"is_oa: {self.is_oa}")
 
