@@ -158,7 +158,7 @@ def process_db_statements_loop(db_q: Queue):
     counts = {'OADOI': 0, 'OPENALEX': 0}
     while True:
         try:
-            stmnt, conn_name, force_commit = db_q.get(timeout=120)
+            stmnt, conn_name, force_commit = db_q.get(timeout=60*60)
             conns[conn_name].execute(stmnt)
             counts[conn_name] += 1
             if counts[conn_name] % 20 == 0:
