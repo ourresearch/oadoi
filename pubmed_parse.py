@@ -114,10 +114,7 @@ def store_pubmed_work(record: dict, tree=None):
 
 def store_pubmed_works(records: list):
     for record in records:
-        try:
-            store_pubmed_work(record)
-        except Exception as e:
-            print(e)
+        store_pubmed_work(record)
     db.session.commit()
 
 
