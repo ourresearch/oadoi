@@ -51,6 +51,7 @@ class PubmedAffiliation(db.Model):
     author_order = db.Column(db.Integer, primary_key=True)
     affiliation_number = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime)
+    author_string = db.Column(db.Text)
     affiliation = db.Column(db.Text)
 
 
