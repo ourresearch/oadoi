@@ -44,7 +44,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.3
 jmespath==0.10.0
 kids.cache==0.0.7
-lxml==4.6.3
+lxml==5.2.1
 MarkupSafe==2.0.1
 maxminddb==2.2.0
 mock==4.0.3
