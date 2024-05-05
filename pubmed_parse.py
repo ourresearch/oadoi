@@ -224,7 +224,7 @@ def store_pubmed_mesh(records: list):
 def pre_delete(table, last_successful_batch):
     db.session.execute(f'''delete from recordthresher.{table} where pmid in (
     	select distinct pmid from recordthresher.pubmed_raw 
-        where created > %(last_successful)s);''',
+        where created > :last_successful;''',
                        {'last_successful': last_successful_batch})
     db.session.commit()
 
@@ -236,9 +236,9 @@ def mark_batch_completed(batch_id, last_successful_batch):
                     was_successful = true, 
                     articles_updated = (
                         select count(*) from recordthresher.pubmed_works 
-                        where created > %(last_successful_batch)s
+                        where created > :last_successful_batch
                     )
-                where id = %(batch_id)s;'''
+                where id = :batch_id'''
 
     db.session.execute(query, {'batch_id': batch_id,
                                'last_successful_batch': last_successful_batch})
@@ -248,7 +248,7 @@ def mark_batch_completed(batch_id, last_successful_batch):
 def enqueue_to_record_queue(last_successful_batch):
     query = '''insert into recordthresher.pubmed_record_queue (pmid) (
   select pmid from recordthresher.pubmed_works 
-  where created > %(last_successful_batch)s
+  where created > :last_successful_batch
 ) on conflict do nothing;'''
     db.session.execute(query, {'last_successful_batch': last_successful_batch})
     db.session.commit()
