@@ -224,7 +224,7 @@ def store_pubmed_mesh(records: list):
 def pre_delete(table, last_successful_batch):
     db.session.execute(f'''delete from recordthresher.{table} where pmid in (
     	select distinct pmid from recordthresher.pubmed_raw 
-        where created > :last_successful''',
+        where created > :last_successful)''',
                        {'last_successful': last_successful_batch})
     db.session.commit()
 
