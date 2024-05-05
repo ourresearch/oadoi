@@ -241,7 +241,7 @@ def mark_batch_completed(batch_id, last_successful_batch):
                 where id = %(batch_id)s;'''
 
     db.session.execute(query, {'batch_id': batch_id,
-                               last_successful_batch: last_successful_batch})
+                               'last_successful_batch': last_successful_batch})
     db.session.commit()
 
 
