@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 
 from lxml import etree
 from lxml.etree import tostring
-from sqlalchemy import text, insert, inspect
+from sqlalchemy import insert, inspect
 from sqlalchemy.dialects.postgresql import insert
 
 from app import db
@@ -47,7 +47,7 @@ def remove_control_characters(s):
 
 def get_last_successful_pubmed_batch_start():
     query = "select coalesce(max(started), '1970-01-01') as max_started from recordthresher.pubmed_parse_batch where was_successful;"
-    result = db.session.execute(text(query)).fetchone()
+    result = db.session.execute(query).fetchone()
     return result[0]
 
 
@@ -55,20 +55,20 @@ def delete_from_record_queue(last_successful_batch_start):
     query = '''delete from recordthresher.pubmed_record_queue where pmid in (
   select pmid from recordthresher.pubmed_works 
   where created > :last_successful)'''
-    db.session.execute(text(query),
+    db.session.execute(query,
                        {'last_successful': last_successful_batch_start})
     db.session.commit()
 
 
 def start_batch():
     query = 'insert into recordthresher.pubmed_parse_batch (started) values (now()) returning id;'
-    result = db.session.execute(text(query)).fetchone()
+    result = db.session.execute(query).fetchone()
     return int(result[0])
 
 
 def get_raw_records(last_successful_batch_start):
     query = 'SELECT * FROM recordthresher.pubmed_raw WHERE created > :last_successful'
-    return db.session.execute(text(query),
+    return db.session.execute(query,
                               {
                                   'last_successful': last_successful_batch_start}).fetchall()
 
