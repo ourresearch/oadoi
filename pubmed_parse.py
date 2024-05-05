@@ -2,17 +2,15 @@ import logging
 import re
 import unicodedata
 from datetime import timedelta, datetime
+
 from lxml import etree
 from lxml.etree import tostring
-
 from sqlalchemy import text, insert, inspect
 from sqlalchemy.dialects.postgresql import insert
 
-from app import db_engine, db
+from app import db
 from recordthresher.pubmed import PubmedWork, PubmedReference, PubmedAuthor, \
     PubmedAffiliation, PubmedMesh
-
-DB_CONN = db_engine.connect()
 
 COMMIT_CHUNK_SIZE = 100
 
@@ -49,30 +47,30 @@ def remove_control_characters(s):
 
 def get_last_successful_pubmed_batch_start():
     query = "select coalesce(max(started), '1970-01-01') as max_started from recordthresher.pubmed_parse_batch where was_successful;"
-    result = DB_CONN.execute(text(query)).fetchone()
+    result = db.session.execute(text(query)).fetchone()
     return result[0]
 
 
-def dequeue_raw_records(last_successful_batch_start):
+def delete_from_record_queue(last_successful_batch_start):
     query = '''delete from recordthresher.pubmed_record_queue where pmid in (
   select pmid from recordthresher.pubmed_works 
   where created > :last_successful);'''
-    DB_CONN.execute(text(query),
-                    {'last_successful': last_successful_batch_start})
-    DB_CONN.connection.commit()
+    db.session.execute(text(query),
+                       {'last_successful': last_successful_batch_start})
+    db.session.commit()
 
 
 def start_batch():
     query = 'insert into recordthresher.pubmed_parse_batch (started) values (now()) returning id;'
-    result = DB_CONN.execute(text(query)).fetchone()
+    result = db.session.execute(text(query)).fetchone()
     return int(result[0])
 
 
 def get_raw_records(last_successful_batch_start):
     query = 'SELECT * FROM recordthresher.pubmed_raw WHERE created > :last_successful;'
-    return DB_CONN.execute(text(query),
-                           {
-                               'last_successful': last_successful_batch_start}).fetchall()
+    return db.session.execute(text(query),
+                              {
+                                  'last_successful': last_successful_batch_start}).fetchall()
 
 
 def safe_article_xml(article_xml):
@@ -154,7 +152,8 @@ def store_pubmed_authors_and_affiliations(records: list):
         store_pubmed_work_authors_and_affiliations(record)
         if i % COMMIT_CHUNK_SIZE == 0:
             db.session.commit()
-            LOGGER.info(f'Stored authors and references for {i + 1}/{len(records)} works')
+            LOGGER.info(
+                f'Stored authors and references for {i + 1}/{len(records)} works')
     db.session.commit()
 
 
@@ -174,7 +173,8 @@ def store_pubmed_work_authors_and_affiliations(record: dict, tree=None):
         author.initials = safe_get_first_xpath(raw_author, '//Initials/text()')
         author.orcid = safe_get_first_xpath(raw_author,
                                             '//Identifier[@Source="ORCID"]/text()')
-        stmnt = insert(PubmedAuthor).values(**model_to_dict(author)).on_conflict_do_nothing()
+        stmnt = insert(PubmedAuthor).values(
+            **model_to_dict(author)).on_conflict_do_nothing()
         db.session.execute(stmnt)
 
         affiliations = raw_author.xpath('//AffiliationInfo/Affiliation')
@@ -222,17 +222,43 @@ def store_pubmed_mesh(records: list):
 
 
 def pre_delete(table, last_successful_batch):
-    DB_CONN.execute(f'''delete from recordthresher.{table} where pmid in (
+    db.session.execute(f'''delete from recordthresher.{table} where pmid in (
     	select distinct pmid from recordthresher.pubmed_raw 
-        where created > %(last_successful)s);''', {'last_successful': last_successful_batch})
-    DB_CONN.connection.commit()
+        where created > %(last_successful)s);''',
+                       {'last_successful': last_successful_batch})
+    db.session.commit()
+
+
+def mark_batch_completed(batch_id, last_successful_batch):
+    query = '''update recordthresher.pubmed_parse_batch 
+                set
+                    finished = now(), 
+                    was_successful = true, 
+                    articles_updated = (
+                        select count(*) from recordthresher.pubmed_works 
+                        where created > %(last_successful_batch)s
+                    )
+                where id = %(batch_id)s;'''
+
+    db.session.execute(query, {'batch_id': batch_id,
+                               last_successful_batch: last_successful_batch})
+    db.session.commit()
+
+
+def enqueue_to_record_queue(last_successful_batch):
+    query = '''insert into recordthresher.pubmed_record_queue (pmid) (
+  select pmid from recordthresher.pubmed_works 
+  where created > %(last_successful_batch)s
+) on conflict do nothing;'''
+    db.session.execute(query, {'last_successful_batch': last_successful_batch})
+    db.session.commit()
 
 
 if __name__ == '__main__':
     last_successful_batch = get_last_successful_pubmed_batch_start() - timedelta(
         hours=24)
     LOGGER.info(f'Last successful batch: {last_successful_batch}')
-    dequeue_raw_records(last_successful_batch)
+    delete_from_record_queue(last_successful_batch)
     LOGGER.info(f'Dequeued raw records')
     batch_id = start_batch()
     raw_records = [dict(row) for row in get_raw_records(last_successful_batch)]
@@ -253,3 +279,5 @@ if __name__ == '__main__':
     LOGGER.info('Storing meshes')
     store_pubmed_mesh(raw_records)
     LOGGER.info('Finished storing meshes')
+    mark_batch_completed(batch_id)
+    enqueue_to_record_queue(last_successful_batch)
