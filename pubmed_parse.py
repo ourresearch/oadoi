@@ -279,5 +279,11 @@ if __name__ == '__main__':
     LOGGER.info('Storing meshes')
     store_pubmed_mesh(raw_records)
     LOGGER.info('Finished storing meshes')
+    LOGGER.info('Marking batch completed')
     mark_batch_completed(batch_id)
+    LOGGER.info('Finished marking batch completed')
+    LOGGER.info('Enqueueing batch to pubmed_record_queue')
     enqueue_to_record_queue(last_successful_batch)
+    LOGGER.info('Finished enqueueing batch to pubmed_record_queue')
+    LOGGER.info('Done.')
+
