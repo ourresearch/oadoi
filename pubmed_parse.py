@@ -54,7 +54,7 @@ def get_last_successful_pubmed_batch_start():
 def delete_from_record_queue(last_successful_batch_start):
     query = '''delete from recordthresher.pubmed_record_queue where pmid in (
   select pmid from recordthresher.pubmed_works 
-  where created > :last_successful);'''
+  where created > :last_successful)'''
     db.session.execute(text(query),
                        {'last_successful': last_successful_batch_start})
     db.session.commit()
