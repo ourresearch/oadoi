@@ -67,7 +67,7 @@ def start_batch():
 
 
 def get_raw_records(last_successful_batch_start):
-    query = 'SELECT * FROM recordthresher.pubmed_raw WHERE created > :last_successful;'
+    query = 'SELECT * FROM recordthresher.pubmed_raw WHERE created > :last_successful'
     return db.session.execute(text(query),
                               {
                                   'last_successful': last_successful_batch_start}).fetchall()
@@ -224,7 +224,7 @@ def store_pubmed_mesh(records: list):
 def pre_delete(table, last_successful_batch):
     db.session.execute(f'''delete from recordthresher.{table} where pmid in (
     	select distinct pmid from recordthresher.pubmed_raw 
-        where created > :last_successful;''',
+        where created > :last_successful''',
                        {'last_successful': last_successful_batch})
     db.session.commit()
 
@@ -258,8 +258,9 @@ if __name__ == '__main__':
     last_successful_batch = get_last_successful_pubmed_batch_start() - timedelta(
         hours=24)
     LOGGER.info(f'Last successful batch: {last_successful_batch}')
+    LOGGER.info(f'Deleting from record queue')
     delete_from_record_queue(last_successful_batch)
-    LOGGER.info(f'Dequeued raw records')
+    LOGGER.info(f'Finished deleting from record queue')
     batch_id = start_batch()
     raw_records = [dict(row) for row in get_raw_records(last_successful_batch)]
     pre_delete('pubmed_works', last_successful_batch)
