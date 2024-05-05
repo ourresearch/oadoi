@@ -249,7 +249,7 @@ if __name__ == '__main__':
     LOGGER.info('Storing authors and affiliations')
     store_pubmed_authors_and_affiliations(raw_records)
     LOGGER.info('Finished storing authors and affiliations')
-    pre_delete('pubmed_mesh')
+    pre_delete('pubmed_mesh', last_successful_batch)
     LOGGER.info('Storing meshes')
     store_pubmed_mesh(raw_records)
     LOGGER.info('Finished storing meshes')
