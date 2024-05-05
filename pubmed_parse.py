@@ -142,8 +142,8 @@ def store_pubmed_references(records: list):
     for i, record in enumerate(records):
         store_pubmed_work_references(record)
         if i % COMMIT_CHUNK_SIZE == 0:
-            LOGGER.info(f'Stored references for {i + 1}/{len(records)} works')
             db.session.commit()
+            LOGGER.info(f'Stored references for {i + 1}/{len(records)} works')
     db.session.commit()
 
 
@@ -282,7 +282,7 @@ if __name__ == '__main__':
     store_pubmed_mesh(raw_records)
     LOGGER.info('Finished storing meshes')
     LOGGER.info('Marking batch completed')
-    mark_batch_completed(batch_id)
+    mark_batch_completed(batch_id, last_successful_batch)
     LOGGER.info('Finished marking batch completed')
     LOGGER.info('Enqueueing batch to pubmed_record_queue')
     enqueue_to_record_queue(last_successful_batch)
