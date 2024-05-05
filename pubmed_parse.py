@@ -14,6 +14,8 @@ from recordthresher.pubmed import PubmedWork, PubmedReference, PubmedAuthor, \
 
 DB_CONN = db_engine.connect()
 
+COMMIT_CHUNK_SIZE = 100
+
 
 def make_logger():
     # Create a logger object
@@ -113,8 +115,11 @@ def store_pubmed_work(record: dict, tree=None):
 
 
 def store_pubmed_works(records: list):
-    for record in records:
+    for i, record in enumerate(records):
         store_pubmed_work(record)
+        if i % COMMIT_CHUNK_SIZE == 0:
+            db.session.commit()
+            LOGGER.info(f'Stored {i + 1}/{len(records)} works')
     db.session.commit()
 
 
@@ -136,14 +141,20 @@ def store_pubmed_work_references(record: dict, tree=None):
 
 
 def store_pubmed_references(records: list):
-    for record in records:
+    for i, record in enumerate(records):
         store_pubmed_work_references(record)
+        if i % COMMIT_CHUNK_SIZE == 0:
+            LOGGER.info(f'Stored references for {i + 1}/{len(records)} works')
+            db.session.commit()
     db.session.commit()
 
 
 def store_pubmed_authors_and_affiliations(records: list):
-    for record in records:
+    for i, record in enumerate(records):
         store_pubmed_work_authors_and_affiliations(record)
+        if i % COMMIT_CHUNK_SIZE == 0:
+            db.session.commit()
+            LOGGER.info(f'Stored authors and references for {i + 1}/{len(records)} works')
     db.session.commit()
 
 
@@ -203,8 +214,10 @@ def store_pubmed_work_mesh(record: dict, tree=None):
 
 
 def store_pubmed_mesh(records: list):
-    for record in records:
+    for i, record in enumerate(records):
         store_pubmed_work_mesh(record)
+        if i % 100 == 0:
+            LOGGER.info(f'Stored meshes for {i + 1}/{len(records)} works')
     db.session.commit()
 
 
