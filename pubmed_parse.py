@@ -217,6 +217,7 @@ def store_pubmed_mesh(records: list):
     for i, record in enumerate(records):
         store_pubmed_work_mesh(record)
         if i % 100 == 0:
+            db.session.commit()
             LOGGER.info(f'Stored meshes for {i + 1}/{len(records)} works')
     db.session.commit()
 
