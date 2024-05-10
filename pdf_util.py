@@ -70,7 +70,7 @@ def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
 def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED,
                         commit=True):
     db.session.execute(text(
-        "INSERT INTO recordthresher.pdf_update_ingest (doi, pdf_version) VALUES (:doi, :version) ON CONFLICT(doi) DO UPDATE SET finished = NULL;").bindparams(
+        "INSERT INTO recordthresher.pdf_update_ingest (doi, pdf_version) VALUES (:doi, :version) ON CONFLICT(doi, pdf_version) DO UPDATE SET finished = NULL;").bindparams(
         doi=doi, version=version.value))
     if commit:
         db.session.commit()
