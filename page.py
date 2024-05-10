@@ -333,10 +333,19 @@ class PageBase(db.Model):
         if self.scrape_pdf_url:
             self.scrape_pdf_url = clean_url(self.scrape_pdf_url)
 
-        if isinstance(self, PageNew) and self.scrape_version and self.doi:
-            logger.info(f'Saving {self.scrape_version} PDF of DOI - {self.doi}')
-            self.save_pdf(PDFVersion.from_version_str(self.scrape_version),
-                          pdf_r=pdf_r)
+        if isinstance(self, PageNew) and self.scrape_version:
+            if (arxiv_dois := re.findall(r'arxiv.org/abs/(.*?)$', self.url)):
+                # Save Arxiv PDF with Datacite issued DOI (preprint, self.doi is null)
+                arxiv_doi = f'10.48550/arXiv.{arxiv_dois[0]}'
+                logger.info(
+                    f'Saving {self.scrape_version} PDF of DOI - {arxiv_doi}')
+                self.save_pdf(PDFVersion.SUBMITTED, doi=arxiv_doi)
+            if self.doi:
+                logger.info(
+                    f'Saving {self.scrape_version} PDF of DOI - {self.doi}')
+                # Save all other PDFs and Arxiv DOIs that have been published (self.doi is not null)
+                self.save_pdf(PDFVersion.from_version_str(self.scrape_version),
+                              pdf_r=pdf_r)
 
     def pmc_first_available_date(self):
         if self.pmcid:
@@ -768,7 +777,7 @@ class PageNew(PageBase):
             response["id"] = self.id
         return response
 
-    def save_pdf(self, version: PDFVersion, pdf_r=None):
+    def save_pdf(self, version: PDFVersion, pdf_r=None, doi=None):
         if not pdf_r:
             pdf_r = http_get(self.scrape_pdf_url, ask_slowly=True, stream=False)
         pdf_content = None
@@ -777,8 +786,8 @@ class PageNew(PageBase):
         elif hasattr(pdf_r, 'content'):
             pdf_content = pdf_r.content
         if pdf_content:
-            save_pdf(self.doi, pdf_content, version)
-        enqueue_pdf_parsing(self.doi, version)
+            save_pdf(doi or self.doi, pdf_content, version)
+        enqueue_pdf_parsing(doi or self.doi, version)
 
 
 class Page(db.Model):
