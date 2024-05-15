@@ -688,13 +688,21 @@ class Pub(db.Model):
         current_oa_status = self.response_jsonb and self.response_jsonb.get(
             'oa_status', None)
         if current_oa_status and current_oa_status == "gold" or current_oa_status == "hybrid":
+            issns_to_refresh = [
+                "2152-7180",
+                "1687-8507",
+                "1131-5598",
+                "2083-2931",
+                "2008-322X",
+                "2152-7180, 2152-7199, 0037-8046, 1545-6846, 0024-3949, 1613-396X, 1741-2862, 0047-1178",
+            ]
             r = requests.get(
                 f"https://parseland.herokuapp.com/parse-publisher?doi={self.id}")
             if r.status_code != 200:
                 logger.info(
                     f"need to refresh gold or hybrid because parseland is bad response {self.id}")
                 return False
-            elif self.issn_l == '1687-8507' or self.issn_l == '1131-5598' or self.issn_l == '2083-2931' or self.issn_l == '2008-322X':
+            elif self.issn_l in issns_to_refresh:
                 logger.info(
                     f"need to refresh gold or hybrid because of the journal {self.id}")
                 return False
