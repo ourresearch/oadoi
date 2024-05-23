@@ -341,6 +341,7 @@ class DataCiteDoiRecord(Record):
             repository_name = (
                 help_block.get_text(strip=True)
                 .replace("This file is part of", "")
+                .replace("Use email button above to contact", "")
                 .replace('"', "")
                 .replace(".", "")
                 .strip()
