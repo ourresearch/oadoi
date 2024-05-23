@@ -338,6 +338,8 @@ class DataCiteDoiRecord(Record):
         help_block = soup.find('p', class_='help-block')
 
         if help_block:
+            if "this file is part of" not in help_block.get_text(strip=True).lower():
+                return None
             repository_name = (
                 help_block.get_text(strip=True)
                 .replace("This file is part of", "")
