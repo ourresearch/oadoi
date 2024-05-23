@@ -149,8 +149,13 @@ class DataCiteDoiRecord(Record):
         print(f"authors: {self.authors}")
 
     def set_abstract(self, datacite_work):
-        descriptions = datacite_work['attributes'].get('descriptions', [])
-        abstract = next((d['description'] for d in descriptions if d['descriptionType'] == 'Abstract'), None)
+        descriptions = datacite_work.get('attributes', {}).get('descriptions', [])
+        if isinstance(descriptions, list):
+            abstract = next((d.get('description') for d in descriptions if d.get('descriptionType') == 'Abstract'),
+                            None)
+        else:
+            abstract = None
+
         self.abstract = abstract
         print(f"abstract: {self.abstract}")
 
