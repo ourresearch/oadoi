@@ -1384,6 +1384,7 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = version
             my_location.oa_date = oa_date
+            my_location.publisher = self.publisher
             my_location.publisher_specific_license = publisher_specific_license
             if pdf_url:
                 my_location.pdf_url = pdf_url

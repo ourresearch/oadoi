@@ -124,6 +124,7 @@ class OpenLocation(db.Model):
         self.institution = None
         self.oa_date = None
         self.publisher_specific_license = None
+        self.publisher = None
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
@@ -136,7 +137,7 @@ class OpenLocation(db.Model):
         ) or self.publisher_specific_license in (
             "http://onlinelibrary.wiley.com/termsAndConditions#am",
             "http://www.apa.org/pubs/journals/resources/open-access.aspx",
-        ):
+        ) or (self.license == 'publisher-specific-oa' and self.publisher and 'elsevier' in self.publisher.lower()):
             return False
         return True
 
