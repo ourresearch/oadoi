@@ -3,9 +3,10 @@ import hashlib
 import json
 import re
 
-import uuid
+from bs4 import BeautifulSoup
 import requests
 import shortuuid
+import uuid
 
 from app import db, logger
 from oa_local import find_normalized_license
@@ -106,7 +107,15 @@ class DataCiteDoiRecord(Record):
     def set_title(self, datacite_work):
         self.title = datacite_work['attributes']['titles'][0]['title'] if datacite_work['attributes']['titles'] else None
         self.normalized_title = normalize_title(self.title)
-        print(f"title: {self.title}")
+
+        # expand harvard dataverse title
+        client_id = datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None)
+        if client_id and client_id == 'gdcc.harvard-dv':
+            harvard_dataverse_repository_name = self.get_harvard_dataverse_repository_name(datacite_work)
+            print(f"Found harvard dataverse repository name: {harvard_dataverse_repository_name}")
+            self.title = f"{harvard_dataverse_repository_name} {self.title}" if harvard_dataverse_repository_name else self.title
+            self.normalized_title = normalize_title(self.title)
+            print(f"Expanded title: {self.title}")
 
     def set_authors(self, datacite_work):
         self.authors = []
@@ -140,8 +149,13 @@ class DataCiteDoiRecord(Record):
         print(f"authors: {self.authors}")
 
     def set_abstract(self, datacite_work):
-        descriptions = datacite_work['attributes'].get('descriptions', [])
-        abstract = next((d['description'] for d in descriptions if d['descriptionType'] == 'Abstract'), None)
+        descriptions = datacite_work.get('attributes', {}).get('descriptions', [])
+        if isinstance(descriptions, list):
+            abstract = next((d.get('description') for d in descriptions if d.get('descriptionType') == 'Abstract'),
+                            None)
+        else:
+            abstract = None
+
         self.abstract = abstract
         print(f"abstract: {self.abstract}")
 
@@ -205,7 +219,7 @@ class DataCiteDoiRecord(Record):
             oa = True
 
         # OA clients
-        oa_clients = ['gbif.gbif']
+        oa_clients = ['ccdc.csd', 'gbif.gbif', 'gdcc.harvard-dv']
         if not oa and datacite_work['relationships'].get('client', {}).get('data', {}).get('id', None) in oa_clients:
             oa = True
 
@@ -306,3 +320,34 @@ class DataCiteDoiRecord(Record):
         for related_identifier in datacite_work['attributes'].get('relatedIdentifiers', []):
             if related_identifier['relatedIdentifierType'] == 'DOI' and related_identifier['relationType'] == 'IsIdenticalTo':
                 return True
+
+    @staticmethod
+    def get_harvard_dataverse_repository_name(datacite_work):
+        url = datacite_work.get('attributes', {}).get('url')
+        if not url:
+            return None
+
+        try:
+            r = requests.get(url, timeout=5)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching {url}: {e}")
+            return None
+
+        soup = BeautifulSoup(r.text, 'html.parser')
+        help_block = soup.find('p', class_='help-block')
+
+        if help_block:
+            if "this file is part of" not in help_block.get_text(strip=True).lower():
+                return None
+            repository_name = (
+                help_block.get_text(strip=True)
+                .replace("This file is part of", "")
+                .replace("Use email button above to contact", "")
+                .replace('"', "")
+                .replace(".", "")
+                .strip()
+            )
+            return repository_name
+        else:
+            return None
