@@ -321,7 +321,7 @@ def is_open_via_url_fragment(url):
     return False
 
 
-def find_normalized_license(text):
+def find_normalized_license(text, is_dataset=False):
     if not text:
         return None
 
@@ -368,18 +368,19 @@ def find_normalized_license(text):
         ("creativecommons.org/publicdomain/mark", "public-domain"),
         ("publicdomain", "public-domain"),
 
-        # datasets
         ("openaccess", "other-oa"),
         ("arxiv.orgperpetual", "publisher-specific-oa"),
         ("arxiv.orgnonexclusive", "publisher-specific-oa"),
-        ("mit", "mit"),
-        ("gpl3", "gpl-3"),
-        ("gpl2", "gpl-2"),
-        ("gpl", "gpl"),
-        ("apache2", "apache-2.0"),
-
-        # ("openaccess", "oa")
     ]
+
+    if is_dataset:
+        license_lookups += [
+            ("mit", "mit"),
+            ("gpl3", "gpl-3"),
+            ("gpl2", "gpl-2"),
+            ("gpl", "gpl"),
+            ("apache2", "apache-2.0"),
+        ]
 
     for (lookup, license) in license_lookups:
         if lookup in normalized_text:

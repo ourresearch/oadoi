@@ -238,8 +238,9 @@ class DataCiteDoiRecord(Record):
                     raw_license = rights.get('rights', None)
 
         # normalize the license
+        is_dataset = self.genre and self.genre == 'dataset'
         if raw_license:
-            open_license = find_normalized_license(raw_license)
+            open_license = find_normalized_license(raw_license, is_dataset=is_dataset)
         elif raw_license and "closed" in raw_license.lower():
             open_license = None
         elif self.is_oa:
