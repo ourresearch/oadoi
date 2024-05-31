@@ -706,7 +706,7 @@ class Pub(db.Model):
                 logger.info(
                     f"need to refresh gold or hybrid because of the journal {self.id}")
                 return False
-            elif self.license and self.license == 'mit':
+            elif self.scrape_license and self.scrape_license == 'mit':
                 return False
             return True
 
