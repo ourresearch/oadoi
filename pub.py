@@ -1441,6 +1441,7 @@ class Pub(db.Model):
             my_location.evidence = self.scrape_evidence
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
+            my_location.publisher = self.publisher
             my_location.version = "publishedVersion"
 
             if my_location.pdf_url and '/article/am/pii/' in my_location.pdf_url:
