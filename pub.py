@@ -992,8 +992,8 @@ class Pub(db.Model):
                 # don't append, make it the only one
                 self.open_locations.append(my_location)
 
-                self.updated = datetime.datetime.utcnow()
-                self.last_changed_date = datetime.datetime.utcnow()
+            self.updated = datetime.datetime.utcnow()
+            self.last_changed_date = datetime.datetime.utcnow()
 
     def ask_preprints(self):
         preprint_relationships = FilteredPreprint.query.filter(
