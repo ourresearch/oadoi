@@ -129,8 +129,6 @@ class OpenLocation(db.Model):
 
     @property
     def has_open_license(self):
-        if hasattr(self, 'ol_override_func'):
-            return self.ol_override_func()
         if not self.license:
             return False
         if self.license in (
@@ -139,7 +137,7 @@ class OpenLocation(db.Model):
         ) or self.publisher_specific_license in (
             "http://onlinelibrary.wiley.com/termsAndConditions#am",
             "http://www.apa.org/pubs/journals/resources/open-access.aspx",
-        ):
+        ) or (self.license == 'publisher-specific-oa' and self.publisher and 'elsevier' in self.publisher.lower()):
             return False
         return True
 

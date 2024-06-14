@@ -1397,7 +1397,7 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = version
             my_location.oa_date = oa_date
-            my_location.ol_override_func = lambda: not (license == 'publisher-specific-oa' and ('elsevier' in self.publisher.lower() or 'sciencedirect.com' in self.resolved_doi_url))
+            my_location.publisher = self.publisher
             my_location.publisher_specific_license = publisher_specific_license
             if pdf_url:
                 my_location.pdf_url = pdf_url
