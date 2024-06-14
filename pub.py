@@ -1397,7 +1397,7 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = version
             my_location.oa_date = oa_date
-            my_location.not_ol_exception_func = lambda: license == 'publisher-specific-oa' and ('elsevier' in self.publisher.lower() or (self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url))
+            my_location.not_ol_exception_func = lambda: license == 'publisher-specific-oa' and ('elsevier' in self.publisher.lower() or (self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith('10.1016'))
             my_location.publisher_specific_license = publisher_specific_license
             if pdf_url:
                 my_location.pdf_url = pdf_url
@@ -1444,7 +1444,6 @@ class Pub(db.Model):
             my_location.evidence = self.scrape_evidence
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
-            my_location.publisher = self.publisher
             my_location.version = "publishedVersion"
 
             if my_location.pdf_url and '/article/am/pii/' in my_location.pdf_url:
