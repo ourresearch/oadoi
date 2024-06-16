@@ -1567,6 +1567,9 @@ class Pub(db.Model):
 
     def ask_green_locations(self):
         has_new_green_locations = False
+        springer_ebook_oa_override = any([(page.scrape_pdf_url and page.scrape_pdf_url.endswith('?pdf=chapter%20toc') for page in self.pages)])
+        if springer_ebook_oa_override:
+            return
         for my_page in [p for p in self.pages if
                         p.pmh_id != oa_page.publisher_equivalent_pmh_id]:
             # this step isn't scraping, is just looking in db

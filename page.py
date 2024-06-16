@@ -101,9 +101,6 @@ class PageBase(db.Model):
 
     @property
     def is_open(self):
-        # Springer e-book edge case, this URL is only partial PDF/table of contents/paratext, not actually full open PDF
-        if self.scrape_pdf_url and self.scrape_pdf_url.endswith('?pdf=chapter%20toc'):
-            return False
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     @property
@@ -835,9 +832,6 @@ class Page(db.Model):
 
     @property
     def is_open(self):
-        # Springer e-book edge case, this URL is only partial PDF/table of contents/paratext, not actually full open PDF
-        if self.scrape_pdf_url and self.scrape_pdf_url.endswith('?pdf=chapter%20toc'):
-            return False
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     @property
