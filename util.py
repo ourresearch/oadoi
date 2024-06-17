@@ -7,6 +7,7 @@ import os
 import re
 import time
 import unicodedata
+from typing import List
 from urllib.parse import urljoin
 
 import heroku3
@@ -16,7 +17,7 @@ from bs4 import UnicodeDammit
 from lxml import etree
 from lxml import html
 from requests.adapters import HTTPAdapter
-from sqlalchemy import exc
+from sqlalchemy import exc, text
 from sqlalchemy import sql
 from tenacity import retry, stop_after_attempt, wait_exponential
 from unidecode import unidecode
@@ -721,3 +722,17 @@ def is_valid_date_string(date_string):
         return True
     except ValueError:
         return False
+
+
+def enqueue_slow_queue(dois_chunk: List[str], conn):
+    stmnt = text(
+        '''INSERT INTO queue.run_once_work_add_most_things(work_id)
+           SELECT DISTINCT work_id FROM (
+                SELECT work_id
+                FROM ins.recordthresher_record
+                WHERE doi IN :dois
+            ) subquery
+            ON CONFLICT (work_id) DO UPDATE SET started = NULL;
+            ''')
+    conn.execute(stmnt, dois=tuple(dois_chunk))
+    conn.connection.commit()

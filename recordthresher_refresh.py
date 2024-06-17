@@ -13,7 +13,7 @@ from sqlalchemy.exc import NoResultFound, PendingRollbackError
 
 from app import app, db, logger
 from pub import Pub
-from util import normalize_doi, get_openalex_json
+from util import normalize_doi, get_openalex_json, enqueue_slow_queue
 from endpoint import Endpoint  # magic
 
 from app import oa_db_engine
@@ -94,20 +94,6 @@ def put_dois_db(q: Queue):
         for result in results:
             q.put(result)
         offset += page_size
-
-
-def enqueue_slow_queue(dois_chunk: List[str], conn):
-    stmnt = text(
-        '''INSERT INTO queue.run_once_work_add_most_things(work_id)
-           SELECT DISTINCT work_id FROM (
-                SELECT work_id
-                FROM ins.recordthresher_record
-                WHERE doi IN :dois
-            ) subquery
-            ON CONFLICT (work_id) DO UPDATE SET started = NULL;
-            ''')
-    conn.execute(stmnt, dois=tuple(dois_chunk))
-    conn.connection.commit()
 
 
 def print_stats(q: Queue = None):

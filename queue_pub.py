@@ -8,12 +8,12 @@ from time import time
 from sqlalchemy import orm
 from sqlalchemy import text
 
-from app import db
+from app import db, oa_db_engine
 from app import logger
 from endpoint import Endpoint  # magic
 from pub import Pub
 from queue_main import DbQueue
-from util import elapsed
+from util import elapsed, enqueue_slow_queue
 from util import normalize_doi
 from util import run_sql
 
@@ -89,6 +89,7 @@ class DbQueuePub(DbQueue):
             )
         index = 0
         start_time = time()
+        oa_db_conn = oa_db_engine.connect()
         while True:
             new_loop_start_time = time()
             if single_obj_id:
@@ -128,6 +129,7 @@ class DbQueuePub(DbQueue):
 
             object_ids = [obj.id for obj in objects]
             self.update_fn(run_class, run_method, objects, index=index)
+            enqueue_slow_queue(object_ids, oa_db_conn)
 
             # logger.info(u"finished update_fn")
             if queue_table:
