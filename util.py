@@ -16,6 +16,7 @@ import sqlalchemy
 from bs4 import UnicodeDammit
 from lxml import etree
 from lxml import html
+from redis.client import Redis
 from requests.adapters import HTTPAdapter
 from sqlalchemy import exc, text
 from sqlalchemy import sql
@@ -23,6 +24,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from unidecode import unidecode
 
 from convert_http_to_https import fix_url_scheme
+
+REDIS_UNPAYWALL_REFRESH_QUEUE = 'queue:unpaywall_refresh'
 
 
 class NoDoiException(Exception):
@@ -736,3 +739,14 @@ def enqueue_slow_queue(dois_chunk: List[str], conn):
             ''')
     conn.execute(stmnt, dois=tuple(dois_chunk))
     conn.connection.commit()
+
+
+def enqueue_unpaywall_refresh(dois: List[str], db_conn, redis_conn: Redis=None):
+    if not redis_conn:
+        redis_conn = Redis.from_url(os.environ['REDIS_DO_URL'])
+    recordthresher_ids = db_conn.execute(text(
+        'SELECT id FROM ins.recordthresher_record WHERE doi IN :dois AND work_id > 0'),
+        params={'dois': dois}).fetchall()
+    recordthresher_ids = [r[0] for r in recordthresher_ids]
+    redis_conn.sadd(REDIS_UNPAYWALL_REFRESH_QUEUE, *recordthresher_ids)
+
