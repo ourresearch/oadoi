@@ -748,5 +748,9 @@ def enqueue_unpaywall_refresh(dois: List[str], db_conn, redis_conn: Redis=None):
         'SELECT id FROM ins.recordthresher_record WHERE doi IN :dois AND work_id > 0'),
         dois=tuple(dois)).fetchall()
     recordthresher_ids = [r[0] for r in recordthresher_ids]
-    redis_conn.sadd(REDIS_UNPAYWALL_REFRESH_QUEUE, *recordthresher_ids)
+    redis_queue_mapping = {
+        recordthresher_id: time.time() for recordthresher_id in
+        recordthresher_ids
+    }
+    redis_conn.zadd(REDIS_UNPAYWALL_REFRESH_QUEUE, redis_queue_mapping)
 
