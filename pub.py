@@ -1397,7 +1397,7 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = version
             my_location.oa_date = oa_date
-            my_location.not_ol_exception_func = lambda: license == 'publisher-specific-oa' and ('elsevier' in self.publisher.lower() or (self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith('10.1016'))
+            my_location.not_ol_exception_func = self.elsevier_bronze_exception_func(license)
             my_location.publisher_specific_license = publisher_specific_license
             if pdf_url:
                 my_location.pdf_url = pdf_url
@@ -1442,6 +1442,7 @@ class Pub(db.Model):
             my_location.metadata_url = self.scrape_metadata_url
             my_location.license = self.scrape_license
             my_location.evidence = self.scrape_evidence
+            my_location.not_ol_exception_func = self.elsevier_bronze_exception_func(self.scrape_license)
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
@@ -1588,6 +1589,7 @@ class Pub(db.Model):
                 new_open_location.updated = my_page.scrape_updated
                 new_open_location.doi = self.doi
                 new_open_location.pmh_id = my_page.bare_pmh_id
+                new_open_location.not_ol_exception_func = self.elsevier_bronze_exception_func(my_page.scrape_license)
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
                 new_open_location.oa_date = my_page.first_available
@@ -1613,6 +1615,7 @@ class Pub(db.Model):
                 new_open_location.evidence = my_page.scrape_version
                 new_open_location.version = 'publishedVersion'
                 new_open_location.updated = my_page.scrape_updated
+                new_open_location.not_ol_exception_func = self.elsevier_bronze_exception_func(my_page.scrape_license)
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = None
                 new_open_location.endpoint_id = None
@@ -1735,6 +1738,11 @@ class Pub(db.Model):
             return False
 
         return True
+
+    def elsevier_bronze_exception_func(self, license):
+        return lambda: license == 'publisher-specific-oa' and (
+                    'elsevier' in self.publisher.lower() or (
+                        self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith('10.1016'))
 
     def set_title_hacks(self):
         workaround_titles = {
