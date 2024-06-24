@@ -1740,9 +1740,15 @@ class Pub(db.Model):
         return True
 
     def elsevier_bronze_exception_func(self, license):
-        return lambda: license == 'publisher-specific-oa' and (
-                    'elsevier' in self.publisher.lower() or (
-                        self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith('10.1016'))
+        def func():
+            if license != 'publisher-specific-oa':
+                return False
+            elif ('elsevier' in self.publisher.lower() or (
+                        self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith('10.1016')):
+                return True
+            rows = db.session.execute(text("SELECT EXISTS (SELECT 1 FROM journal WHERE issn_l = :issn_l AND publisher = 'Elsevier')"), {'issn_l': self.issn_l})
+            return rows.rowcount > 0
+        return func
 
     def set_title_hacks(self):
         workaround_titles = {
