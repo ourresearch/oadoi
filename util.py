@@ -752,5 +752,8 @@ def enqueue_unpaywall_refresh(dois: List[str], db_conn, redis_conn: Redis=None):
         recordthresher_id: time.time() for recordthresher_id in
         recordthresher_ids
     }
-    redis_conn.zadd(REDIS_UNPAYWALL_REFRESH_QUEUE, redis_queue_mapping)
+    if redis_queue_mapping:
+        redis_conn.zadd(REDIS_UNPAYWALL_REFRESH_QUEUE, redis_queue_mapping)
+    else:
+        print(f'Empty recordthresher ids for DOIs: {dois}')
 
