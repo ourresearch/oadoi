@@ -261,11 +261,6 @@ def enqueue_to_record_queue(last_successful_batch):
 
 
 if __name__ == '__main__':
-    record = dict(get_raw_record('20530463'))
-    store_pubmed_work_references(record)
-    store_pubmed_work_mesh(record)
-    store_pubmed_work_authors_and_affiliations(record)
-
     last_successful_batch = get_last_successful_pubmed_batch_start() - timedelta(
         hours=24)
     LOGGER.info(f'Last successful batch: {last_successful_batch}')
