@@ -139,7 +139,7 @@ def store_pubmed_work_references(record: dict, tree=None):
             raw_ref.attrib.get('RecordthresherReferenceNo', 1))
         ref.doi = record['doi']
         ref.citation = safe_get_first_xpath(raw_ref, './Citation/text()')
-        ref.pmid_referenced = safe_get_first_xpath(tree, './ArticleId/text()')
+        ref.pmid_referenced = safe_get_first_xpath(tree, '//ArticleId/text()')
         db.session.add(ref)
 
 
