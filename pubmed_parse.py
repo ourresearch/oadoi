@@ -73,6 +73,11 @@ def get_raw_records(last_successful_batch_start):
                                   'last_successful': last_successful_batch_start}).fetchall()
 
 
+def get_raw_record(pmid):
+    query = 'SELECT * FROM recordthresher.pubmed_raw WHERE pmid = :pmid'
+    return db.session.execute(query, {'pmid': pmid}).fetchone()
+
+
 def safe_article_xml(article_xml):
     return re.sub(r'[\x00-\x08\x0B-\x1F\x7F-\x9F]', '',
                   article_xml.replace('\u0000', ''))
@@ -133,8 +138,8 @@ def store_pubmed_work_references(record: dict, tree=None):
         ref.reference_number = int(
             raw_ref.attrib.get('RecordthresherReferenceNo', 1))
         ref.doi = record['doi']
-        ref.citation = safe_get_first_xpath(raw_ref, '//Citation/text()')
-        ref.pmid_referenced = safe_get_first_xpath(tree, '//ArticleId/text()')
+        ref.citation = safe_get_first_xpath(raw_ref, './Citation/text()')
+        ref.pmid_referenced = safe_get_first_xpath(tree, './ArticleId/text()')
         db.session.add(ref)
 
 
@@ -168,11 +173,11 @@ def store_pubmed_work_authors_and_affiliations(record: dict, tree=None):
         author.doi = record['doi']
         author.author_order = int(
             raw_author.attrib.get('RecordthresherAuthorNo', 1))
-        author.family = safe_get_first_xpath(raw_author, '//LastName/text()')
-        author.given = safe_get_first_xpath(raw_author, '//ForeName/text()')
-        author.initials = safe_get_first_xpath(raw_author, '//Initials/text()')
+        author.family = safe_get_first_xpath(raw_author, './LastName/text()')
+        author.given = safe_get_first_xpath(raw_author, './ForeName/text()')
+        author.initials = safe_get_first_xpath(raw_author, './Initials/text()')
         author.orcid = safe_get_first_xpath(raw_author,
-                                            '//Identifier[@Source="ORCID"]/text()')
+                                            './Identifier[@Source="ORCID"]/text()')
         stmnt = insert(PubmedAuthor).values(
             **model_to_dict(author)).on_conflict_do_nothing()
         db.session.execute(stmnt)
@@ -201,15 +206,15 @@ def store_pubmed_work_mesh(record: dict, tree=None):
         mesh.created = datetime.now()
         mesh.pmid = record['pmid']
         mesh.qualifier_ui = safe_get_first_xpath(raw_mesh,
-                                                 '//QualifierName/@UI')
+                                                 './QualifierName/@UI')
         mesh.qualifier_name = safe_get_first_xpath(raw_mesh,
-                                                   '//QualifierName/text()')
+                                                   './QualifierName/text()')
         mesh.descriptor_ui = safe_get_first_xpath(raw_mesh,
-                                                  '//DescriptorName/@UI')
+                                                  './DescriptorName/@UI')
         mesh.descriptor_name = safe_get_first_xpath(raw_mesh,
-                                                    '//DescriptorName/text()')
+                                                    './DescriptorName/text()')
         mesh.is_major_topic = safe_get_first_xpath(raw_mesh,
-                                                   '//QualifierName/@MajorTopicYN') == 'Y'
+                                                   './QualifierName/@MajorTopicYN') == 'Y'
         db.session.add(mesh)
 
 
@@ -256,6 +261,11 @@ def enqueue_to_record_queue(last_successful_batch):
 
 
 if __name__ == '__main__':
+    record = dict(get_raw_record('20530463'))
+    store_pubmed_work_references(record)
+    store_pubmed_work_mesh(record)
+    store_pubmed_work_authors_and_affiliations(record)
+
     last_successful_batch = get_last_successful_pubmed_batch_start() - timedelta(
         hours=24)
     LOGGER.info(f'Last successful batch: {last_successful_batch}')
@@ -288,4 +298,3 @@ if __name__ == '__main__':
     enqueue_to_record_queue(last_successful_batch)
     LOGGER.info('Finished enqueueing batch to pubmed_record_queue')
     LOGGER.info('Done.')
-
