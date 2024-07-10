@@ -188,6 +188,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
         exc = None
         try:
             doi, version = pdf_doi_q.get(timeout=20)
+            doi = doi.lower()
             if doi_is_seen(doi):
                 inc_dupe_count()
                 continue
