@@ -336,7 +336,7 @@ class PageBase(db.Model):
         if isinstance(self, PageNew) and self.scrape_version:
             if (arxiv_dois := re.findall(r'arxiv.org/abs/(.*?)$', self.url)):
                 # Save Arxiv PDF with Datacite issued DOI (preprint, self.doi is null)
-                arxiv_doi = f'10.48550/arXiv.{arxiv_dois[0]}'
+                arxiv_doi = f'10.48550/arxiv.{arxiv_dois[0]}'
                 logger.info(
                     f'Saving {self.scrape_version} PDF of DOI - {arxiv_doi}')
                 self.save_pdf(PDFVersion.SUBMITTED, doi=arxiv_doi)
