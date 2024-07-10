@@ -188,7 +188,6 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
         exc = None
         try:
             doi, version = pdf_doi_q.get(timeout=20)
-            doi = doi.lower()
             if doi_is_seen(doi):
                 inc_dupe_count()
                 continue
@@ -197,6 +196,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
                 inc_already_parsed()
                 continue
             parsed = fetch_parsed_pdf_response(doi, version)['message']
+            doi = doi.lower()
             if DEBUG:
                 print(f'{doi}, {version.value} - {parsed}')
             if parsed.get('fulltext'):
