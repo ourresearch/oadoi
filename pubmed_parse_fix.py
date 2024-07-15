@@ -41,7 +41,7 @@ def make_logger():
 LOGGER = make_logger()
 
 
-def fetch_pmids_from_queue(limit=1):
+def fetch_pmids_from_queue(limit=50):
     query = '''
     WITH cte AS (
         SELECT pmid
