@@ -182,7 +182,7 @@ def store_pubmed_work_authors_and_affiliations(record: dict, tree=None):
             **model_to_dict(author)).on_conflict_do_nothing()
         db.session.execute(stmnt)
 
-        affiliations = raw_author.xpath('//AffiliationInfo/Affiliation')
+        affiliations = raw_author.xpath('./AffiliationInfo/Affiliation')
         for raw_aff in affiliations:
             affiliation = PubmedAffiliation()
             affiliation.created = datetime.now()

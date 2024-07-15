@@ -41,6 +41,27 @@ def make_logger():
 LOGGER = make_logger()
 
 
+def fetch_pmids_from_queue(limit=1):
+    query = '''SELECT pmid FROM recordthresher.pubmed_fix_queue WHERE started IS NULL LIMIT :limit'''
+    result = db.session.execute(query, {'limit': limit}).fetchall()
+    return [row['pmid'] for row in result]
+
+
+def mark_pmids_as_started(pmids):
+    if isinstance(pmids, str):
+        pmids = [pmids]
+    query = '''UPDATE recordthresher.pubmed_fix_queue SET started = now() WHERE pmid = any(:pmids)'''
+    db.session.execute(query, {'pmids': pmids})
+    db.session.commit()
+
+def mark_pmids_as_finished(pmids):
+    if isinstance(pmids, str):
+        pmids = [pmids]
+    query = '''UPDATE recordthresher.pubmed_fix_queue SET finished = now() WHERE pmid = any(:pmids)'''
+    db.session.execute(query, {'pmids': pmids})
+    db.session.commit()
+
+
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
@@ -176,29 +197,26 @@ def store_pubmed_work_authors_and_affiliations(record: dict, tree=None):
         author.created = datetime.now()
         author.pmid = record['pmid']
         author.doi = record['doi']
-        author.author_order = int(
-            raw_author.attrib.get('RecordthresherAuthorNo', 1))
+        author.author_order = int(raw_author.attrib.get('RecordthresherAuthorNo', 1))
         author.family = safe_get_first_xpath(raw_author, './LastName/text()')
         author.given = safe_get_first_xpath(raw_author, './ForeName/text()')
         author.initials = safe_get_first_xpath(raw_author, './Initials/text()')
-        author.orcid = safe_get_first_xpath(raw_author,
-                                            './Identifier[@Source="ORCID"]/text()')
-        stmnt = insert(PubmedAuthor).values(
-            **model_to_dict(author)).on_conflict_do_nothing()
+        author.orcid = safe_get_first_xpath(raw_author, './Identifier[@Source="ORCID"]/text()')
+
+        stmnt = insert(PubmedAuthor).values(**model_to_dict(author)).on_conflict_do_nothing()
         db.session.execute(stmnt)
 
-        affiliations = raw_author.xpath('//AffiliationInfo/Affiliation')
+        affiliations = raw_author.xpath('./AffiliationInfo/Affiliation')
         for raw_aff in affiliations:
             affiliation = PubmedAffiliation()
             affiliation.created = datetime.now()
             affiliation.affiliation = raw_aff.text
             affiliation.author_string = tostring(raw_author).decode()
             affiliation.pmid = author.pmid
-            affiliation.affiliation_number = int(
-                raw_aff.attrib.get('RecordthresherAuthorAffiliationNo', 1))
+            affiliation.affiliation_number = int(raw_aff.attrib.get('RecordthresherAuthorAffiliationNo', 1))
             affiliation.author_order = author.author_order
-            stmnt = insert(PubmedAffiliation).values(
-                **model_to_dict(affiliation)).on_conflict_do_nothing()
+
+            stmnt = insert(PubmedAffiliation).values(**model_to_dict(affiliation)).on_conflict_do_nothing()
             db.session.execute(stmnt)
 
 
@@ -271,21 +289,20 @@ def enqueue_to_record_queue(pmids):
     db.session.commit()
 
 
-
 if __name__ == '__main__':
     import argparse
 
-    # Setup argument parser
-    parser = argparse.ArgumentParser(description='Process PubMed records for specific PMIDs.')
-    parser.add_argument('--pmids', type=str, help='Comma-separated list of PMIDs to process', required=True)
+    # Fetch PMIDs from the queue table
+    pmids = fetch_pmids_from_queue()
 
-    args = parser.parse_args()
-
-    pmids = args.pmids.split(',')
-    if len(pmids) == 1:
-        pmids = pmids[0]
+    if not pmids:
+        LOGGER.info('No PMIDs to process.')
+        exit()
 
     LOGGER.info(f'Processing records for PMIDs: {pmids}')
+
+    # Mark PMIDs as started
+    mark_pmids_as_started(pmids)
 
     LOGGER.info(f'Deleting from record queue')
     delete_from_record_queue(pmids)
@@ -317,5 +334,8 @@ if __name__ == '__main__':
     LOGGER.info('Enqueueing batch to pubmed_record_queue')
     enqueue_to_record_queue(pmids)
     LOGGER.info('Finished enqueueing batch to pubmed_record_queue')
+
+    # Mark PMIDs as finished
+    mark_pmids_as_finished(pmids)
 
     LOGGER.info('Done.')
