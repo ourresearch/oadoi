@@ -293,49 +293,50 @@ if __name__ == '__main__':
     import argparse
 
     # Fetch PMIDs from the queue table
-    pmids = fetch_pmids_from_queue()
+    while True:
+        pmids = fetch_pmids_from_queue()
 
-    if not pmids:
-        LOGGER.info('No PMIDs to process.')
-        exit()
+        if not pmids:
+            LOGGER.info('No PMIDs to process.')
+            break
 
-    LOGGER.info(f'Processing records for PMIDs: {pmids}')
+        LOGGER.info(f'Processing records for PMIDs: {pmids}')
 
-    # Mark PMIDs as started
-    mark_pmids_as_started(pmids)
+        # Mark PMIDs as started
+        mark_pmids_as_started(pmids)
 
-    LOGGER.info(f'Deleting from record queue')
-    delete_from_record_queue(pmids)
-    LOGGER.info(f'Finished deleting from record queue')
+        LOGGER.info(f'Deleting from record queue')
+        delete_from_record_queue(pmids)
+        LOGGER.info(f'Finished deleting from record queue')
 
-    raw_records = [dict(row) for row in get_raw_records_for_pmids(pmids)]
+        raw_records = [dict(row) for row in get_raw_records_for_pmids(pmids)]
 
-    pre_delete('pubmed_works', pmids)
-    LOGGER.info('Storing works')
-    store_pubmed_works(raw_records)
-    LOGGER.info('Finished storing works')
+        pre_delete('pubmed_works', pmids)
+        LOGGER.info('Storing works')
+        store_pubmed_works(raw_records)
+        LOGGER.info('Finished storing works')
 
-    pre_delete('pubmed_reference', pmids)
-    LOGGER.info('Storing references')
-    store_pubmed_references(raw_records)
-    LOGGER.info('Stored references')
+        pre_delete('pubmed_reference', pmids)
+        LOGGER.info('Storing references')
+        store_pubmed_references(raw_records)
+        LOGGER.info('Stored references')
 
-    pre_delete('pubmed_author', pmids)
-    pre_delete('pubmed_affiliation', pmids)
-    LOGGER.info('Storing authors and affiliations')
-    store_pubmed_authors_and_affiliations(raw_records)
-    LOGGER.info('Finished storing authors and affiliations')
+        pre_delete('pubmed_author', pmids)
+        pre_delete('pubmed_affiliation', pmids)
+        LOGGER.info('Storing authors and affiliations')
+        store_pubmed_authors_and_affiliations(raw_records)
+        LOGGER.info('Finished storing authors and affiliations')
 
-    pre_delete('pubmed_mesh', pmids)
-    LOGGER.info('Storing meshes')
-    store_pubmed_mesh(raw_records)
-    LOGGER.info('Finished storing meshes')
+        pre_delete('pubmed_mesh', pmids)
+        LOGGER.info('Storing meshes')
+        store_pubmed_mesh(raw_records)
+        LOGGER.info('Finished storing meshes')
 
-    LOGGER.info('Enqueueing batch to pubmed_record_queue')
-    enqueue_to_record_queue(pmids)
-    LOGGER.info('Finished enqueueing batch to pubmed_record_queue')
+        LOGGER.info('Enqueueing batch to pubmed_record_queue')
+        enqueue_to_record_queue(pmids)
+        LOGGER.info('Finished enqueueing batch to pubmed_record_queue')
 
-    # Mark PMIDs as finished
-    mark_pmids_as_finished(pmids)
+        # Mark PMIDs as finished
+        mark_pmids_as_finished(pmids)
 
-    LOGGER.info('Done.')
+        LOGGER.info('Done.')
