@@ -41,7 +41,7 @@ def make_logger():
 LOGGER = make_logger()
 
 
-def fetch_pmids_from_queue(limit=1):
+def fetch_pmids_from_queue(limit=25):
     query = '''SELECT pmid FROM recordthresher.pubmed_fix_queue WHERE started IS NULL LIMIT :limit'''
     result = db.session.execute(query, {'limit': limit}).fetchall()
     return [row['pmid'] for row in result]
