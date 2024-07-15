@@ -66,15 +66,6 @@ def delete_from_record_queue(pmids):
     db.session.commit()
 
 
-
-
-
-def start_batch():
-    query = 'insert into recordthresher.pubmed_parse_batch (started) values (now()) returning id;'
-    result = db.session.execute(query).fetchone()
-    return int(result[0])
-
-
 def get_raw_records_for_pmids(pmids):
     if isinstance(pmids, str):
         pmids = [pmids]
@@ -300,7 +291,6 @@ if __name__ == '__main__':
     delete_from_record_queue(pmids)
     LOGGER.info(f'Finished deleting from record queue')
 
-    batch_id = start_batch()
     raw_records = [dict(row) for row in get_raw_records_for_pmids(pmids)]
 
     pre_delete('pubmed_works', pmids)
@@ -323,10 +313,6 @@ if __name__ == '__main__':
     LOGGER.info('Storing meshes')
     store_pubmed_mesh(raw_records)
     LOGGER.info('Finished storing meshes')
-
-    LOGGER.info('Marking batch completed')
-    mark_batch_completed(batch_id, pmids)
-    LOGGER.info('Finished marking batch completed')
 
     LOGGER.info('Enqueueing batch to pubmed_record_queue')
     enqueue_to_record_queue(pmids)
