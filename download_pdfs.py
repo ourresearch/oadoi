@@ -239,13 +239,14 @@ def openalex_filter_to_dict(_filter):
 def enqueue_from_api(url_q: Queue, _filter):
     _filter = openalex_filter_to_dict(_filter)
     _filter['has_doi'] = True
-    pager = Works().filter(**_filter).select('doi,best_oa_location').paginate(
+    pager = Works().filter(**_filter).select('doi,best_oa_location,type').paginate(
         per_page=200)
     for page in pager:
         for work in page:
             if pdf_url := (work.get('best_oa_location', {}) or {}).get('pdf_url'):
                 doi = normalize_doi(work['doi'])
-                url_q.put((doi, pdf_url, PDFVersion.PUBLISHED))
+                version = PDFVersion.SUBMITTED if work.get('type') == 'preprint' else PDFVersion.PUBLISHED
+                url_q.put((doi, pdf_url, version))
 
 
 def parse_args():
