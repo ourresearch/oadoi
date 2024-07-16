@@ -122,13 +122,13 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
         chunk = []
         while True:
             try:
-                doi = parse_doi_queue.get()
-                chunk.append(doi)
+                doi, version = parse_doi_queue.get()
+                chunk.append((doi, version))
                 if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
                     continue
-                _values = ', '.join([f"('{doi}', NULL, NULL)" for doi in chunk])
+                _values = ', '.join([f"('{doi}', NULL, NULL, {version})" for doi, version in chunk])
                 conn.execute(text(
-                    f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES {_values} ON CONFLICT(doi) DO NOTHING;').execution_options(
+                    f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {_values} ON CONFLICT(doi, pdf_version) DO NOTHING;').execution_options(
                     autocommit=True))
                 chunk = []
             except Empty:
@@ -169,7 +169,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
             else:
                 PDF_CONTENT_NOT_FOUND += 1
                 continue
-            parse_q.put(doi)
+            parse_q.put((doi, version))
             SUCCESSFUL += 1
             LAST_SUCCESSFUL = {'doi': doi, 's3_key': key}
         except Empty:
