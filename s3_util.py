@@ -61,4 +61,3 @@ def get_landing_page(doi):
     obj = get_object(LANDING_PAGE_ARCHIVE_BUCKET, landing_page_key(doi))
     contents = obj['Body'].read()
     return decompress(contents)
-

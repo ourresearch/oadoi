@@ -22,6 +22,7 @@ from app import app, logger
 from http_cache import http_get
 from pdf_util import PDFVersion
 from s3_util import get_landing_page, mute_boto_logging
+from util import normalize_doi
 
 TOTAL_ATTEMPTED = 0
 SUCCESSFUL = 0
@@ -153,7 +154,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
             version: PDFVersion
             doi, url, version = url_q.get(timeout=30)
             key = version.s3_key(doi)
-            if version.in_s3(doi):
+            if version.valid_in_s3(doi):
                 ALREADY_EXIST += 1
                 continue
             if not url:
@@ -226,20 +227,31 @@ def enqueue_from_db(url_q: Queue):
             conn.execute(text(del_query).bindparams(ids=tuple(ids)))
 
 
-def enqueue_from_api(url_q: Queue):
-    pager = Works().filter(is_oa=True, has_doi=True).paginate(per_page=200)
-    global PDF_URL_NOT_FOUND
+def openalex_filter_to_dict(_filter):
+    f = {}
+    items = _filter.split(',')
+    for item in items:
+        key, value = item.split(':')
+        f[key] = value
+    return f
+
+
+def enqueue_from_api(url_q: Queue, _filter):
+    _filter = openalex_filter_to_dict(_filter)
+    _filter['has_doi'] = True
+    pager = Works().filter(**_filter).select('doi,best_oa_location').paginate(
+        per_page=200)
     for page in pager:
         for work in page:
-            pdf_url = work['best_oa_location']['pdf_url']
-            url_q.put((work['doi'], pdf_url))
+            if pdf_url := (work.get('best_oa_location', {}) or {}).get('pdf_url'):
+                doi = normalize_doi(work['doi'])
+                url_q.put((doi, pdf_url, PDFVersion.PUBLISHED))
 
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--api', '-a', default=False,
-                        action='store_true',
-                        help='Enqueue PDF urls to download from API rather than database (default)')
+    parser.add_argument('--api_filter', '-f', default=False, type=str,
+                        help='Enqueue PDF urls to download from API filter')
     parser.add_argument('--download_threads', '-dt', '-t',
                         default=1,
                         type=int,
@@ -289,8 +301,9 @@ def main():
     Thread(target=print_stats, daemon=True).start()
     Thread(target=insert_into_parse_queue, daemon=True, args=(parse_q,)).start()
     q = Queue(maxsize=args.download_threads + 1)
-    if args.api:
-        Thread(target=enqueue_from_api, args=(q,), daemon=True).start()
+    if args.api_filter:
+        Thread(target=enqueue_from_api, args=(q, args.api_filter),
+               daemon=True).start()
     else:
         Thread(target=enqueue_from_db, args=(q,), daemon=True).start()
     for _ in range(args.download_threads):

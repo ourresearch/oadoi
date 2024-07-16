@@ -37,6 +37,9 @@ class PDFVersion(Enum):
                 return version
         return None
 
+    def valid_in_s3(self, doi) -> bool:
+        return check_valid_pdf(PDF_ARCHIVE_BUCKET, self.s3_key(doi))
+
     def in_s3(self, doi) -> bool:
         return check_exists(PDF_ARCHIVE_BUCKET, self.s3_key(doi))
 
@@ -74,6 +77,16 @@ def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED,
         doi=doi, version=version.value))
     if commit:
         db.session.commit()
+
+
+def check_valid_pdf(bucket, key, s3=None, _raise=False):
+    obj = get_object(bucket, key, s3=s3, _raise=_raise)
+    if not obj:
+        return False
+    contents = obj['Body'].read()
+    if contents is not None:
+        return is_pdf(contents)
+    return False
 
 
 def is_pdf(contents: bytes) -> bool:
