@@ -225,12 +225,16 @@ def enqueue_from_db(url_q: Queue):
 
 def enqueue_from_api(url_q: Queue, _filter):
     page_count = 0
+    if 'has_doi' not in _filter:
+        _filter += 'has_doi:true'
     for page in openalex_works_paginate(_filter, select='doi,best_oa_location,type'):
         page_count += 1
         logger.info(f'Fetched page {page_count} of API with filter {_filter}')
         for work in page:
             if pdf_url := (work.get('best_oa_location', {}) or {}).get('pdf_url'):
-                doi = normalize_doi(work['doi'])
+                doi = normalize_doi(work['doi'], return_none_if_error=True)
+                if not doi:
+                    continue
                 version = PDFVersion.SUBMITTED if work.get('type') == 'preprint' else PDFVersion.PUBLISHED
                 url_q.put((doi, pdf_url, version))
 
