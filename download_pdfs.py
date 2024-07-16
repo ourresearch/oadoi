@@ -226,7 +226,7 @@ def enqueue_from_db(url_q: Queue):
 def enqueue_from_api(url_q: Queue, _filter):
     page_count = 0
     if 'has_doi' not in _filter:
-        _filter += 'has_doi:true'
+        _filter += ',has_doi:true'
     for page in openalex_works_paginate(_filter, select='doi,best_oa_location,type'):
         page_count += 1
         logger.info(f'Fetched page {page_count} of API with filter {_filter}')
