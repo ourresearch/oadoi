@@ -152,7 +152,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
         doi, url, version = None, None, None
         try:
             version: PDFVersion
-            doi, url, version = url_q.get(timeout=30)
+            doi, url, version = url_q.get(timeout=60*5)
             key = version.s3_key(doi)
             if version.valid_in_s3(doi):
                 ALREADY_EXIST += 1
