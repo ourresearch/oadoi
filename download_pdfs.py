@@ -1,18 +1,14 @@
 import json
-import logging
 import os
-import re
 import time
 from argparse import ArgumentParser
 from datetime import datetime
-from gzip import decompress
 from io import BytesIO
 from queue import Queue, Empty
 from threading import Thread
 
 import boto3
 import botocore
-import requests
 from bs4 import BeautifulSoup
 from pyalex import Works
 from sqlalchemy import text, create_engine
@@ -22,7 +18,7 @@ from app import app, logger
 from http_cache import http_get
 from pdf_util import PDFVersion
 from s3_util import get_landing_page, mute_boto_logging
-from util import normalize_doi
+from util import normalize_doi, openalex_works_paginate
 
 TOTAL_ATTEMPTED = 0
 SUCCESSFUL = 0
@@ -227,21 +223,11 @@ def enqueue_from_db(url_q: Queue):
             conn.execute(text(del_query).bindparams(ids=tuple(ids)))
 
 
-def openalex_filter_to_dict(_filter):
-    f = {}
-    items = _filter.split(',')
-    for item in items:
-        key, value = item.split(':')
-        f[key] = value
-    return f
-
-
 def enqueue_from_api(url_q: Queue, _filter):
-    _filter = openalex_filter_to_dict(_filter)
-    _filter['has_doi'] = True
-    pager = Works().filter(**_filter).select('doi,best_oa_location,type').paginate(
-        per_page=200)
-    for page in pager:
+    page_count = 0
+    for page in openalex_works_paginate(_filter, select='doi,best_oa_location,type'):
+        page_count += 1
+        logger.info(f'Fetched page {page_count} of API with filter {_filter}')
         for work in page:
             if pdf_url := (work.get('best_oa_location', {}) or {}).get('pdf_url'):
                 doi = normalize_doi(work['doi'])

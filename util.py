@@ -757,3 +757,40 @@ def enqueue_unpaywall_refresh(dois: List[str], db_conn, redis_conn: Redis=None):
     else:
         print(f'Empty recordthresher ids for DOIs: {dois}')
 
+
+def print_openalex_error(retry_state):
+    if retry_state.outcome.failed:
+        print(
+            f'[!] Error making OpenAlex API call (attempt #{retry_state.attempt_number}): {retry_state.outcome.exception()}')
+
+
+@retry(stop=stop_after_attempt(5),
+       wait=wait_exponential(multiplier=1, min=4, max=256),
+       retry_error_callback=print_openalex_error)
+def get_openalex_json(url, params, s=None):
+    if not s:
+        s = requests
+    r = s.get(url, params=params,
+              verify=False)
+    r.raise_for_status()
+    return r.json()
+
+
+def openalex_works_paginate(oax_filter, select=None):
+    params = {'mailto': 'team@ourresearch.org',
+              'filter': oax_filter,
+              'per-page': '200',
+              'cursor': '*'}
+    if select:
+        params['select'] = select
+    s = requests.session()
+    while True:
+        j = get_openalex_json('https://api.openalex.org/works', params, s)
+        page = j['results']
+        if next_cursor := j['meta'].get('next_cursor'):
+            params['cursor'] = next_cursor
+        else:
+            break
+        if not page:
+            break
+        yield page
