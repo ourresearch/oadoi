@@ -122,7 +122,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 chunk.append((doi, version))
                 if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
                     continue
-                _values = ', '.join([f"('{doi}', NULL, NULL, {version})" for doi, version in chunk])
+                _values = ', '.join([f"('{doi}', NULL, NULL, {version.value})" for doi, version in chunk])
                 conn.execute(text(
                     f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {_values} ON CONFLICT(doi, pdf_version) DO NOTHING;').execution_options(
                     autocommit=True))
