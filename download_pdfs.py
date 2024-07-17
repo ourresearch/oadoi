@@ -251,9 +251,9 @@ def enqueue_from_api(_filter, url_q: Queue = None):
                     continue
                 version = PDFVersion.SUBMITTED if work.get(
                     'type') == 'preprint' else PDFVersion.PUBLISHED
-                if (doi, version) in seen_dois:
+                if doi in seen_dois:
                     continue
-                seen_dois.add((doi, version))
+                seen_dois.add(doi)
                 if url_q:
                     url_q.put((doi, pdf_url, version))
                 elif db_conn and db_cursor:
