@@ -10,6 +10,7 @@ from threading import Thread
 import boto3
 import botocore
 from bs4 import BeautifulSoup
+from psycopg2 import sql
 from pyalex import Works
 from sqlalchemy import text, create_engine
 from sqlalchemy.engine import Engine
@@ -122,7 +123,9 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 chunk.append((doi, version))
                 if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
                     continue
-                _values = ', '.join([f"('{doi}', NULL, NULL, '{version.value}')" for doi, version in chunk])
+                _values = ', '.join(
+                    [f"('{doi}', NULL, NULL, '{version.value}')" for
+                     doi, version in chunk])
                 conn.execute(text(
                     f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {_values} ON CONFLICT(doi, pdf_version) DO NOTHING;').execution_options(
                     autocommit=True))
@@ -148,7 +151,7 @@ def download_pdfs(url_q: Queue, parse_q: Queue):
         doi, url, version = None, None, None
         try:
             version: PDFVersion
-            doi, url, version = url_q.get(timeout=60*5)
+            doi, url, version = url_q.get(timeout=60 * 5)
             key = version.s3_key(doi)
             if version.valid_in_s3(doi):
                 ALREADY_EXIST += 1
@@ -223,26 +226,57 @@ def enqueue_from_db(url_q: Queue):
             conn.execute(text(del_query).bindparams(ids=tuple(ids)))
 
 
-def enqueue_from_api(url_q: Queue, _filter):
+def enqueue_from_api(_filter, url_q: Queue = None):
     page_count = 0
+    works_count = 0
+    db_conn = None
+    db_cursor = None
+    pdf_save_queue_batch = []
     if 'has_doi' not in _filter:
         _filter += ',has_doi:true'
-    for page in openalex_works_paginate(_filter, select='doi,best_oa_location,type'):
+    if not url_q:
+        db_conn = OADOI_DB_ENGINE.connect()
+        db_cursor = db_conn.connection.cursor()
+    for page in openalex_works_paginate(_filter,
+                                        select='doi,best_oa_location,type'):
         page_count += 1
         logger.info(f'Fetched page {page_count} of API with filter {_filter}')
         for work in page:
-            if pdf_url := (work.get('best_oa_location', {}) or {}).get('pdf_url'):
+            works_count += 1
+            if pdf_url := (work.get('best_oa_location', {}) or {}).get(
+                    'pdf_url'):
                 doi = normalize_doi(work['doi'], return_none_if_error=True)
                 if not doi:
                     continue
-                version = PDFVersion.SUBMITTED if work.get('type') == 'preprint' else PDFVersion.PUBLISHED
-                url_q.put((doi, pdf_url, version))
+                version = PDFVersion.SUBMITTED if work.get(
+                    'type') == 'preprint' else PDFVersion.PUBLISHED
+                if url_q:
+                    url_q.put((doi, pdf_url, version))
+                elif db_conn and db_cursor:
+                    pdf_save_queue_batch.append((doi, pdf_url, version))
+                    if len(pdf_save_queue_batch) % 200 == 0 and len(pdf_save_queue_batch) > 0:
+                        values = ', '.join(
+                            db_cursor.mogrify("(%s, %s, %s, FALSE)", (doi, pdf_url, version.value)).decode('utf-8')
+                            for doi, pdf_url, version in pdf_save_queue_batch
+                        )
+                        stmnt = sql.SQL(
+                            'INSERT INTO pdf_save_queue (id, scrape_pdf_url, version, in_progress) VALUES {} ON CONFLICT(id) DO UPDATE SET in_progress = FALSE;'
+                        ).format(sql.SQL(values))
+                        db_cursor.execute(stmnt)
+                        db_conn.connection.commit()
+                        logger.info(
+                            f'Enqueued {works_count} works into pdf_save_queue from filter {_filter}')
+                        pdf_save_queue_batch.clear()
 
 
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--api_filter', '-f', default=False, type=str,
                         help='Enqueue PDF urls to download from API filter')
+    parser.add_argument('--enqueue_db', '-db',
+                        default=False,
+                        action='store_true',
+                        help='Enqueue from API into database')
     parser.add_argument('--download_threads', '-dt', '-t',
                         default=1,
                         type=int,
@@ -289,12 +323,16 @@ def main():
     logger.info(f'Starting PDF downloader with args: {args.__dict__}')
     threads = []
     parse_q = Queue(maxsize=PARSE_QUEUE_CHUNK_SIZE)
-    Thread(target=print_stats, daemon=True).start()
+    if not args.enqueue_db:
+        Thread(target=print_stats, daemon=True).start()
     Thread(target=insert_into_parse_queue, daemon=True, args=(parse_q,)).start()
     q = Queue(maxsize=args.download_threads + 1)
     if args.api_filter:
-        Thread(target=enqueue_from_api, args=(q, args.api_filter),
-               daemon=True).start()
+        if args.enqueue_db:
+            enqueue_from_api(args.api_filter)
+        else:
+            Thread(target=enqueue_from_api, args=(q, args.api_filter),
+                   daemon=True).start()
     else:
         Thread(target=enqueue_from_db, args=(q,), daemon=True).start()
     for _ in range(args.download_threads):
