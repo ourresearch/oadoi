@@ -123,7 +123,6 @@ def enqueue_from_db_loop(pdf_doi_q: Queue):
                 RETURNING *;
                 '''
     rows = True
-    pdf_doi_q.put(('10.1021/ac504173b.s001', PDFVersion.from_version_str('submitted')))
     with OADOI_DB_ENGINE.connect() as conn:
         while rows:
             rows = conn.execute(
@@ -195,6 +194,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
             if version.grobid_in_s3(doi):
                 inc_already_parsed()
                 continue
+            # TODO make pdf
             parsed = fetch_parsed_pdf_response(doi, version)['message']
             doi = doi.lower()
             if DEBUG:
