@@ -231,6 +231,7 @@ def enqueue_from_api(_filter, url_q: Queue = None):
     works_count = 0
     db_conn = None
     db_cursor = None
+    seen_dois = set()
     pdf_save_queue_batch = []
     if 'has_doi' not in _filter:
         _filter += ',has_doi:true'
@@ -250,6 +251,9 @@ def enqueue_from_api(_filter, url_q: Queue = None):
                     continue
                 version = PDFVersion.SUBMITTED if work.get(
                     'type') == 'preprint' else PDFVersion.PUBLISHED
+                if (doi, version) in seen_dois:
+                    continue
+                seen_dois.add((doi, version))
                 if url_q:
                     url_q.put((doi, pdf_url, version))
                 elif db_conn and db_cursor:
