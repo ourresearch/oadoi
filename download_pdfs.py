@@ -115,9 +115,7 @@ def parse_pdf_content(landing_page):
 
 def insert_into_parse_queue(parse_doi_queue: Queue):
     global INSERT_PDF_UPDATED_INGEST_LOOP_EXITED
-    global PARSE_QUEUE_CHUNK_SIZE
     INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = False
-    PARSE_QUEUE_CHUNK_SIZE = 10
     with OADOI_DB_ENGINE.connect() as conn:
         conn = conn.execution_options(isolation_level="AUTOCOMMIT")
         chunk = []
