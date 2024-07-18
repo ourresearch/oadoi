@@ -79,21 +79,45 @@ class PubmedRecord(Record):
 
         if (article_type_elements := work_tree.findall('.//PublicationTypeList/PublicationType')) is not None:
             article_type_names = [e.text for e in article_type_elements]
-            normalized_names = {}
 
-            for article_type_name in article_type_names:
-                normalized_names[article_type_name.strip().lower()] = article_type_name
+            # list of publication types to prioritize. order is important
+            pubmed_publication_types_to_prioritize = [
+                'Published Erratum',
+                'Systematic Review',
+                'Meta-Analysis',
+                'Review',
+                'Letter',
+                'Comment',
+                'Editorial',
+                'Retraction of Publication',
+                'Preprint',
+                'Journal Article',
+            ]
+            best_type = None
+            for pubmed_type in pubmed_publication_types_to_prioritize:
+                if pubmed_type in article_type_names:
+                    best_type = pubmed_type
+                    break
+            if best_type is not None:
+                record.genre = best_type
+            elif best_type is None and len(article_type_names) > 0:
+                # this is if the above didn't come up with anything.
+                # fall back to the old way of doing things: pick based on a static table with types ranked by relative frequency
+                normalized_names = {}
 
-            best_type = PubmedArticleType.query.filter(
-                PubmedArticleType.article_type.in_(normalized_names.keys())
-            ).order_by(PubmedArticleType.rank).first()
+                for article_type_name in article_type_names:
+                    normalized_names[article_type_name.strip().lower()] = article_type_name
 
-            if best_type:
-                record.genre = normalized_names[best_type.article_type]
-            elif article_type_names:
-                record.genre = article_type_names[0]
-            else:
-                record.genre = None
+                best_type = PubmedArticleType.query.filter(
+                    PubmedArticleType.article_type.in_(normalized_names.keys())
+                ).order_by(PubmedArticleType.rank).first()
+
+                if best_type:
+                    record.genre = normalized_names[best_type.article_type]
+                elif article_type_names:
+                    record.genre = article_type_names[0]
+                else:
+                    record.genre = None
         else:
             record.genre = None
 
