@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import time
 from argparse import ArgumentParser
 from datetime import datetime
@@ -129,14 +130,12 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 conn.execute(text(
                     f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {_values} ON CONFLICT(doi, pdf_version) DO NOTHING;').execution_options(
                     autocommit=True))
-                chunk = []
-            except Empty:
-                break
+                chunk.clear()
             except Exception as e:
-                logger.exception(e, exc_info=True)
-                break
+                logger.exception('Error enqueuing DOIs to parse', exc_info=True)
     logger.info('EXITING insert_into_parse_queue loop')
     INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = True
+    sys.exit(1)
 
 
 def download_pdfs(url_q: Queue, parse_q: Queue):
