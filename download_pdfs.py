@@ -132,7 +132,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                     for doi, version in chunk
                 )
                 stmnt = sql.SQL('INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {} ON CONFLICT(doi, pdf_version) DO NOTHING;'.format(sql.SQL(values)))
-                conn.execute(text(stmnt).execution_options(autocommit=True))
+                conn.execute(text(stmnt.string).execution_options(autocommit=True))
                 chunk.clear()
             except Exception as e:
                 logger.exception('Error enqueuing DOIs to parse', exc_info=True)
