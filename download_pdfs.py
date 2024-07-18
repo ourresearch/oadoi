@@ -118,6 +118,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
     INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = False
     with OADOI_DB_ENGINE.connect() as conn:
         conn = conn.execution_options(isolation_level="AUTOCOMMIT")
+        cursor = conn.connection.cursor()
         chunk = []
         while True:
             try:
@@ -125,16 +126,25 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 chunk.append((doi, version))
                 if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
                     continue
-                values = ', '.join(("('{}', NULL, NULL, '{}')".format(doi, version.value) for doi, version in chunk))
-                stmnt = sql.SQL('INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {} ON CONFLICT(doi, pdf_version) DO NOTHING;'.format(sql.SQL(values).string)).string
-                conn.execute(stmnt)
-                logger.info(f'Successfully enqueued {len(chunk)} DOIs for parsing')
+                values = tuple(
+                    sql.SQL("({}, NULL, NULL, {})").format(
+                        sql.Literal(doi), sql.Literal(version.value)
+                    ) for doi, version in chunk
+                )
+                values_sql = sql.SQL(', ').join(values)
+                stmnt = sql.SQL(
+                    'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {} '
+                    'ON CONFLICT(doi, pdf_version) DO NOTHING'
+                ).format(values_sql)
+                cursor.execute(stmnt)
+                logger.info(
+                    f'Successfully enqueued {len(chunk)} DOIs for parsing')
                 chunk.clear()
             except Exception as e:
-                logger.exception('Error enqueuing DOIs to parse', exc_info=True)
+                logger.exception(f'Error enqueuing DOIs to parse\nValues = {values}', exc_info=True)
+                sys.exit(1)
     logger.info('EXITING insert_into_parse_queue loop')
     INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = True
-    sys.exit(1)
 
 
 def download_pdfs(url_q: Queue, parse_q: Queue):
@@ -256,9 +266,11 @@ def enqueue_from_api(_filter, url_q: Queue = None):
                     url_q.put((doi, pdf_url, version))
                 elif db_conn and db_cursor:
                     pdf_save_queue_batch.append((doi, pdf_url, version))
-                    if len(pdf_save_queue_batch) % 200 == 0 and len(pdf_save_queue_batch) > 0:
+                    if len(pdf_save_queue_batch) % 200 == 0 and len(
+                            pdf_save_queue_batch) > 0:
                         values = ', '.join(
-                            db_cursor.mogrify("(%s, %s, %s, FALSE)", (doi, pdf_url, version.value)).decode('utf-8')
+                            db_cursor.mogrify("(%s, %s, %s, FALSE)", (
+                            doi, pdf_url, version.value)).decode('utf-8')
                             for doi, pdf_url, version in pdf_save_queue_batch
                         )
                         stmnt = sql.SQL(
@@ -283,6 +295,8 @@ def parse_args():
                         default=1,
                         type=int,
                         help='Number of threads to download PDFs')
+    parser.add_argument('--single_doi', '-doi', type=str,
+                        help='Single DOI to download for debugging purposes')
     args = parser.parse_args()
     env_dt = int(os.getenv('PDF_DOWNLOAD_THREADS', 0))
     if env_dt:
