@@ -52,7 +52,7 @@ HEADERS = {
     'Sec-GPC': '1',
 }
 
-PARSE_QUEUE_CHUNK_SIZE = 10
+PARSE_QUEUE_CHUNK_SIZE = 100
 DEQUEUE_CHUNK_SIZE = 100
 
 mute_boto_logging()
@@ -133,8 +133,8 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 )
                 stmnt = sql.SQL('INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {} ON CONFLICT(doi, pdf_version) DO NOTHING;'.format(sql.SQL(values).string)).string
                 conn.execute(text(stmnt).execution_options(autocommit=True))
-                chunk.clear()
                 logger.info(f'Successfully enqueued {len(chunk)} DOIs for parsing')
+                chunk.clear()
             except Exception as e:
                 logger.exception('Error enqueuing DOIs to parse', exc_info=True)
     logger.info('EXITING insert_into_parse_queue loop')
