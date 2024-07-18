@@ -117,6 +117,7 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
     global INSERT_PDF_UPDATED_INGEST_LOOP_EXITED
     INSERT_PDF_UPDATED_INGEST_LOOP_EXITED = False
     with OADOI_DB_ENGINE.connect() as conn:
+        cursor = conn.connection.cursor()
         chunk = []
         while True:
             try:
@@ -124,12 +125,14 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 chunk.append((doi, version))
                 if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
                     continue
-                _values = ', '.join(
-                    [f"('{doi}', NULL, NULL, '{version.value}')" for
-                     doi, version in chunk])
-                conn.execute(text(
-                    f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {_values} ON CONFLICT(doi, pdf_version) DO NOTHING;').execution_options(
-                    autocommit=True))
+                values = ', '.join(
+                    cursor.mogrify("(%s, NULL, NULL, %s)",
+                                      (doi, version.value)).decode(
+                        'utf-8')
+                    for doi, version in chunk
+                )
+                stmnt = sql.SQL('INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished, pdf_version) VALUES {} ON CONFLICT(doi, pdf_version) DO NOTHING;'.format(sql.SQL(values)))
+                conn.execute(text(stmnt).execution_options(autocommit=True))
                 chunk.clear()
             except Exception as e:
                 logger.exception('Error enqueuing DOIs to parse', exc_info=True)
