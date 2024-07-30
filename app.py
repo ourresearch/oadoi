@@ -61,12 +61,15 @@ app.config["SQLALCHEMY_BINDS"] = {"openalex": openalex_db_url}
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 
 # from http://stackoverflow.com/a/12417346/596939
-class NullPoolSQLAlchemy(SQLAlchemy):
-    def apply_driver_hacks(self, app, info, options):
-        options['poolclass'] = NullPool
-        return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
+# class NullPoolSQLAlchemy(SQLAlchemy):
+#     def apply_driver_hacks(self, app, info, options):
+#         options['poolclass'] = NullPool
+#         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
+#
+# db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
 
-db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
+app.config["SQLALCHEMY_POOL_SIZE"] = 10
+db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False})
 
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 oa_db_engine = create_engine(openalex_db_url)
