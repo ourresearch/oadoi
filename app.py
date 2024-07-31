@@ -69,8 +69,8 @@ class NullPoolSQLAlchemy(SQLAlchemy):
 
 db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
 
-# app.config["SQLALCHEMY_POOL_SIZE"] = 10
-# db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False})
+pooled_db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False},
+                       engine_options={"pool_size": 10})
 
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 oa_db_engine = create_engine(openalex_db_url)
