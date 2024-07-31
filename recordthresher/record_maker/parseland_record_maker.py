@@ -14,6 +14,13 @@ def parseland_api_url(pub):
     return f'https://parseland.herokuapp.com/parse-publisher?doi={pub.id}'
 
 
+def affiliations_count(pl_response):
+    count = 0
+    for author in pl_response.get('authors'):
+        count += len((author.get('affiliations', []) or []))
+    return count
+
+
 class ParselandRecordMaker:
     @classmethod
     def make_record(cls, pub, update_existing=True):
@@ -28,13 +35,18 @@ class ParselandRecordMaker:
         pl_record = CrossrefParselandRecord.query.get(record_id)
 
         if pl_record and not update_existing:
-            logger.info(f"not updating existing parseland record {pl_record.id}")
+            logger.info(
+                f"not updating existing parseland record {pl_record.id}")
             return None
 
         pl_response = parser_response(parseland_api_url(pub))
 
         if not pl_response:
-            logger.info(f"didn't get a parseland response for {pub.id}, not making record")
+            logger.info(
+                f"didn't get a parseland response for {pub.id}, not making record")
+            return None
+        elif pl_record and affiliations_count(pl_response) == 0:
+            logger.info(f'parseland response for {pub.id} returned 0 affiliations, not updating existing parseland record {pl_record.id}')
             return None
 
         pl_authors = pl_response.get('authors')
@@ -49,4 +61,3 @@ class ParselandRecordMaker:
         pl_record.updated = datetime.datetime.utcnow().isoformat()
 
         return pl_record
-
