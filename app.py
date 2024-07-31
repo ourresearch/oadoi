@@ -19,7 +19,8 @@ HEROKU_APP_NAME = "articlepage"
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG,
-    format='%(thread)d: %(message)s'  #tried process but it was always "6" on heroku
+    format='%(thread)d: %(message)s'
+    #tried process but it was always "6" on heroku
 )
 logger = logging.getLogger("oadoi")
 
@@ -40,7 +41,6 @@ libraries_to_mum = [
     "botocore",
 ]
 
-
 for a_library in libraries_to_mum:
     the_logger = logging.getLogger(a_library)
     the_logger.setLevel(logging.WARNING)
@@ -54,32 +54,32 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 app = Flask(__name__)
 
 # database stuff
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
-openalex_db_url = os.getenv("OPENALEX_DATABASE_URL").replace('postgres://', 'postgresql://')
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace('postgres://', 'postgresql://')
+app.config[
+    "SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
+openalex_db_url = os.getenv("OPENALEX_DATABASE_URL").replace('postgres://',
+                                                             'postgresql://')
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace(
+    'postgres://', 'postgresql://')
 app.config["SQLALCHEMY_BINDS"] = {"openalex": openalex_db_url}
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 
 # from http://stackoverflow.com/a/12417346/596939
-class NullPoolSQLAlchemy(SQLAlchemy):
-    def apply_driver_hacks(self, app, info, options):
-        options['poolclass'] = NullPool
-        return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
+# class NullPoolSQLAlchemy(SQLAlchemy):
+#     def apply_driver_hacks(self, app, info, options):
+#         options['poolclass'] = NullPool
+#         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
+#
+#
+# db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
 
-
-db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
-
-pooled_db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False},
-                       engine_options={"pool_size": 10})
+app.config["SQLALCHEMY_POOL_SIZE"] = 10
+db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False})
 
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 oa_db_engine = create_engine(openalex_db_url)
 
-
-
 # do compression.  has to be above flask debug toolbar so it can override this.
-compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
-
+compress_json = os.getenv("COMPRESS_DEBUG", "False") == "True"
 
 # set up Flask-DebugToolbar
 if (os.getenv("FLASK_DEBUG", False) == "True"):
@@ -95,7 +95,6 @@ if (os.getenv("FLASK_DEBUG", False) == "True"):
 # gzip responses
 Compress(app)
 app.config["COMPRESS_DEBUG"] = compress_json
-
 
 # aws s3 connection
 s3_conn = boto3.client('s3')
