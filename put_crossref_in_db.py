@@ -11,7 +11,7 @@ from sqlalchemy import text
 from tenacity import retry, stop_after_attempt, wait_exponential, \
     retry_if_exception_type, retry_if_result
 
-from app import db
+from app import pooled_db as db
 from app import logger
 from app import logging
 from pub import Pub
