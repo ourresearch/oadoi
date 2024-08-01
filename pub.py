@@ -41,7 +41,8 @@ from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 from recordthresher.record import RecordthresherParentRecord
 from recordthresher.record_maker import CrossrefRecordMaker
-from recordthresher.record_maker.parseland_record_maker import ParselandRecordMaker
+from recordthresher.record_maker.parseland_record_maker import \
+    ParselandRecordMaker
 from recordthresher.record_maker import PmhRecordMaker
 from recordthresher.record_maker.pdf_record_maker import PDFRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
@@ -694,7 +695,8 @@ class Pub(db.Model):
                 "1131-5598",
                 "2083-2931",
                 "2008-322X",
-                "2152-7180, 2152-7199, 0037-8046, 1545-6846, 0024-3949, 1613-396X, 1741-2862, 0047-1178", "2598-0025"
+                "2152-7180, 2152-7199, 0037-8046, 1545-6846, 0024-3949, 1613-396X, 1741-2862, 0047-1178",
+                "2598-0025"
             ]
             r = requests.get(
                 f"https://parseland.herokuapp.com/parse-publisher?doi={self.id}")
@@ -742,19 +744,24 @@ class Pub(db.Model):
         self.create_or_update_recordthresher_record()
         db.session.merge(self)
 
+    def create_or_update_parseland_record(self):
+        if pl_record := ParselandRecordMaker.make_record(self):
+            db.session.merge(pl_record)
+
     def create_or_update_recordthresher_record(self):
         if self.error and "crossref deleted doi" in self.error.lower():
             return False
         if rt_record := CrossrefRecordMaker.make_record(self):
             db.session.merge(rt_record)
             self.recordthresher_id = rt_record.id
-            secondary_records = PmhRecordMaker.make_secondary_repository_responses(rt_record)
+            secondary_records = PmhRecordMaker.make_secondary_repository_responses(
+                rt_record)
             for secondary_record in secondary_records:
                 db.session.merge(secondary_record)
-                db.session.merge(RecordthresherParentRecord(record_id=secondary_record.id, parent_record_id=rt_record.id))
-
-            if pl_record := ParselandRecordMaker.make_record(self):
-                db.session.merge(pl_record)
+                db.session.merge(
+                    RecordthresherParentRecord(record_id=secondary_record.id,
+                                               parent_record_id=rt_record.id))
+            self.create_or_update_parseland_record()
             if pdf_record := PDFRecordMaker.make_record(self):
                 db.session.merge(pdf_record)
             return True
@@ -1397,7 +1404,8 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = version
             my_location.oa_date = oa_date
-            my_location.not_ol_exception_func = self.elsevier_bronze_exception_func(license)
+            my_location.not_ol_exception_func = self.elsevier_bronze_exception_func(
+                license)
             my_location.publisher_specific_license = publisher_specific_license
             if pdf_url:
                 my_location.pdf_url = pdf_url
@@ -1442,7 +1450,8 @@ class Pub(db.Model):
             my_location.metadata_url = self.scrape_metadata_url
             my_location.license = self.scrape_license
             my_location.evidence = self.scrape_evidence
-            my_location.not_ol_exception_func = self.elsevier_bronze_exception_func(self.scrape_license)
+            my_location.not_ol_exception_func = self.elsevier_bronze_exception_func(
+                self.scrape_license)
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
@@ -1568,7 +1577,10 @@ class Pub(db.Model):
 
     def ask_green_locations(self):
         has_new_green_locations = False
-        springer_ebook_oa_override = any([(page.scrape_pdf_url and page.scrape_pdf_url.endswith('?pdf=chapter%20toc') for page in self.pages)]) and self.publisher and 'springer' in self.publisher.lower()
+        springer_ebook_oa_override = any([(
+                                          page.scrape_pdf_url and page.scrape_pdf_url.endswith(
+                                              '?pdf=chapter%20toc') for page in
+                                          self.pages)]) and self.publisher and 'springer' in self.publisher.lower()
         if springer_ebook_oa_override:
             return
         for my_page in [p for p in self.pages if
@@ -1589,7 +1601,8 @@ class Pub(db.Model):
                 new_open_location.updated = my_page.scrape_updated
                 new_open_location.doi = self.doi
                 new_open_location.pmh_id = my_page.bare_pmh_id
-                new_open_location.not_ol_exception_func = self.elsevier_bronze_exception_func(my_page.scrape_license)
+                new_open_location.not_ol_exception_func = self.elsevier_bronze_exception_func(
+                    my_page.scrape_license)
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
                 new_open_location.oa_date = my_page.first_available
@@ -1615,7 +1628,8 @@ class Pub(db.Model):
                 new_open_location.evidence = my_page.scrape_version
                 new_open_location.version = 'publishedVersion'
                 new_open_location.updated = my_page.scrape_updated
-                new_open_location.not_ol_exception_func = self.elsevier_bronze_exception_func(my_page.scrape_license)
+                new_open_location.not_ol_exception_func = self.elsevier_bronze_exception_func(
+                    my_page.scrape_license)
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = None
                 new_open_location.endpoint_id = None
@@ -1744,10 +1758,14 @@ class Pub(db.Model):
             if license != 'publisher-specific-oa':
                 return False
             elif ('elsevier' in self.publisher.lower() or (
-                        self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith('10.1016')):
+                    self.resolved_doi_url and 'sciencedirect.com' in self.resolved_doi_url) or self.doi.startswith(
+                '10.1016')):
                 return True
-            rows = db.session.execute(text("SELECT EXISTS (SELECT 1 FROM journal WHERE issn_l = :issn_l AND publisher = 'Elsevier')"), {'issn_l': self.issn_l})
+            rows = db.session.execute(text(
+                "SELECT EXISTS (SELECT 1 FROM journal WHERE issn_l = :issn_l AND publisher = 'Elsevier')"),
+                                      {'issn_l': self.issn_l})
             return rows.rowcount > 0
+
         return func
 
     def set_title_hacks(self):
