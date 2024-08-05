@@ -1,6 +1,7 @@
 import bisect
 import collections
 import datetime
+import json
 import logging
 import math
 import os
@@ -26,6 +27,7 @@ from unidecode import unidecode
 from convert_http_to_https import fix_url_scheme
 
 REDIS_UNPAYWALL_REFRESH_QUEUE = 'queue:unpaywall_refresh'
+REDIS_ADD_THINGS_QUEUE = 'queue:add_things'
 
 
 class NoDoiException(Exception):
@@ -727,6 +729,10 @@ def is_valid_date_string(date_string):
         return False
 
 
+def make_do_redis_client():
+    return Redis.from_url(os.getenv('REDIS_DO_URL'))
+
+
 def enqueue_slow_queue(dois_chunk: List[str], conn):
     stmnt = text(
         '''INSERT INTO queue.run_once_work_add_most_things(work_id)
@@ -741,9 +747,36 @@ def enqueue_slow_queue(dois_chunk: List[str], conn):
     conn.connection.commit()
 
 
-def enqueue_unpaywall_refresh(dois: List[str], db_conn, redis_conn: Redis=None):
+def enqueue_add_things(dois: List[str],
+                       db_conn,
+                       methods=None,
+                       priority=None,
+                       fast_queue_priority=None,
+                       redis_conn: Redis = None):
     if not redis_conn:
-        redis_conn = Redis.from_url(os.environ['REDIS_DO_URL'])
+        redis_conn = make_do_redis_client()
+    rows = db_conn.execute(text(
+        'SELECT work_id FROM ins.recordthresher_record WHERE work_id > 0 AND doi IN :dois'),
+                           dois=tuple(dois)).fetchall()
+    work_ids = [r[0] for r in rows]
+    if methods is None:
+        methods = []
+    if priority is None:
+        priority = time.time()
+    mapping = {json.dumps({'work_id': work_id,
+                           'methods': methods,
+                           'fast_queue_priority': fast_queue_priority}): priority
+               for work_id in work_ids}
+    if mapping:
+        redis_conn.zadd(REDIS_ADD_THINGS_QUEUE, mapping)
+    else:
+        print(f'Empty work ids for DOIs: {dois}')
+
+
+def enqueue_unpaywall_refresh(dois: List[str], db_conn,
+                              redis_conn: Redis = None):
+    if not redis_conn:
+        redis_conn = make_do_redis_client()
     recordthresher_ids = db_conn.execute(text(
         'SELECT id FROM ins.recordthresher_record WHERE doi IN :dois AND work_id > 0'),
         dois=tuple(dois)).fetchall()
