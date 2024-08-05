@@ -11,15 +11,20 @@ from pyalex import Works, config
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound, PendingRollbackError
 
-from app import app, db, logger
+from app import app, logger
+from app import pooled_db as db
 from pub import Pub
-from util import normalize_doi, get_openalex_json, enqueue_slow_queue
+from util import normalize_doi, get_openalex_json, enqueue_slow_queue, \
+    enqueue_add_things, make_do_redis_client
 from endpoint import Endpoint  # magic
 
 from app import oa_db_engine
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
+
+UPDATED_LOCK = Lock()
+UPDATED_COUNT = 0
 
 START = datetime.now()
 
@@ -52,121 +57,38 @@ def add_seen_doi(doi):
         SEEN_DOIS.add(doi)
 
 
-def put_dois_api(q: Queue):
-    global SEEN_DOIS
-    global SEEN_LOCK
-    while True:
-        try:
-            j = get_openalex_json('https://api.openalex.org/works',
-                                  params={
-                                      'filter': 'authorships.institutions.id:null,type:journal-article,has_doi:true',
-                                      'per-page': '25',
-                                      'sample': '25',
-                                      'mailto': 'nolanmccafferty@gmail.com', })
-            for work in j["results"]:
-                if not isinstance(work['doi'], str):
-                    continue
-                doi = re.findall(r'doi.org/(.*?)$', work['doi'])
-                if not doi:
-                    continue
-                doi = doi[0]
-                if doi_seen(doi):
-                    logger.info(f'[!] Seen DOI already: {doi}')
-                    continue
-                try:
-                    pub = Pub.query.filter_by(id=doi).one()
-                    q.put(pub)
-                    add_seen_doi(doi)
-                except NoResultFound:
-                    continue
-        except Exception as e:
-            logger.exception(f'[!] Error enqueuing DOIs: {e}')
-            logger.exception(traceback.format_exc())
-            break
-
-
-def put_dois_db(q: Queue):
-    page_size = 1000
-    offset = 0
-    results = True
-    while results:
-        results = Pub.query.limit(page_size).offset(offset).all()
-        for result in results:
-            q.put(result)
-        offset += page_size
-
-
 def print_stats(q: Queue = None):
     while True:
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(PROCESSED_COUNT / hrs_running, 2)
-        msg = f'[*] Processed count: {PROCESSED_COUNT} | Encountered dupe count: {DUPE_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
+        msg = f'[*] Processed count: {PROCESSED_COUNT} | Updated count: {UPDATED_COUNT} | Encountered dupe count: {DUPE_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
         if q:
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
         time.sleep(5)
 
 
-def refresh_api():
-    Thread(target=print_stats).start()
-    global PROCESSED_COUNT
-    global SEEN_DOIS
-    global DUPE_COUNT
-    with app.app_context():
-        while True:
-            processed = False
-            j = get_openalex_json('https://api.openalex.org/works',
-                                  params={
-                                      'filter': 'authorships.institutions.id:null,type:journal-article,has_doi:true',
-                                      'per-page': '25',
-                                      'sample': '25',
-                                      'mailto': 'nolanmccafferty@gmail.com', })
-            for work in j["results"]:
-                doi = None
-                try:
-                    if not isinstance(work['doi'], str):
-                        continue
-                    doi = re.findall(r'doi.org/(.*?)$', work['doi'])
-                    if not doi:
-                        continue
-                    doi = doi[0]
-                    if doi in SEEN_DOIS:
-                        logger.info(f'[!] Seen DOI - {doi}')
-                        DUPE_COUNT += 1
-                        continue
-                    SEEN_DOIS.add(doi)
-                    pub = Pub.query.filter_by(id=doi).one()
-                    if pub.create_or_update_recordthresher_record():
-                        db.session.commit()
-                    processed = True
-                except NoResultFound:
-                    continue
-                except Exception as e:
-                    if doi:
-                        logger.info(f'[!] Error updating record: {doi}')
-                    logger.exception(e)
-                finally:
-                    if processed:
-                        PROCESSED_COUNT += 1
-
-
 def enqueue_slow_queue_worker(q: Queue):
     dois = []
+    redis_conn = make_do_redis_client()
     with oa_db_engine.connect() as oa_db_conn:
         while True:
             try:
-                doi = q.get(timeout=5 * 60)
+                doi = q.get()
                 dois.append(doi)
                 if len(dois) >= ENQUEUE_SLOW_QUEUE_CHUNK_SIZE:
-                    enqueue_slow_queue(list(set(dois)), oa_db_conn)
-                    dois = []
+                    enqueue_add_things(list(set(dois)), oa_db_conn,
+                                       priority=-1,
+                                       fast_queue_priority=-1,
+                                       redis_conn=redis_conn)
+                    dois.clear()
             except Empty:
                 return
 
 
 def refresh_sql(slow_queue_q: Queue, chunk_size=10):
-    global PROCESSED_COUNT
+    global PROCESSED_COUNT, UPDATED_COUNT
     query = f'''WITH queue as (
             SELECT * FROM recordthresher.refresh_queue WHERE in_progress = false
             LIMIT {chunk_size}
@@ -182,15 +104,19 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
         while rows:
             rows = db.session.execute(text(query)).all()
             for r in rows:
-                processed = False
+                processed, updated = False, False
                 mapping = dict(r._mapping).copy()
-                del mapping['doi']
-                pub = Pub(**mapping)
+                del mapping['in_progress']
+                method_name = mapping.get('method', 'create_or_update_recordthresher_record')
+                del mapping['method']
+                pub = Pub.query.get(mapping.get('id'))
                 try:
-                    if pub.create_or_update_recordthresher_record():
+                    method = getattr(pub, method_name)
+                    if method():
                         db.session.commit()
+                        slow_queue_q.put(r.id)
+                        updated = True
                     processed = True
-                    slow_queue_q.put(r.id)
                 except PendingRollbackError:
                     db.session.rollback()
                     logger.exception('[*] Rolled back transaction')
@@ -203,7 +129,11 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                     del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
                     db.session.execute(text(del_query).bindparams(id_=id_))
                     if processed:
-                        PROCESSED_COUNT += 1
+                        with PROCESSED_LOCK:
+                            PROCESSED_COUNT += 1
+                    if updated:
+                        with UPDATED_LOCK:
+                            UPDATED_COUNT += 1
 
 
 def filter_string_to_dict(oa_filter_str):
@@ -293,7 +223,7 @@ if __name__ == '__main__':
             t.join()
     else:
         slow_queue_q = Queue(maxsize=args.n_threads)
-        Thread(target=enqueue_slow_queue_worker, args=(slow_queue_q,)).start()
+        Thread(target=enqueue_slow_queue_worker, args=(slow_queue_q,), daemon=True).start()
         Thread(target=print_stats, daemon=True).start()
         threads = []
         for _ in range(args.n_threads):
