@@ -1,6 +1,7 @@
 import re
 import time
 import traceback
+import tracemalloc
 from argparse import ArgumentParser
 from datetime import datetime
 from queue import Queue, Empty
@@ -19,6 +20,8 @@ from util import normalize_doi, get_openalex_json, enqueue_slow_queue, \
 from endpoint import Endpoint  # magic
 
 from app import oa_db_engine
+
+tracemalloc.start()
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
@@ -57,6 +60,16 @@ def add_seen_doi(doi):
         SEEN_DOIS.add(doi)
 
 
+def log_memory_snapshot():
+    snapshot = tracemalloc.take_snapshot()
+    top_stats = snapshot.statistics('lineno')
+
+    logger.info("Top 10 lines with highest memory usage:")
+    for index, stat in enumerate(top_stats[:10], 1):
+        frame = stat.traceback[0]
+        logger.info(f"{index}. {frame.filename}:{frame.lineno} - Size: {stat.size / 1024:.1f} KiB")
+
+
 def print_stats(q: Queue = None):
     while True:
         now = datetime.now()
@@ -66,6 +79,7 @@ def print_stats(q: Queue = None):
         if q:
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
+        log_memory_snapshot()
         time.sleep(5)
 
 
@@ -113,7 +127,7 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                 try:
                     method = getattr(pub, method_name)
                     if method():
-                        db.session.commit()
+                        db_commit()
                         slow_queue_q.put(r.id)
                         updated = True
                     processed = True
@@ -127,7 +141,7 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                 finally:
                     id_ = r['id']
                     del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
-                    db.session.execute(text(del_query).bindparams(id_=id_))
+                    db.session.execute(text(del_query).bindparams(id_=id_).execution_options(autocommit=True))
                     if processed:
                         with PROCESSED_LOCK:
                             PROCESSED_COUNT += 1
