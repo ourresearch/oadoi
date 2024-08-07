@@ -132,6 +132,7 @@ class DbQueuePub(DbQueue):
             object_ids = [obj.id for obj in objects]
             self.update_fn(run_class, run_method, objects, index=index)
             enqueue_unpaywall_refresh(object_ids, oa_db_conn, oa_redis_conn)
+            logger.info(f'Enqueued {len(object_ids)} works to be updated in unpaywall_recordthresher_fields')
 
             # logger.info(u"finished update_fn")
             if queue_table:
