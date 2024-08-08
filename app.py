@@ -67,7 +67,7 @@ app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 #         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
 
 
-db = SQLAlchemy(app, session_options={"autoflush": False}, engine_options={"pool_size": 10})
+db = SQLAlchemy(app, session_options={"autoflush": False}, engine_options={"pool_size": 5})
 
 pooled_db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False},
                        engine_options={"pool_size": 10})
