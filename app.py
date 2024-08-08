@@ -61,13 +61,13 @@ app.config["SQLALCHEMY_BINDS"] = {"openalex": openalex_db_url}
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 
 # from http://stackoverflow.com/a/12417346/596939
-class NullPoolSQLAlchemy(SQLAlchemy):
-    def apply_driver_hacks(self, app, info, options):
-        options['poolclass'] = NullPool
-        return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
+# class NullPoolSQLAlchemy(SQLAlchemy):
+#     def apply_driver_hacks(self, app, info, options):
+#         options['poolclass'] = NullPool
+#         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
 
 
-db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
+db = SQLAlchemy(app, session_options={"autoflush": False})
 
 pooled_db = SQLAlchemy(app, session_options={"autoflush": False, "autocommit": False},
                        engine_options={"pool_size": 10})
@@ -132,3 +132,48 @@ s3_conn = boto3.client('s3')
 #         # connecting again up to three times before raising.
 #         raise exc.DisconnectionError()
 #     cursor.close()
+
+
+# Dictionary to store active transactions
+active_transactions = {}
+from sqlalchemy import event
+import time
+from sqlalchemy.exc import DisconnectionError
+
+@event.listens_for(db.engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault('query_start_time', []).append(time.time())
+    logger.info(f"Query started: {statement} \nParameters: {parameters}")
+
+@event.listens_for(db.engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    start_time = conn.info['query_start_time'].pop(-1)
+    duration = time.time() - start_time
+    logger.info(f"Query executed: {statement} \nParameters: {parameters} \nDuration: {duration:.6f} seconds")
+
+@event.listens_for(db.engine, "begin")
+def before_begin(conn):
+    active_transactions[conn] = {'start_time': time.time()}
+    logger.info(f"Transaction started: {conn}")
+
+@event.listens_for(db.engine, "rollback")
+def after_rollback(conn):
+    transaction_info = active_transactions.pop(conn, None)
+    if transaction_info:
+        duration = time.time() - transaction_info['start_time']
+        logger.warning(f"Transaction rolled back. Duration: {duration:.6f} seconds. Connection: {conn}")
+    else:
+        logger.warning(f"Rollback without transaction info. Connection: {conn}")
+
+@event.listens_for(db.engine, "handle_error")
+def handle_error(context):
+    conn = context.connection
+    if isinstance(context.original_exception, DisconnectionError):
+        transaction_info = active_transactions.pop(conn, None)
+        if transaction_info:
+            duration = time.time() - transaction_info['start_time']
+            logger.error(f"Disconnection error detected. Duration: {duration:.6f} seconds. Connection: {conn}")
+        else:
+            logger.error(f"Disconnection error without transaction info. Connection: {conn}")
+    else:
+        logger.error(f"Other error: {context.original_exception}")

@@ -164,13 +164,13 @@ def after_request_stuff(resp):
     resp.headers['Access-Control-Allow-Headers'] = "origin, content-type, accept, x-requested-with"
 
     # remove session
-    db.session.remove()
+    # db.session.remove()
 
     # without this jason's heroku local buffers forever
     sys.stdout.flush()
 
     # log request for analytics
-    log_request(resp)
+    # log_request(resp)
 
     return resp
 
