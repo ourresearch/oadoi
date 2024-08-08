@@ -79,20 +79,7 @@ class ZytePolicy(db.Model):
         return _sender
 
 
-def _get_policies():
-    session = db.session()
-    try:
-        result = session.query(ZytePolicy).all()
-        session.commit()
-        return result
-    except Exception as e:
-        session.rollback()
-        raise e
-    finally:
-        session.close()
-
-
-_ALL_POLICIES: List[ZytePolicy] = _get_policies()
+_ALL_POLICIES: List[ZytePolicy] = db.session.query(ZytePolicy).all()
 _REFRESH_LOCK = threading.Lock()  # Lock to ensure thread safety
 _REFRESH_THREAD = None  # Reference to the refresh thread
 DEFAULT_NO_MATCH_POLICIES = (ZytePolicy(profile='proxy', id=1000),
@@ -104,7 +91,7 @@ NO_MATCH_POLICIES_TRY_BYPASS = [BYPASS_POLICY] + list(DEFAULT_NO_MATCH_POLICIES)
 def _refresh_policies():
     global _ALL_POLICIES
     while True:
-        _ALL_POLICIES = _get_policies()
+        _ALL_POLICIES = ZytePolicy.query.all()
         time.sleep(5 * 60)
 
 
@@ -234,8 +221,7 @@ class ZyteSession(requests.Session):
     def __init__(self,
                  retry: Retrying = _DEFAULT_RETRY,
                  logger: logging.Logger = None,
-                 no_match_policies: List[
-                     ZytePolicy] = DEFAULT_NO_MATCH_POLICIES):
+                 no_match_policies: List[ZytePolicy] = DEFAULT_NO_MATCH_POLICIES):
         self.api_session = requests.Session()
         self.no_match_policies = no_match_policies
         self.retry = retry
@@ -257,8 +243,7 @@ class ZyteSession(requests.Session):
             *args,
             **kwargs,
     ):
-        zyte_policies = get_matching_policies(
-            request.url) or self.no_match_policies
+        zyte_policies = get_matching_policies(request.url) or self.no_match_policies
         kwargs['allow_redirects'] = False
         r, policy = self._send_with_policies(request,
                                              zyte_policies,
@@ -269,8 +254,7 @@ class ZyteSession(requests.Session):
             url = self.get_redirect_target(r)
             req = r.request.copy()
             req.url = url
-            zyte_policies = get_matching_policies(
-                req.url) or self.no_match_policies
+            zyte_policies = get_matching_policies(req.url) or self.no_match_policies
             r, policy = self._send_with_policies(req,
                                                  zyte_policies,
                                                  *args,
