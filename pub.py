@@ -713,14 +713,14 @@ class Pub(db.Model):
             return True
 
     def refresh(self, session_id=None):
-        if self.do_not_refresh() and self.resolved_doi_http_status is not None:
-            logger.info(
-                f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
-            self.store_or_remove_pdf_urls_for_validation()
-            self.store_refresh_priority()
-            self.create_or_update_recordthresher_record()
-            db.session.merge(self)
-            return
+        # if self.do_not_refresh() and self.resolved_doi_http_status is not None:
+        #     logger.info(
+        #         f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
+        #     self.store_or_remove_pdf_urls_for_validation()
+        #     self.store_refresh_priority()
+        #     self.create_or_update_recordthresher_record()
+        #     db.session.merge(self)
+        #     return
 
         self.session_id = session_id or get_session_id()
         refresh_result = PubRefreshResult(
@@ -1680,8 +1680,10 @@ class Pub(db.Model):
 
             my_webpage.scrape_for_fulltext_link(find_pdf_link=find_pdf_link,
                                                 pdf_hint=self.crossref_text_mining_pdf)
+            if self.error is None:
+                self.error = ''
 
-            if my_webpage.error is not None and self.error is not None:
+            if my_webpage.error:
                 self.error += my_webpage.error
 
             if my_webpage.is_open:
