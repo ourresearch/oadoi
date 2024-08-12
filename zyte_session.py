@@ -13,7 +13,7 @@ from sqlalchemy import Column, Integer, Enum, String, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from tenacity import Retrying, stop_after_attempt, wait_exponential
 
-from app import pooled_db as db
+from app import db
 from const import ZYTE_API_URL, ZYTE_API_KEY
 from pdf_util import is_pdf
 from redirectors import ALL_REDIRECTORS
@@ -83,8 +83,6 @@ def _get_policies():
     session = db.session()
     try:
         result = session.query(ZytePolicy).all()
-        for policy in result:
-            _ = policy.regex
         return result
     except Exception as e:
         session.rollback()
