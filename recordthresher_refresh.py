@@ -1,4 +1,3 @@
-import re
 import time
 import traceback
 import tracemalloc
@@ -11,14 +10,11 @@ from typing import List
 from pyalex import Works, config
 from sqlalchemy import text, create_engine
 from sqlalchemy.exc import NoResultFound, PendingRollbackError
-from sqlalchemy.orm import Session
 from sqlalchemy.pool import NullPool
 
 from app import app, logger
-from app import pooled_db as db
 from pub import Pub
-from util import normalize_doi, get_openalex_json, enqueue_slow_queue, \
-    enqueue_add_things, make_do_redis_client
+from util import normalize_doi, enqueue_add_things, make_do_redis_client
 from endpoint import Endpoint  # magic
 
 from app import oa_db_engine
@@ -63,12 +59,12 @@ def execute_db_operation(operation):
         DB_SESSION_LOCK.release()
 
 
-def get_pub_by_id(conn, pub_id):
-    session = Session(bind=conn)
-    try:
-        return session.query(Pub).get(pub_id)
-    finally:
-        session.close()
+def get_pub_by_id(pub_id):
+    query = "SELECT * FROM pub WHERE id = :id"
+    mapping = execute_db_operation(lambda conn: conn.execute(text(query), {'id': pub_id}).mappings().first())
+    mapping = dict(mapping)
+    del mapping['doi']
+    return Pub(**mapping)
 
 
 def doi_seen(doi):
@@ -151,7 +147,7 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                 method_name = mapping.get('method',
                                           'create_or_update_recordthresher_record')
                 del mapping['method']
-                pub = execute_db_operation(lambda conn: get_pub_by_id(conn, mapping.get('id')))
+                pub = get_pub_by_id(mapping.get('id'))
                 try:
                     method = getattr(pub, method_name)
                     if method():
