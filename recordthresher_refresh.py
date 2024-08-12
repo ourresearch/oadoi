@@ -9,8 +9,10 @@ from threading import Thread, Lock
 from typing import List
 
 from pyalex import Works, config
-from sqlalchemy import text
+from sqlalchemy import text, create_engine
 from sqlalchemy.exc import NoResultFound, PendingRollbackError
+from sqlalchemy.orm import Session
+from sqlalchemy.pool import NullPool
 
 from app import app, logger
 from app import pooled_db as db
@@ -35,6 +37,9 @@ SEEN_DOIS = set()
 SEEN_LOCK = Lock()
 
 DB_SESSION_LOCK = Lock()
+DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
+                          poolclass=NullPool)
+DB_CONN = DB_ENGINE.connect()
 
 DUPE_COUNT = 0
 
@@ -42,8 +47,28 @@ ENQUEUE_SLOW_QUEUE_CHUNK_SIZE = 100
 
 
 def db_commit():
-    with DB_SESSION_LOCK:
-        db.session.commit()
+    execute_db_operation(lambda conn: conn.connection.commit())
+
+
+def get_db():
+    DB_SESSION_LOCK.acquire()
+    return DB_CONN
+
+
+def execute_db_operation(operation):
+    conn = get_db()
+    try:
+        return operation(conn)
+    finally:
+        DB_SESSION_LOCK.release()
+
+
+def get_pub_by_id(conn, pub_id):
+    session = Session(bind=conn)
+    try:
+        return session.query(Pub).get(pub_id)
+    finally:
+        session.close()
 
 
 def doi_seen(doi):
@@ -67,7 +92,8 @@ def log_memory_snapshot():
     logger.info("Top 10 lines with highest memory usage:")
     for index, stat in enumerate(top_stats[:10], 1):
         frame = stat.traceback[0]
-        logger.info(f"{index}. {frame.filename}:{frame.lineno} - Size: {stat.size / 1024:.1f} KiB")
+        logger.info(
+            f"{index}. {frame.filename}:{frame.lineno} - Size: {stat.size / 1024:.1f} KiB")
 
 
 def print_stats(q: Queue = None):
@@ -79,7 +105,7 @@ def print_stats(q: Queue = None):
         if q:
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
-        log_memory_snapshot()
+        # log_memory_snapshot()
         time.sleep(5)
 
 
@@ -116,14 +142,16 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
     rows = True
     with app.app_context():
         while rows:
-            rows = db.session.execute(text(query)).all()
+            rows = execute_db_operation(
+                lambda conn: conn.execute(text(query)).all())
             for r in rows:
                 processed, updated = False, False
                 mapping = dict(r._mapping).copy()
                 del mapping['in_progress']
-                method_name = mapping.get('method', 'create_or_update_recordthresher_record')
+                method_name = mapping.get('method',
+                                          'create_or_update_recordthresher_record')
                 del mapping['method']
-                pub = Pub.query.get(mapping.get('id'))
+                pub = execute_db_operation(lambda conn: get_pub_by_id(conn, mapping.get('id')))
                 try:
                     method = getattr(pub, method_name)
                     if method():
@@ -132,7 +160,7 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                         updated = True
                     processed = True
                 except PendingRollbackError:
-                    db.session.rollback()
+                    execute_db_operation(lambda conn: conn.rollback())
                     logger.exception('[*] Rolled back transaction')
                 except Exception as e:
                     logger.exception(
@@ -141,7 +169,9 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                 finally:
                     id_ = r['id']
                     del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
-                    db.session.execute(text(del_query).bindparams(id_=id_).execution_options(autocommit=True))
+                    execute_db_operation(lambda conn: conn.execute(
+                        text(del_query).bindparams(id_=id_).execution_options(
+                            autocommit=True)))
                     if processed:
                         with PROCESSED_LOCK:
                             PROCESSED_COUNT += 1
@@ -169,11 +199,12 @@ def enqueue_from_api(oa_filters):
         while True:
             try:
                 page = next(pager)
-                dois = tuple({normalize_doi(work['doi'], True) for work in page})
+                dois = tuple(
+                    {normalize_doi(work['doi'], True) for work in page})
                 dois = tuple([doi for doi in dois if doi])
                 stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
-                db.session.execute(text(stmnt).bindparams(dois=dois))
-                db.session.commit()
+                execute_db_operation(lambda conn: conn.execute(text(stmnt).bindparams(dois=dois)))
+                db_commit()
                 # publisher = page[0]['primary_location']['source'][
                 #     'host_organization_name']
                 # pub_id = page[0]['primary_location']['source'][
@@ -197,8 +228,8 @@ def enqueue_from_txt(path):
                  for line in contents.splitlines()]))
         dois = tuple(normalize_doi(doi) for doi in dois)
         stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT(id) DO UPDATE SET in_progress = FALSE;'
-        db.session.execute(text(stmnt).bindparams(dois=dois))
-        db.session.commit()
+        execute_db_operation(lambda conn: conn.execute(text(stmnt).bindparams(dois=dois)))
+        db_commit()
     print(f'Enqueued {len(dois)} DOIS from {path}')
 
 
@@ -237,7 +268,8 @@ if __name__ == '__main__':
             t.join()
     else:
         slow_queue_q = Queue(maxsize=args.n_threads)
-        Thread(target=enqueue_slow_queue_worker, args=(slow_queue_q,), daemon=True).start()
+        Thread(target=enqueue_slow_queue_worker, args=(slow_queue_q,),
+               daemon=True).start()
         Thread(target=print_stats, daemon=True).start()
         threads = []
         for _ in range(args.n_threads):
