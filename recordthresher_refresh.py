@@ -10,7 +10,7 @@ from typing import List
 from pyalex import Works, config
 from sqlalchemy import text, create_engine
 from sqlalchemy.exc import NoResultFound, PendingRollbackError
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 from app import app, logger
 from pub import Pub
@@ -34,7 +34,7 @@ SEEN_LOCK = Lock()
 
 DB_SESSION_LOCK = Lock()
 DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
-                          poolclass=NullPool)
+                          poolclass=StaticPool)
 DB_CONN = DB_ENGINE.connect()
 
 DUPE_COUNT = 0
