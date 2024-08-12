@@ -67,7 +67,7 @@ app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 #         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
 
 
-db = SQLAlchemy(app, session_options={"autoflush": False}, engine_options={"pool_size": 20})
+db = SQLAlchemy(app, session_options={"autoflush": False}, engine_options={"pool_size": 50})
 
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 oa_db_engine = create_engine(openalex_db_url)
