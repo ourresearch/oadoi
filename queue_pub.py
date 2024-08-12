@@ -9,7 +9,7 @@ from redis.client import Redis
 from sqlalchemy import orm
 from sqlalchemy import text
 
-from app import db, oa_db_engine
+from app import pooled_db as db, oa_db_engine
 from app import logger
 from endpoint import Endpoint  # magic
 from pub import Pub
