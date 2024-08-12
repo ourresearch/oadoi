@@ -762,7 +762,7 @@ class Pub(db.Model):
                     RecordthresherParentRecord(record_id=secondary_record.id,
                                                parent_record_id=rt_record.id))
             self.create_or_update_parseland_record()
-            if pdf_record := PDFRecordMaker.make_record(self):
+            if self.is_oa and (pdf_record := PDFRecordMaker.make_record(self)):
                 db.session.merge(pdf_record)
             return True
         return False
