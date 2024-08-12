@@ -2,7 +2,7 @@
 # setting to 10 hours: 60*60*10=36000
 web: bin/start-pgbouncer-stunnel gunicorn views:app -w $WEB_WORKERS_PER_DYNO --timeout 36000 --reload
 web_dev: gunicorn views:app -w 2 --timeout 36000 --reload
-update: bash run_worker.sh
+update: bin/start-pgbouncer-stunnel bash run_worker.sh
 refresh: bin/start-pgbouncer-stunnel bash run_hybrid_worker.sh
 refresh_aux: bin/start-pgbouncer-stunnel bash run_hybrid_worker_aux_0.sh
 run_pmh: bash run_pmh.sh
