@@ -1681,7 +1681,7 @@ class Pub(db.Model):
             my_webpage.scrape_for_fulltext_link(find_pdf_link=find_pdf_link,
                                                 pdf_hint=self.crossref_text_mining_pdf)
 
-            if my_webpage.error:
+            if my_webpage.error is not None and self.error is not None:
                 self.error += my_webpage.error
 
             if my_webpage.is_open:
@@ -2560,10 +2560,10 @@ class Pub(db.Model):
 
     def store_or_remove_pdf_urls_for_validation(self):
         """Store PDF URLs for validation."""
-        urls_to_add = []
+        urls_to_add = set()
         for loc in self.open_locations:
             if loc.pdf_url and not is_pmc(loc.pdf_url):
-                urls_to_add.append(loc.pdf_url)
+                urls_to_add.add(loc.pdf_url)
 
         for url in urls_to_add:
             try:
