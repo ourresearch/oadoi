@@ -30,6 +30,7 @@ def fulltext_search_title(query, is_oa=None, page=1):
     search_results = {row[0]: {'snippet': row[1], 'score': row[2]} for row in rows}
 
     cached_responses = [p for p in db.session.query(Pub).filter(Pub.id.in_(list(search_results.keys()))).all()]
+    cached_responses = [p.response_jsonb for p in cached_responses]
 
     if is_oa:
         oa_filter = lambda p: p.is_oa
@@ -40,7 +41,7 @@ def fulltext_search_title(query, is_oa=None, page=1):
 
     filtered_responses = [
         {
-            'response': response.response_jsonb,
+            'response': response,
             'snippet': search_results[response['doi']]['snippet'],
             'score': search_results[response['doi']]['score'],
         }
