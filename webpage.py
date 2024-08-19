@@ -411,8 +411,9 @@ class Webpage(object):
         # logger.info(page)
 
         links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page_with_scripts or page)] + get_useful_links(page)
+        links = [link for link in links if link is not None]
 
-        for link in [x for x in links if x is not None]:
+        for link in links:
             if DEBUG_SCRAPING:
                 logger.info("trying {}, {} in find_pdf_link".format(link.href, link.anchor))
 
@@ -735,6 +736,10 @@ class PublisherWebpage(Webpage):
                 if (re.match(r'https?://(www\.)?onlinelibrary.wiley.com/doi/epdf/10\..+', pdf_url)):
                     pdf_url = pdf_url.replace('/epdf/', '/pdfdirect/')
                     pdf_download_link.href = pdf_download_link.href.replace('/epdf/', '/pdfdirect/')
+
+                if (re.match(r'https?://(journals\.)?healio.com/doi/epdf/10\..+', pdf_url)):
+                    pdf_url = pdf_url.replace('/doi/epdf/', '/doi/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace('/doi/epdf/', '/doi/pdf/')
 
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
