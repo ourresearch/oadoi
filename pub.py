@@ -713,14 +713,14 @@ class Pub(db.Model):
             return True
 
     def refresh(self, session_id=None):
-        # if self.do_not_refresh() and self.resolved_doi_http_status is not None:
-        #     logger.info(
-        #         f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
-        #     self.store_or_remove_pdf_urls_for_validation()
-        #     self.store_refresh_priority()
-        #     self.create_or_update_recordthresher_record()
-        #     db.session.merge(self)
-        #     return
+        if self.do_not_refresh() and self.resolved_doi_http_status is not None:
+            logger.info(
+                f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
+            self.store_or_remove_pdf_urls_for_validation()
+            self.store_refresh_priority()
+            self.create_or_update_recordthresher_record()
+            db.session.merge(self)
+            return
 
         self.session_id = session_id or get_session_id()
         refresh_result = PubRefreshResult(
