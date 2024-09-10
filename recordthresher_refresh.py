@@ -1,3 +1,4 @@
+import itertools
 import time
 import traceback
 import tracemalloc
@@ -216,16 +217,33 @@ def enqueue_from_api(oa_filters):
                 i += 1
 
 
+def chunker(seq: List, size: int):
+    """Yield successive n-sized chunks from seq."""
+    it = iter(seq)
+    return iter(lambda: list(itertools.islice(it, size)), [])
+
+
 def enqueue_from_txt(path):
     with open(path) as f:
         contents = f.read()
         dois = list(
             set([line.split('doi.org/')[-1] if line.startswith('http') else line
                  for line in contents.splitlines()]))
-        dois = tuple(normalize_doi(doi) for doi in dois)
-        stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT(id) DO UPDATE SET in_progress = FALSE;'
-        execute_db_operation(lambda conn: conn.execute(text(stmnt).bindparams(dois=dois)))
-        db_commit()
+        dois = tuple(normalize_doi(doi, True) for doi in dois)
+        dois = tuple([doi for doi in dois if doi])
+        stmnt = '''
+            INSERT INTO recordthresher.refresh_queue(id, in_progress, method)
+            SELECT UNNEST(:dois), FALSE, 'create_or_update_recordthresher_record'
+            ON CONFLICT(id) DO UPDATE 
+            SET in_progress = FALSE, 
+                method = 'create_or_update_recordthresher_record';
+        '''
+        for i, chunk in enumerate(chunker(dois, 1000), 1):
+            execute_db_operation(
+                lambda conn: conn.execute(
+                    text(stmnt).bindparams(dois=chunk))
+            )
+            db_commit()
     print(f'Enqueued {len(dois)} DOIS from {path}')
 
 
