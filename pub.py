@@ -1854,6 +1854,11 @@ class Pub(db.Model):
             return None
 
     @property
+    def earliest_date(self):
+        dts = [self.issued, self.crossref_published, self.approved, self.created, self.deposited]
+        return min([dt for dt in dts if dt is not None], default=None)
+
+    @property
     def issued(self):
         try:
             if self.crossref_api_raw_new and "date-parts" in \
@@ -1882,6 +1887,17 @@ class Pub(db.Model):
                     self.crossref_api_raw_new["deposited"]:
                 date_parts = \
                     self.crossref_api_raw_new["deposited"]["date-parts"][0]
+                return get_citeproc_date(*date_parts)
+        except (KeyError, TypeError, AttributeError):
+            return None
+
+    @property
+    def approved(self):
+        try:
+            if self.crossref_api_raw_new and "date-parts" in \
+                    self.crossref_api_raw_new["approved"]:
+                date_parts = \
+                    self.crossref_api_raw_new["approved"]["date-parts"][0]
                 return get_citeproc_date(*date_parts)
         except (KeyError, TypeError, AttributeError):
             return None

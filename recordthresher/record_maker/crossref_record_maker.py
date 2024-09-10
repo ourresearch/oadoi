@@ -65,7 +65,7 @@ class CrossrefRecordMaker(RecordMaker):
 
         record.doi = pub.id
         record.abstract = pub.abstract_from_crossref or None
-        record.published_date = pub.issued or pub.created or pub.crossref_published or pub.deposited
+        record.published_date = pub.earliest_date
 
         if not record.published_date:
             return None
