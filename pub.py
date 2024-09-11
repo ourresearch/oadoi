@@ -748,11 +748,13 @@ class Pub(db.Model):
         if pl_record := ParselandRecordMaker.make_record(self):
             db.session.merge(pl_record)
 
-    def create_or_update_recordthresher_record(self):
+    def create_or_update_recordthresher_record(self, all_records=True):
         if self.error and "crossref deleted doi" in self.error.lower():
             return False
         if rt_record := CrossrefRecordMaker.make_record(self):
             db.session.merge(rt_record)
+            if not all_records:
+                return True
             self.recordthresher_id = rt_record.id
             secondary_records = PmhRecordMaker.make_secondary_repository_responses(
                 rt_record)

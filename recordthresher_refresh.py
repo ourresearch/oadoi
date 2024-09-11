@@ -151,10 +151,15 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                 pub = get_pub_by_id(mapping.get('id'))
                 try:
                     method = getattr(pub, method_name)
-                    if method():
-                        db_commit()
-                        slow_queue_q.put(r.id)
-                        updated = True
+                    if method_name == 'create_or_update_recordthresher_record':
+                        all_records = mapping.get('all_records', True)
+                        if method(all_records):
+                            db_commit()
+                    else:
+                        if method():
+                            db_commit()
+                    slow_queue_q.put(r.id)
+                    updated = True
                     processed = True
                 except PendingRollbackError:
                     execute_db_operation(lambda conn: conn.rollback())
