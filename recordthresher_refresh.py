@@ -3,23 +3,18 @@ import time
 import traceback
 import tracemalloc
 from argparse import ArgumentParser
-from contextlib import contextmanager
 from datetime import datetime
 from queue import Queue, Empty
-from threading import Thread, Lock, local
+from threading import Thread, Lock
 from typing import List
 
 from pyalex import Works, config
-from sqlalchemy import text, create_engine
-from sqlalchemy.exc import NoResultFound, PendingRollbackError
-from sqlalchemy.pool import NullPool, StaticPool
+from sqlalchemy import text
 
 from app import app, logger, db
+from app import oa_db_engine
 from pub import Pub
 from util import normalize_doi, enqueue_add_things, make_do_redis_client
-from endpoint import Endpoint  # magic
-
-from app import oa_db_engine
 
 tracemalloc.start()
 
@@ -181,15 +176,15 @@ def enqueue_from_api(oa_filters):
                 page = next(pager)
                 dois = tuple(
                     {normalize_doi(work['doi'], True) for work in page})
-                dois = tuple([doi for doi in dois if doi])
+                dois = [doi for doi in dois if doi]
                 stmnt = '''
                     INSERT INTO recordthresher.refresh_queue(id, in_progress, method)
-                    SELECT UNNEST(ARRAY[:dois]), FALSE, 'create_or_update_recordthresher_record'
+                    SELECT UNNEST(:dois), FALSE, 'create_or_update_recordthresher_record'
                     ON CONFLICT(id) DO UPDATE 
                     SET in_progress = FALSE, 
                         method = 'create_or_update_recordthresher_record';
                 '''
-                db.session.execute(text(stmnt).bindparams(dois=dois))
+                db.session.execute(text(stmnt), {'dois': dois})
                 db.session.commit()
                 print(
                     f'[*] Inserted {200 * (i + 1)} into refresh queue from filter - {oa_filter}')
@@ -218,7 +213,7 @@ def enqueue_from_txt(path):
         dois = tuple([doi for doi in dois if doi])
         stmnt = '''
             INSERT INTO recordthresher.refresh_queue(id, in_progress, method)
-            SELECT UNNEST(:dois), FALSE, 'create_or_update_recordthresher_record'
+            SELECT UNNEST(:dois::text[]), FALSE, 'create_or_update_recordthresher_record'
             ON CONFLICT(id) DO UPDATE 
             SET in_progress = FALSE, 
                 method = 'create_or_update_recordthresher_record';
