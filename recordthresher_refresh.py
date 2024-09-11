@@ -184,7 +184,7 @@ def enqueue_from_api(oa_filters):
                 dois = tuple([doi for doi in dois if doi])
                 stmnt = '''
                     INSERT INTO recordthresher.refresh_queue(id, in_progress, method)
-                    SELECT UNNEST(:dois), FALSE, 'create_or_update_recordthresher_record'
+                    SELECT UNNEST(ARRAY[:dois]), FALSE, 'create_or_update_recordthresher_record'
                     ON CONFLICT(id) DO UPDATE 
                     SET in_progress = FALSE, 
                         method = 'create_or_update_recordthresher_record';
