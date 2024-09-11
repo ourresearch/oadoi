@@ -3,9 +3,10 @@ import time
 import traceback
 import tracemalloc
 from argparse import ArgumentParser
+from contextlib import contextmanager
 from datetime import datetime
 from queue import Queue, Empty
-from threading import Thread, Lock
+from threading import Thread, Lock, local
 from typing import List
 
 from pyalex import Works, config
@@ -13,7 +14,7 @@ from sqlalchemy import text, create_engine
 from sqlalchemy.exc import NoResultFound, PendingRollbackError
 from sqlalchemy.pool import NullPool, StaticPool
 
-from app import app, logger
+from app import app, logger, db
 from pub import Pub
 from util import normalize_doi, enqueue_add_things, make_do_redis_client
 from endpoint import Endpoint  # magic
@@ -33,39 +34,17 @@ START = datetime.now()
 SEEN_DOIS = set()
 SEEN_LOCK = Lock()
 
-DB_SESSION_LOCK = Lock()
-DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
-                          poolclass=StaticPool)
-DB_CONN = DB_ENGINE.connect()
-
 DUPE_COUNT = 0
 
 ENQUEUE_SLOW_QUEUE_CHUNK_SIZE = 100
 
 
-def db_commit():
-    execute_db_operation(lambda conn: conn.connection.commit())
-
-
-def get_db():
-    DB_SESSION_LOCK.acquire()
-    return DB_CONN
-
-
-def execute_db_operation(operation):
-    conn = get_db()
-    try:
-        return operation(conn)
-    finally:
-        DB_SESSION_LOCK.release()
-
-
 def get_pub_by_id(pub_id):
     query = "SELECT * FROM pub WHERE id = :id"
-    mapping = execute_db_operation(lambda conn: conn.execute(text(query), {'id': pub_id}).mappings().first())
-    if not mapping:
+    result = db.session.execute(text(query), {'id': pub_id}).mappings().first()
+    if not result:
         return None
-    mapping = dict(mapping)
+    mapping = dict(result)
     del mapping['doi']
     return Pub(**mapping)
 
@@ -141,8 +120,7 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
     rows = True
     with app.app_context():
         while rows:
-            rows = execute_db_operation(
-                lambda conn: conn.execute(text(query)).all())
+            rows = db.session.execute(text(query)).all()
             for r in rows:
                 processed, updated = False, False
                 mapping = dict(r._mapping).copy()
@@ -159,26 +137,23 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                     if method_name == 'create_or_update_recordthresher_record':
                         all_records = mapping.get('all_records', True)
                         if method(all_records):
-                            db_commit()
+                            db.session.commit()
                     else:
                         if method():
-                            db_commit()
+                            db.session.commit()
                     slow_queue_q.put(r.id)
                     updated = True
                     processed = True
-                except PendingRollbackError:
-                    execute_db_operation(lambda conn: conn.rollback())
-                    logger.exception('[*] Rolled back transaction')
                 except Exception as e:
+                    db.session.rollback()
                     logger.exception(
                         f'[!] Error updating record: {r.id} - {e}')
                     logger.exception(traceback.format_exc())
                 finally:
-                    id_ = r['id']
-                    del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
-                    execute_db_operation(lambda conn: conn.execute(
-                        text(del_query).bindparams(id_=id_).execution_options(
-                            autocommit=True)))
+                    # del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
+                    # execute_db_operation(lambda conn: conn.execute(
+                    #     text(del_query).bindparams(id_=id_).execution_options(
+                    #         autocommit=True)))
                     if processed:
                         with PROCESSED_LOCK:
                             PROCESSED_COUNT += 1
@@ -197,7 +172,7 @@ def filter_string_to_dict(oa_filter_str):
 
 
 def enqueue_from_api(oa_filters):
-    config.email = 'nolanmccafferty@gmail.com'
+    config.email = 'team@ourresearch.org'
     for oa_filter in oa_filters:
         print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
         d = filter_string_to_dict(oa_filter)
@@ -210,12 +185,7 @@ def enqueue_from_api(oa_filters):
                     {normalize_doi(work['doi'], True) for work in page})
                 dois = tuple([doi for doi in dois if doi])
                 stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
-                execute_db_operation(lambda conn: conn.execute(text(stmnt).bindparams(dois=dois)))
-                db_commit()
-                # publisher = page[0]['primary_location']['source'][
-                #     'host_organization_name']
-                # pub_id = page[0]['primary_location']['source'][
-                #     'host_organization']
+                db.session.execute(text(stmnt).bindparams(dois=dois))
                 print(
                     f'[*] Inserted {200 * (i + 1)} into refresh queue from filter - {oa_filter}')
             except StopIteration:
@@ -249,11 +219,7 @@ def enqueue_from_txt(path):
                 method = 'create_or_update_recordthresher_record';
         '''
         for i, chunk in enumerate(chunker(dois, 1000), 1):
-            execute_db_operation(
-                lambda conn: conn.execute(
-                    text(stmnt).bindparams(dois=chunk))
-            )
-            db_commit()
+            db.session.execute(text(stmnt).bindparams(dois=chunk))
     print(f'Enqueued {len(dois)} DOIS from {path}')
 
 
