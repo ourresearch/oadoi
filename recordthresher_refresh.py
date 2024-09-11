@@ -182,7 +182,13 @@ def enqueue_from_api(oa_filters):
                 dois = tuple(
                     {normalize_doi(work['doi'], True) for work in page})
                 dois = tuple([doi for doi in dois if doi])
-                stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
+                stmnt = '''
+                    INSERT INTO recordthresher.refresh_queue(id, in_progress, method)
+                    SELECT UNNEST(:dois), FALSE, 'create_or_update_recordthresher_record'
+                    ON CONFLICT(id) DO UPDATE 
+                    SET in_progress = FALSE, 
+                        method = 'create_or_update_recordthresher_record';
+                '''
                 db.session.execute(text(stmnt).bindparams(dois=dois))
                 db.session.commit()
                 print(
