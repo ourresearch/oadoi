@@ -150,10 +150,8 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                         f'[!] Error updating record: {r.id} - {e}')
                     logger.exception(traceback.format_exc())
                 finally:
-                    # del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
-                    # execute_db_operation(lambda conn: conn.execute(
-                    #     text(del_query).bindparams(id_=id_).execution_options(
-                    #         autocommit=True)))
+                    del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
+                    db.session.execute(text(del_query).bindparams(id_=r.id).execution_options(autocommit=True))
                     if processed:
                         with PROCESSED_LOCK:
                             PROCESSED_COUNT += 1
@@ -186,6 +184,7 @@ def enqueue_from_api(oa_filters):
                 dois = tuple([doi for doi in dois if doi])
                 stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
                 db.session.execute(text(stmnt).bindparams(dois=dois))
+                db.session.commit()
                 print(
                     f'[*] Inserted {200 * (i + 1)} into refresh queue from filter - {oa_filter}')
             except StopIteration:
@@ -220,6 +219,7 @@ def enqueue_from_txt(path):
         '''
         for i, chunk in enumerate(chunker(dois, 1000), 1):
             db.session.execute(text(stmnt).bindparams(dois=chunk))
+            db.session.commit()
     print(f'Enqueued {len(dois)} DOIS from {path}')
 
 
