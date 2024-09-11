@@ -63,6 +63,8 @@ def execute_db_operation(operation):
 def get_pub_by_id(pub_id):
     query = "SELECT * FROM pub WHERE id = :id"
     mapping = execute_db_operation(lambda conn: conn.execute(text(query), {'id': pub_id}).mappings().first())
+    if not mapping:
+        return None
     mapping = dict(mapping)
     del mapping['doi']
     return Pub(**mapping)
@@ -149,6 +151,9 @@ def refresh_sql(slow_queue_q: Queue, chunk_size=10):
                                           'create_or_update_recordthresher_record')
                 del mapping['method']
                 pub = get_pub_by_id(mapping.get('id'))
+                if not pub:
+                    print(f'Pub not found for DOI: {mapping.get("id")}')
+                    continue
                 try:
                     method = getattr(pub, method_name)
                     if method_name == 'create_or_update_recordthresher_record':
