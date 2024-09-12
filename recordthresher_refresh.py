@@ -7,6 +7,7 @@ from datetime import datetime
 from queue import Queue, Empty
 from threading import Thread, Lock
 from typing import List
+from endpoint import Endpoint #magic
 
 from pyalex import Works, config
 from sqlalchemy import text
@@ -190,9 +191,6 @@ def enqueue_from_api(oa_filters):
                     f'[*] Inserted {200 * (i + 1)} into refresh queue from filter - {oa_filter}')
             except StopIteration:
                 break
-            except Exception as e:
-                print(f'[!] Error fetching page for filter - {oa_filter}')
-                print(traceback.format_exc())
             finally:
                 i += 1
 
@@ -210,10 +208,10 @@ def enqueue_from_txt(path):
             set([line.split('doi.org/')[-1] if line.startswith('http') else line
                  for line in contents.splitlines()]))
         dois = tuple(normalize_doi(doi, True) for doi in dois)
-        dois = tuple([doi for doi in dois if doi])
+        dois = [doi for doi in dois if doi]
         stmnt = '''
             INSERT INTO recordthresher.refresh_queue(id, in_progress, method)
-            SELECT UNNEST(:dois::text[]), FALSE, 'create_or_update_recordthresher_record'
+            SELECT UNNEST(:dois), FALSE, 'create_or_update_recordthresher_record'
             ON CONFLICT(id) DO UPDATE 
             SET in_progress = FALSE, 
                 method = 'create_or_update_recordthresher_record';
@@ -221,7 +219,8 @@ def enqueue_from_txt(path):
         for i, chunk in enumerate(chunker(dois, 1000), 1):
             db.session.execute(text(stmnt).bindparams(dois=chunk))
             db.session.commit()
-    print(f'Enqueued {len(dois)} DOIS from {path}')
+            print(f'Enqueued {len(chunk)*(i + 1)} DOIs from {path}')
+    print(f'Enqueued {len(dois)} DOIs from {path}')
 
 
 def parse_args():
