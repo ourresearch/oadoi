@@ -134,6 +134,9 @@ def is_a_word_doc(response):
 
     content = response.content_big()
 
+    if not isinstance(content, bytes):
+        return False
+
     # docx
     if content[-22:].startswith(b'PK') and (response.url.endswith('.docx') or b'word/document.xml' in content):
         return True
