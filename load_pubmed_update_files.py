@@ -66,6 +66,7 @@ def load_csv(csv_filename):
     db.session.rollback()
 
     logger.info(f'loading csv rows to temp table')
+    db.session.execute(text('DROP TABLE IF EXISTS tmp_pubmed_raw;'))
     db.session.execute(text('create temp table tmp_pubmed_raw (like recordthresher.pubmed_raw including all);'))
 
     cursor = db.session.connection().connection.cursor()
