@@ -90,7 +90,7 @@ def save_to_s3(json_data, s3_bucket, s3_key):
 
 def main():
     parser = argparse.ArgumentParser(description='Pull Crossref data (new works or updates).')
-    parser.add_argument('mode', choices=['new', 'updates'], help='Specify whether to pull new works or updates.')
+    parser.add_argument('mode', choices=['new', 'updates_two_days_ago', 'updates'], help='Specify whether to pull new works or updates.')
     args = parser.parse_args()
 
     s3_bucket = 'openalex-sandbox'
@@ -98,6 +98,8 @@ def main():
     today_str = now.strftime('%Y-%m-%d')
     yesterday = now - datetime.timedelta(days=1)
     yesterday_str = yesterday.strftime('%Y-%m-%d')
+    two_days_ago = now - datetime.timedelta(days=2)
+    two_days_ago_str = two_days_ago.strftime('%Y-%m-%d')
 
     if args.mode == 'new':
         filter_params = f'from-created-date:{today_str},until-created-date:{today_str}'
@@ -105,7 +107,7 @@ def main():
         get_crossref_data(filter_params, s3_bucket, s3_prefix)
 
     elif args.mode == 'updates':
-        filter_params = f'from-index-date:{yesterday_str},until-index-date:{yesterday_str}'
+        filter_params = f'from-index-date:{two_days_ago_str},until-index-date:{yesterday_str}'
         s3_prefix = f'openalex-elt/crossref/updates/{yesterday.strftime("%Y/%m/%d")}'
         get_crossref_data(filter_params, s3_bucket, s3_prefix)
 
