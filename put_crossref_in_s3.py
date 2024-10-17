@@ -61,7 +61,8 @@ def get_crossref_data(filter_params, s3_bucket, s3_prefix):
         items = data['message']['items']
 
         if items:
-            s3_key = f'{s3_prefix}/works_page_{page_number}.json'
+            current_timestamp = datetime.datetime.now().isoformat()
+            s3_key = f'{s3_prefix}/works_page_{page_number}_{current_timestamp}.json'
             save_to_s3(items, s3_bucket, s3_key)
         else:
             logging.info(f"No more items to fetch on page {page_number}. Ending pagination.")
@@ -102,7 +103,7 @@ def main():
     two_days_ago_str = two_days_ago.strftime('%Y-%m-%d')
 
     if args.mode == 'new':
-        filter_params = f'from-created-date:{today_str},until-created-date:{today_str}'
+        filter_params = f'from-created-date:{yesterday_str},until-created-date:{today_str}'
         s3_prefix = f'openalex-elt/crossref/new-works/{now.strftime("%Y/%m/%d/%H")}'
         get_crossref_data(filter_params, s3_bucket, s3_prefix)
 
