@@ -369,6 +369,7 @@ class Webpage(object):
             r'^https?://cora\.ucc\.ie/bitstream/',  # https://cora.ucc.ie/handle/10468/3838
             r'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
             r'^https?://www\.nowpublishers\.com/',  # https://www.nowpublishers.com/article/Details/ENT-062
+            r'^https://dsa\.fullsight\.org/api/v1/'
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -747,6 +748,10 @@ class PublisherWebpage(Webpage):
                 if (re.match(r'https?://(pubs\.)?rsna.org/doi/epdf/10\..+', pdf_url)):
                     pdf_url = pdf_url.replace('/doi/epdf/', '/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace('/doi/epdf/', '/doi/pdf/')
+
+                if '/epdf/' in pdf_url and not self.gets_a_pdf(pdf_download_link, self.r.url):
+                    pdf_url = pdf_url.replace('/epdf/', '/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace('/epdf/', '/pdf/')
 
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
