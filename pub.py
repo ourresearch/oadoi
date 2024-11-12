@@ -730,7 +730,11 @@ class Pub(db.Model):
                 'oa_status', None)
         )
 
-        self.refresh_hybrid_scrape()
+        if self.is_closed_exception():
+            logger.info(f'{self.doi} is closed exception. Setting to closed and skipping hybrid refresh')
+            self.open_locations = []
+        else:
+            self.refresh_hybrid_scrape()
 
         # and then recalculate everything, so can do to_dict() after this and it all works
         self.update()
@@ -1200,6 +1204,10 @@ class Pub(db.Model):
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
+        if self.is_closed_exception():
+            self.open_locations = []
+            return
+
         if local_lookup := self.ask_local_lookup():
             if local_lookup['is_future']:
                 self.embargoed_locations.append(local_lookup['location'])
@@ -1240,6 +1248,14 @@ class Pub(db.Model):
         if any([loc.host_type == 'publisher' for loc in self.all_oa_locations]):
             self.embargoed_locations = [loc for loc in self.embargoed_locations
                                         if loc.host_type != 'publisher']
+
+    def is_springer_ebook(self):
+        return all([self.doi.startswith('10.1007'),
+                    'springer' in (self.publisher.lower() or ''),
+                    'book' in (self.genre or '')])
+
+    def is_closed_exception(self):
+        return any([self.is_springer_ebook(),])
 
     def ask_local_lookup(self):
         evidence = None
