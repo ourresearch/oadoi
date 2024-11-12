@@ -712,8 +712,8 @@ class Pub(db.Model):
                 return False
             return True
 
-    def refresh(self, session_id=None):
-        if self.do_not_refresh() and self.resolved_doi_http_status is not None:
+    def refresh(self, session_id=None, force=False):
+        if self.do_not_refresh() and self.resolved_doi_http_status is not None and not force:
             logger.info(
                 f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
             self.store_or_remove_pdf_urls_for_validation()
