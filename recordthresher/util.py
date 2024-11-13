@@ -22,7 +22,7 @@ def parse_api_response(url, parser_name='parseland'):
     start = time.time()
     logger.info(f'trying {url}')
     try:
-        response = requests.get(url, verify=False)
+        response = requests.get(url, verify=False, timeout=2*60)
         response_time = f'{time.time() - start:.2f}'
     except Exception as e:
         logger.exception(e)
