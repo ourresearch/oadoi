@@ -71,7 +71,6 @@ def validate_pdf_urls(open_locations):
                 location.pdf_url not in bad_pdf_urls
                 or location.oa_status == OAStatus.gold
                 or location.oa_status == OAStatus.hybrid
-                or location.oa_status == OAStatus.bronze
                 or 'journal.csj.jp/doi/pdf' in location.pdf_url
             )
 
