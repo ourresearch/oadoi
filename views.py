@@ -4,6 +4,7 @@ import re
 import sys
 from collections import defaultdict, OrderedDict
 from datetime import date, datetime, timedelta
+from threading import Thread
 from time import time
 
 import boto
@@ -1121,22 +1122,24 @@ def freshdesk_autorefresh():
     dois = set([doi.strip('.') for doi in dois])
     if not dois:
         return Response(status=200)
-    refreshed_dois = []
-    for doi in dois:
-        p = pub.Pub.query.get(doi)
-        if p:
-            logger.info(f'Refreshing {doi} from Freshdesk ticket {ticket_id}')
-            p.refresh(force=True)
-            db.session.commit()
-            refreshed_dois.append(doi)
-    if not refreshed_dois:
+    pubs = pub.Pub.query.filter(pub.Pub.doi.in_(dois)).all()
+    if not pubs:
         return Response(status=200)
     freshdesk_api_key = os.getenv('FRESHDESK_API_KEY_NOLAN')
     freshdesk_api = API('impactstory.freshdesk.com', freshdesk_api_key)
-    dois_str = ', '.join(refreshed_dois)
-    logger.info(f'Sending auto-refresh response to Freshdesk ticket {ticket_id}')
+    logger.info(
+        f'Sending auto-refresh response to Freshdesk ticket {ticket_id}')
+    dois_str = ', '.join([p.doi for p in pubs])
     freshdesk_api.comments.create_reply(ticket_id,
-                                        f'The following DOIs were detected in your ticket and refreshed in our system automatically: {dois_str}<br><br>If this did not fix your issue, please respond again letting us know as such and we will get back to you as soon as possible.<br><br>Thanks!<br>Unpaywall Team')
+                                        f'The following DOI(s) were detected in your ticket and are currently being refreshed in our system automatically: {dois_str}<br><br>Please allow ~4-5 hours for changes to be visible. If this does not solve your problem, respond to this message and we will get back to you as soon as possible.<br><br>Thanks!<br>Unpaywall Team')
+
+    def refresh_pubs(pubs):
+        for i, p in enumerate(pubs):
+            logger.info(f'Refreshing {p.doi} for ticket {ticket_id} ({i+1}/{len(pubs)})')
+            p.refresh(force=True)
+            db.session.commit()
+
+    Thread(target=refresh_pubs, args=(pubs, )).start()
     return Response(status=200)
 
 if __name__ == "__main__":
