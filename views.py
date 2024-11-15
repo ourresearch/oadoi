@@ -1111,10 +1111,14 @@ def freshdesk_autorefresh():
     if api_key != os.getenv('FRESHDESK_HOOK_API_KEY'):
         return Response(status=403)
     description = request.json['freshdesk_webhook']['ticket_description']
+    subject = request.json['freshdesk_webhook']['ticket_subject']
     if re.search(r'from:\s+support@unpaywall\.org', description):
         return Response(status=200)
     ticket_id = request.json['freshdesk_webhook']['ticket_id']
-    dois = set(re.findall(r'10\.\d{4,9}/[^\s"<>?]+', description))
+    doi_pattern = r'10\.\d{4,9}/[^\s"<>?]+'
+    dois = re.findall(doi_pattern, description)
+    dois += re.findall(doi_pattern, subject)
+    dois = set(dois)
     if not dois:
         return Response(status=200)
     refreshed_dois = []
