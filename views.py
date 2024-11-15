@@ -1122,7 +1122,7 @@ def freshdesk_autorefresh():
     dois = set([doi.strip('.') for doi in dois])
     if not dois:
         return Response(status=200)
-    pubs = pub.Pub.query.filter(pub.Pub.doi.in_(dois)).all()
+    pubs = pub.Pub.query.filter(pub.Pub.id.in_(dois)).all()
     if not pubs:
         return Response(status=200)
     freshdesk_api_key = os.getenv('FRESHDESK_API_KEY_NOLAN')
