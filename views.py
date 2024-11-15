@@ -4,6 +4,7 @@ import re
 import sys
 from collections import defaultdict, OrderedDict
 from datetime import date, datetime, timedelta
+from threading import Thread
 from time import time
 
 import boto
@@ -19,6 +20,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
+from freshdesk.api import API
 from openpyxl import Workbook
 from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
@@ -382,8 +384,13 @@ def get_pub_from_doi(doi, recalculate=True):
     run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
+        if run_with_hybrid:
+            # Run with hybrid/refresh in the background
+            Thread(target=pub.get_pub_from_biblio, args=({'doi': doi},), kwargs=dict(run_with_hybrid=run_with_hybrid,
+                                                                                     skip_all_hybrid=skip_all_hybrid,
+                                                                                     recalculate=recalculate)).start()
         my_pub = pub.get_pub_from_biblio({"doi": doi},
-                                         run_with_hybrid=run_with_hybrid,
+                                         run_with_hybrid=False,
                                          skip_all_hybrid=skip_all_hybrid,
                                          recalculate=recalculate
                                          )
@@ -1104,6 +1111,33 @@ def get_repository_page(page_id):
 
     abort_json(404, f"Can't find an archive for repo page {page_id}")
 
+@app.route('/freshdesk_autorefresh_hook', methods=['POST'])
+def freshdesk_autorefresh():
+    api_key = request.authorization.username
+    if api_key != os.getenv('FRESHDESK_HOOK_API_KEY'):
+        return Response(status=403)
+    description = request.json['freshdesk_webhook']['ticket_description']
+    ticket_id = request.json['freshdesk_webhook']['ticket_id']
+    dois = set(re.findall(r'10\.\d{4,9}/[^\s"<>?]+', description))
+    if not dois:
+        return Response(status=200)
+    refreshed_dois = []
+    for doi in dois:
+        p = pub.Pub.query.get(doi)
+        if p:
+            logger.info(f'Refreshing {doi} from Freshdesk ticket {ticket_id}')
+            p.refresh(force=True)
+            db.session.commit()
+            refreshed_dois.append(doi)
+    if not refreshed_dois:
+        return Response(status=200)
+    freshdesk_api_key = os.getenv('FRESHDESK_API_KEY_NOLAN')
+    freshdesk_api = API('impactstory.freshdesk.com', freshdesk_api_key)
+    dois_str = ', '.join(refreshed_dois)
+    logger.info(f'Sending auto-refresh response to Freshdesk ticket {ticket_id}')
+    freshdesk_api.comments.create_reply(ticket_id,
+                                        f'The following DOIs were detected in your ticket and refreshed in our system automatically: {dois_str}<br><br>If this did not fix your issue, please respond again letting us know as such and we will get back to you as soon as possible.<br><br>Thanks!<br>Unpaywall Team')
+    return Response(status=200)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
