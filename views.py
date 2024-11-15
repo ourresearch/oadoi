@@ -1125,19 +1125,19 @@ def freshdesk_autorefresh():
     pubs = pub.Pub.query.filter(pub.Pub.id.in_(dois)).all()
     if not pubs:
         return Response(status=200)
-    freshdesk_api_key = os.getenv('FRESHDESK_API_KEY_NOLAN')
-    freshdesk_api = API('impactstory.freshdesk.com', freshdesk_api_key)
-    logger.info(
-        f'Sending auto-refresh response to Freshdesk ticket {ticket_id}')
-    dois_str = ', '.join([p.doi for p in pubs])
-    freshdesk_api.comments.create_reply(ticket_id,
-                                        f'The following DOI(s) were detected in your ticket and are currently being refreshed in our system automatically: {dois_str}<br><br>Please allow ~4-5 hours for changes to be visible. If this does not solve your problem, respond to this message and we will get back to you as soon as possible.<br><br>Thanks!<br>Unpaywall Team')
 
     def refresh_pubs(pubs):
         for i, p in enumerate(pubs):
             logger.info(f'Refreshing {p.doi} for ticket {ticket_id} ({i+1}/{len(pubs)})')
             p.refresh(force=True)
             db.session.commit()
+        freshdesk_api_key = os.getenv('FRESHDESK_API_KEY_NOLAN')
+        freshdesk_api = API('impactstory.freshdesk.com', freshdesk_api_key)
+        logger.info(
+            f'Sending auto-refresh response to Freshdesk ticket {ticket_id}')
+        dois_str = ', '.join([p.doi for p in pubs])
+        freshdesk_api.comments.create_reply(ticket_id,
+                                            f'The following DOIs were detected in your ticket and refreshed in our system automatically: {dois_str}<br><br>If this did not fix your issue, please respond again letting us know as such and we will get back to you as soon as possible.<br><br>Thanks!<br>Unpaywall Team')
 
     Thread(target=refresh_pubs, args=(pubs, )).start()
     return Response(status=200)
