@@ -4,7 +4,6 @@ import re
 import sys
 from collections import defaultdict, OrderedDict
 from datetime import date, datetime, timedelta
-from threading import Thread
 from time import time
 
 import boto
@@ -384,13 +383,8 @@ def get_pub_from_doi(doi, recalculate=True):
     run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
-        if run_with_hybrid:
-            # Run with hybrid/refresh in the background
-            Thread(target=pub.get_pub_from_biblio, args=({'doi': doi},), kwargs=dict(run_with_hybrid=run_with_hybrid,
-                                                                                     skip_all_hybrid=skip_all_hybrid,
-                                                                                     recalculate=recalculate)).start()
         my_pub = pub.get_pub_from_biblio({"doi": doi},
-                                         run_with_hybrid=False,
+                                         run_with_hybrid=run_with_hybrid,
                                          skip_all_hybrid=skip_all_hybrid,
                                          recalculate=recalculate
                                          )
@@ -1117,6 +1111,8 @@ def freshdesk_autorefresh():
     if api_key != os.getenv('FRESHDESK_HOOK_API_KEY'):
         return Response(status=403)
     description = request.json['freshdesk_webhook']['ticket_description']
+    if re.search(r'from:\s+support@unpaywall\.org', description):
+        return Response(status=200)
     ticket_id = request.json['freshdesk_webhook']['ticket_id']
     dois = set(re.findall(r'10\.\d{4,9}/[^\s"<>?]+', description))
     if not dois:
