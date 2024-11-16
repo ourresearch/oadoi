@@ -157,7 +157,8 @@ if __name__ == "__main__":
         db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
-    parser.add_argument('--id', '--doi', nargs="+", type=str, help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
+    parser.add_argument('--id', nargs="+", type=str, help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
+    parser.add_argument('--doi', nargs="+", type=str, help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
     parser.add_argument('--method', nargs="?", type=str, default="update",
                         help="method name to run")
 
