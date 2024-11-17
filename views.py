@@ -1119,7 +1119,7 @@ def freshdesk_autorefresh():
     doi_pattern = r'10\.\d{4,9}/[^\s"<>?]+'
     dois = re.findall(doi_pattern, description)
     dois += re.findall(doi_pattern, subject)
-    dois = set([doi.strip('.') for doi in dois])
+    dois = set([normalize_doi(doi).strip('.') for doi in dois])
     if not dois:
         return Response(status=200)
     pubs = pub.Pub.query.filter(pub.Pub.id.in_(dois)).all()
