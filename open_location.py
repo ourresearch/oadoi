@@ -217,6 +217,8 @@ class OpenLocation(db.Model):
 
     @property
     def oa_status(self):
+        if hasattr(self, "oa_status_set"):
+            return OAStatus(self.oa_status_set)
         if self.is_gold:
             return OAStatus.gold
         if self.is_hybrid:
