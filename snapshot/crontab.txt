@@ -1,0 +1,43 @@
+# exports the cronenv so can get it again with "env - `cat ~/cronenv` /bin/sh"
+# */1 * * * * env > ~/cronenv
+
+# for testing
+# */10 * * * * echo "test"; . $HOME/.bash_profile; . $HOME/.bashrc; psql $DATABASE_URL -c "vacuum verbose analyze repository"
+
+# 8am UTC is 1am Pacific, run every Thursday
+00 08 * * THU echo "export"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/export_changefile.sh
+
+00 08 * * * echo "daily export"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/export_daily_changefile.sh
+30 08 * * * echo "daily snapshot"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/export_daily_snapshot.sh
+
+# every 8 hours at minute 35
+# 35 7-23/8 * * * echo "vacuum script"; sh $HOME/unpaywall-export/pub_queue_maintenance.sh
+35 7-23/8 * * * echo "unstick queues"; sh $HOME/unpaywall-export/unstick-queues.sh
+
+45 */2 * * * echo "metrics refresh script"; cd $HOME/unpaywall-export; sh ./logging_update.sh
+
+9 6,18 * * * cd $HOME/unpaywall-export/; echo "export changefile to bigquery"; . $HOME/.bash_profile; . $HOME/.bashrc; /bin/bash update_bigquery_api_live.sh
+0 8,20 * * * echo "record article counts by oa status"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/log-oa-rates.sh
+10 8,20 * * * echo "record article counts by oa status, publisher"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/log-oa-rates-by-publisher.sh
+
+0 9 * * * cd $HOME/unpaywall-export/; . $HOME/.bash_profile; . $HOME/.bashrc; psql $DATABASE_URL -f load-doaj-journals.sql
+
+0  9 * * * cd $HOME/unpaywall-export/pmc-sync; . $HOME/.bash_profile; . $HOME/.bashrc; ./01-get-pmc-id-mappings.sh
+30 9 * * * cd $HOME/unpaywall-export/pmc-sync; . $HOME/.bash_profile; . $HOME/.bashrc; ./02-get-pmc-published-versions.sh
+
+# 0 12 * * * cd $HOME/journal-table/; . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin ./update-journal-table.sh
+# 0 13 * * TUE . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin heroku run -a oadoi python call_journal_apis.py --retry-apis
+
+0 18 * * * . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin heroku run -a oadoi python cache_changefile_dicts.py
+
+#0 13 * * WED echo "load issn-l mappings from journalsdb"; . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin sh journal-table/load-journalsdb-issnls.sh
+0 13 * * WED echo "load issn-l mappings from openalex"; . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin sh journal-table/copy-openalex-issnls-to-unpaywall.sh
+5 13 * * * echo "export num_articles_by_journal_repo"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/bq_export_articles_by_journal_repo.sh
+10 13 * * * echo "export num_dois_by_issnl_year_oa_status"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/bq_export_oa_rates_by_journal_year.sh
+15 13 * * * echo "export doaj_issn_l_years"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/bq_export_doaj_journal_years.sh
+20 13 * * * echo "export oa_issn_l_years"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/bq_export_oa_journal_years.sh
+25 13 * * * cd $HOME/journal-table/; . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin ./copy-bq-issns-to-pg.sh
+30 13 * * * echo "export extension_journal_requests_by_month"; . $HOME/.bash_profile; . $HOME/.bashrc; sh unpaywall-export/bq_export_extension_journal_requests_by_month.sh
+35 13 * * * . $HOME/.bash_profile; . $HOME/.bashrc; PATH=$PATH:/usr/local/bin heroku run -a oadoi -s performance-m python journal_export.py
+
+*/30 * * * * echo "load extension doi requests to bigquery"; . $HOME/.bash_profile; . $HOME/.bashrc; cd $HOME/unpaywall-export/extension-dois-by-month/; /bin/bash load-logs-to-bq.sh
