@@ -1256,8 +1256,8 @@ class Pub(db.Model):
 
     def is_closed_exception(self):
         return any([self.is_springer_ebook(),
-                    '1751-2409' in self.issns,
-                    '1751-2395' in self.issns])
+                    self.issns is not None and '1751-2409' in self.issns,
+                    self.issns is not None and '1751-2395' in self.issns])
 
     def ask_local_lookup(self):
         evidence = None
