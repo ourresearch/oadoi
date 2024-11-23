@@ -32,6 +32,7 @@ from const import LANDING_PAGE_ARCHIVE_BUCKET, PDF_ARCHIVE_BUCKET
 from convert_http_to_https import fix_url_scheme
 from http_cache import get_session_id
 from journal import Journal
+from oa_manual import OAManual
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, \
     oa_status_sort_key
 from pdf_url import PdfUrl
@@ -46,7 +47,7 @@ from recordthresher.record_maker.parseland_record_maker import \
 from recordthresher.record_maker import PmhRecordMaker
 from recordthresher.record_maker.pdf_record_maker import PDFRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
-from util import NoDoiException
+from util import NoDoiException, enqueue_unpaywall_refresh
 from util import is_pmc, clamp, clean_doi, normalize_doi
 from convert_http_to_https import fix_url_scheme
 from util import normalize
@@ -1258,6 +1259,16 @@ class Pub(db.Model):
         return any([self.is_springer_ebook(),
                     self.issns is not None and '1751-2409' in self.issns,
                     self.issns is not None and '1751-2395' in self.issns])
+
+    def manual_close(self):
+        oa_manual = OAManual()
+        oa_manual.response_jsonb = {}
+        oa_manual.doi = self.doi
+        db.session.add(oa_manual)
+        db.session.commit()
+        self.update()
+        db.session.commit()
+        enqueue_unpaywall_refresh([self.doi], db.session)
 
     def ask_local_lookup(self):
         evidence = None
