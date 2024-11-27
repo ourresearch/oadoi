@@ -1887,7 +1887,7 @@ def _transform_meta_pdf(link, page):
             reference_pdf = re.sub(r'\.pdf$', '_reference.pdf',  nature_pdf.group(1))
             if reference_pdf in page:
                 link.href = reference_pdf
-
+    link.href = link.href.replace(':443', '').replace(':80', '')
     return link
 
 
