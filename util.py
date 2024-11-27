@@ -809,20 +809,21 @@ def get_openalex_json(url, params, s=None):
     return r.json()
 
 
-def openalex_works_paginate(oax_filter, select=None):
-    params = {'mailto': 'team@ourresearch.org',
-              'filter': oax_filter,
-              'per-page': '200',
-              'cursor': '*'}
-    if select:
-        params['select'] = select
+def openalex_works_paginate(oax_filter, **params):
+    _params = {'mailto': 'team@ourresearch.org',
+               'filter': oax_filter,
+               'per-page': '200',
+               'cursor': '*'}
+    _params.update(params)
     s = requests.session()
     while True:
-        j = get_openalex_json('https://api.openalex.org/works', params, s)
+        j = get_openalex_json('https://api.openalex.org/works', _params, s)
         page = j['results']
         if next_cursor := j['meta'].get('next_cursor'):
-            params['cursor'] = next_cursor
+            _params['cursor'] = next_cursor
         else:
+            if page:
+                yield page
             break
         if not page:
             break
