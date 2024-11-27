@@ -1466,6 +1466,7 @@ def get_useful_links(page):
 
     # now get the links
     link_elements = tree.xpath("//a")
+    link_elements = [elem for elem in link_elements if not elem.attrib.get('href', '').startswith('mailto')]
 
     for link in link_elements:
         link_text = link.text_content().strip().lower()
