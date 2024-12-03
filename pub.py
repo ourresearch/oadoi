@@ -26,7 +26,7 @@ import oa_local
 import oa_manual
 import oa_page
 import page
-from app import db
+from app import db, oa_db_engine
 from app import logger
 from const import LANDING_PAGE_ARCHIVE_BUCKET, PDF_ARCHIVE_BUCKET
 from convert_http_to_https import fix_url_scheme
@@ -1268,7 +1268,7 @@ class Pub(db.Model):
         db.session.commit()
         self.update()
         db.session.commit()
-        enqueue_unpaywall_refresh([self.doi], db.session)
+        enqueue_unpaywall_refresh([self.doi], oa_db_engine)
 
     def ask_local_lookup(self):
         evidence = None
@@ -1345,8 +1345,8 @@ class Pub(db.Model):
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
                 elsevier_id = self.crossref_alternative_id
-                pdf_url = "http://manuscript.elsevier.com/{}/pdf/{}.pdf".format(
-                    elsevier_id, elsevier_id)
+                pdf_url = "https://www.sciencedirect.com/science/article/am/pii/{}".format(
+                    elsevier_id)
             elif self.is_same_publisher("American Physical Society (APS)"):
                 proper_case_id = self.id
                 proper_case_id = proper_case_id.replace("revmodphys",
