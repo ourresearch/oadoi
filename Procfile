@@ -7,7 +7,6 @@ refresh: bin/start-pgbouncer-stunnel bash run_hybrid_worker.sh
 refresh_aux: bin/start-pgbouncer-stunnel bash run_hybrid_worker_aux_0.sh
 run_pmh: bash run_pmh.sh
 run_repo: bash run_repo.sh
-run_repo_arxiv: bash run_repo_arxiv.sh
 run_pdf_url_check: bin/start-pgbouncer-stunnel bash run_pdf_url_check.sh
 green_scrape: bash run_green_scrape_worker.sh
 green_scrape_arxiv: bash run_green_scrape_arxiv_worker.sh
