@@ -8,6 +8,7 @@ from collections import Counter
 from collections import OrderedDict
 from collections import defaultdict
 from enum import Enum
+from functools import cached_property
 from threading import Thread
 
 import boto3
@@ -16,7 +17,7 @@ import requests
 from dateutil.relativedelta import relativedelta
 from lxml import etree
 from psycopg2.errors import UniqueViolation
-from sqlalchemy import orm, sql, text
+from sqlalchemy import orm, sql, text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.attributes import flag_modified
@@ -731,7 +732,7 @@ class Pub(db.Model):
                 'oa_status', None)
         )
 
-        if self.is_closed_exception():
+        if self.is_closed_exception:
             logger.info(f'{self.doi} is closed exception. Setting to closed and skipping hybrid refresh')
             self.open_locations = []
         else:
@@ -1205,7 +1206,7 @@ class Pub(db.Model):
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
-        if self.is_closed_exception():
+        if self.is_closed_exception:
             self.open_locations = []
             return
 
@@ -1255,10 +1256,26 @@ class Pub(db.Model):
                     'springer' in (self.publisher.lower() or ''),
                     'book' in (self.genre or '')])
 
+    def is_manually_opened(self):
+        return OAManual.query.filter(OAManual.doi == self.id,
+                                     func.jsonb_exists(OAManual.response_jsonb, 'pdf_url')).first() is not None
+    @cached_property
     def is_closed_exception(self):
         return any([self.is_springer_ebook(),
                     self.issns is not None and '1751-2409' in self.issns,
-                    self.issns is not None and '1751-2395' in self.issns])
+                    self.issns is not None and '1751-2395' in self.issns]) and not self.is_manually_opened()
+
+    def manual_open(self, pdf_url, oa_status=None):
+        oa_manual = OAManual()
+        oa_manual.response_jsonb = {'pdf_url': pdf_url}
+        if oa_status:
+            oa_manual.response_jsonb['oa_status_set'] = oa_status
+        oa_manual.doi = self.doi
+        db.session.add(oa_manual)
+        db.session.commit()
+        self.update()
+        db.session.commit()
+        enqueue_unpaywall_refresh([self.doi], oa_db_engine)
 
     def manual_close(self):
         oa_manual = OAManual()
