@@ -174,9 +174,8 @@ class DbQueue(object):
                 method_name=method_name
             ))
 
-            if kwargs_map:
-                method_kwargs = kwargs_map.get(obj.id, {})
-                method_to_run(**method_kwargs)
+            method_kwargs = kwargs_map.get(obj.id, {}) if kwargs_map else {}
+            method_to_run(**method_kwargs)
 
             logger.info("finished {repr}.{method_name}(). took {elapsed} seconds".format(
                 repr=obj,
