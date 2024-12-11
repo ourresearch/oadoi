@@ -141,7 +141,7 @@ class DbQueue(object):
 
 
 
-    def update_fn(self, cls, method_name, objects, index=1):
+    def update_fn(self, cls, method_name, objects, index=1, kwargs_map=None):
 
         # we are in a fork!  dispose of our engine.
         # will get a new one automatically
@@ -174,7 +174,9 @@ class DbQueue(object):
                 method_name=method_name
             ))
 
-            method_to_run()
+            if kwargs_map:
+                method_kwargs = kwargs_map.get(obj.id, {})
+                method_to_run(**method_kwargs)
 
             logger.info("finished {repr}.{method_name}(). took {elapsed} seconds".format(
                 repr=obj,

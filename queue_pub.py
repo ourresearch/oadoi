@@ -45,7 +45,7 @@ class DbQueuePub(DbQueue):
                 limit = 1000
             text_query_pattern = """
                 with refresh_queue as (
-                    select id
+                    select id, kwargs
                     from {queue_table}
                     where started is null
                     order by
@@ -60,7 +60,7 @@ class DbQueuePub(DbQueue):
                 set started = now()
                 from refresh_queue
                 where refresh_queue.id = queue_rows_to_update.id
-                returning refresh_queue.id;"""
+                returning refresh_queue.id, refresh_queue.kwargs;"""
             text_query = text_query_pattern.format(
                 chunk=chunk,
                 queue_table=queue_table
@@ -100,6 +100,7 @@ class DbQueuePub(DbQueue):
                 normalized_dois = [normalize_doi(doi) for doi in dois]
                 objects = run_class.query.filter(
                     run_class.id.in_(normalized_dois)).all()
+                kwargs_map = {}  # Empty kwargs map for direct DOI processing
                 if not objects:
                     logger.info(f"No publications found for DOIs: {dois}")
                     return
@@ -109,7 +110,18 @@ class DbQueuePub(DbQueue):
                 job_time = time()
                 row_list = db.engine.execute(text(text_query).execution_options(
                     autocommit=True)).fetchall()
-                object_ids = [row[0] for row in row_list]
+
+                if run_method == "refresh":
+                    object_ids = []
+                    kwargs_map = {}
+                    for row in row_list:
+                        object_ids.append(row[0])
+                        if row[1]:  # If kwargs exists for this row
+                            kwargs_map[row[0]] = row[1]
+                else:
+                    object_ids = [row[0] for row in row_list]
+                    kwargs_map = {}  # Empty kwargs map for non-refresh queue
+
                 logger.info(
                     "got ids, took {} seconds".format(elapsed(job_time)))
 
@@ -129,7 +141,9 @@ class DbQueuePub(DbQueue):
                 return
 
             object_ids = [obj.id for obj in objects]
-            self.update_fn(run_class, run_method, objects, index=index)
+            self.update_fn(run_class, run_method, objects, index=index,
+                           kwargs_map=kwargs_map)
+
             enqueue_unpaywall_refresh(object_ids, oa_db_conn, oa_redis_conn)
             logger.info(
                 f'Enqueued {len(object_ids)} works to be updated in unpaywall_recordthresher_fields')
@@ -157,8 +171,10 @@ if __name__ == "__main__":
         db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
-    parser.add_argument('--id', nargs="+", type=str, help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
-    parser.add_argument('--doi', nargs="+", type=str, help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
+    parser.add_argument('--id', nargs="+", type=str,
+                        help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
+    parser.add_argument('--doi', nargs="+", type=str,
+                        help="id(s) or DOI(s) of the one thing(s) you want to update (case sensitive)")
     parser.add_argument('--method', nargs="?", type=str, default="update",
                         help="method name to run")
 
