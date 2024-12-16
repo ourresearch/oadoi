@@ -1,7 +1,6 @@
 from enum import Enum
 from urllib.parse import quote
 
-import botocore
 from sqlalchemy import text
 
 from app import s3_conn, logger, db
@@ -72,9 +71,10 @@ def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
 
 def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED,
                         commit=True):
-    db.session.execute(text(
+    stmnt = text(
         "INSERT INTO recordthresher.pdf_update_ingest (doi, pdf_version) VALUES (:doi, :version) ON CONFLICT(doi, pdf_version) DO UPDATE SET finished = NULL;").bindparams(
-        doi=doi, version=version.value))
+        doi=doi, version=version.value)
+    db.session.execute(stmnt)
     if commit:
         db.session.commit()
 
