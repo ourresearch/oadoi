@@ -37,7 +37,7 @@ from oa_manual import OAManual
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, \
     oa_status_sort_key
 from pdf_url import PdfUrl
-from pdf_util import save_pdf
+from pdf_util import save_pdf, enqueue_pdf_parsing, PDFVersion
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -771,15 +771,7 @@ class Pub(db.Model):
                                                parent_record_id=rt_record.id))
             self.create_or_update_parseland_record()
             if self.is_oa:
-                version = 'published' if not self.response_best_version else self.response_best_version.lower().strip('version')
-                db.session.execute(
-                    text('''
-                        INSERT INTO recordthresher.pdf_update_ingest(doi, pdf_version)
-                        VALUES (:doi, :pdf_version)
-                        ON CONFLICT (doi, pdf_version) DO NOTHING;
-                    '''),
-                    {'doi': self.id, 'pdf_version': version}
-                )
+                enqueue_pdf_parsing(self.id, PDFVersion.from_version_str(self.response_best_version))
             return True
         return False
 
