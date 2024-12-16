@@ -770,8 +770,16 @@ class Pub(db.Model):
                     RecordthresherParentRecord(record_id=secondary_record.id,
                                                parent_record_id=rt_record.id))
             self.create_or_update_parseland_record()
-            if self.is_oa and (pdf_record := PDFRecordMaker.make_record(self)):
-                db.session.merge(pdf_record)
+            if self.is_oa:
+                version = 'published' if not self.response_best_version else self.response_best_version.lower().strip('version')
+                db.session.execute(
+                    text('''
+                        INSERT INTO recordthresher.pdf_update_ingest(doi, pdf_version)
+                        VALUES (:doi, :pdf_version)
+                        ON CONFLICT (doi, pdf_version) DO NOTHING;
+                    '''),
+                    {'doi': self.id, 'pdf_version': version}
+                )
             return True
         return False
 
