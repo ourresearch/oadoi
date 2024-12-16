@@ -157,7 +157,7 @@ def process_db_statements_loop(db_q: Queue):
     counts = {'OADOI': 0, 'OPENALEX': 0}
     while True:
         try:
-            stmnt, conn_name, force_commit = db_q.get(timeout=60*60)
+            stmnt, conn_name, force_commit = db_q.get()
             conns[conn_name].execute(stmnt)
             counts[conn_name] += 1
             if counts[conn_name] % 20 == 0:
@@ -186,7 +186,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
         doi = None
         exc = None
         try:
-            doi, version = pdf_doi_q.get(timeout=20)
+            doi, version = pdf_doi_q.get()
             if doi_is_seen(doi):
                 inc_dupe_count()
                 continue
