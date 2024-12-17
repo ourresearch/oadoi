@@ -16,6 +16,7 @@ click==8.0.3
 coloredlogs==15.0.1
 cryptography==35.0.0
 ddt==1.4.2
+python-digitalocean~=1.17.0
 et-xmlfile==1.1.0
 executor==23.2
 fasteners==0.16.3
