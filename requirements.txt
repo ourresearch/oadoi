@@ -58,6 +58,7 @@ oauthlib==3.1.1
 openpyxl==3.0.7
 packaging==21.0
 pandas==2.1.1
+paramiko~=3.4.0
 pdfminer==20191125
 pdftotext==2.1.5
 pip==23.0.1
