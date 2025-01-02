@@ -1625,10 +1625,10 @@ class Pub(db.Model):
 
     def ask_green_locations(self):
         has_new_green_locations = False
-        springer_ebook_oa_override = any([(
+        springer_ebook_oa_override = any([
                                           page.scrape_pdf_url and page.scrape_pdf_url.endswith(
                                               '?pdf=chapter%20toc') for page in
-                                          self.pages)]) and self.publisher and 'springer' in self.publisher.lower()
+                                          self.pages]) and self.publisher and 'springer' in self.publisher.lower()
         if springer_ebook_oa_override:
             return
         for my_page in [p for p in self.pages if
