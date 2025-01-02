@@ -1265,11 +1265,13 @@ class Pub(db.Model):
                     self.issns is not None and '1751-2409' in self.issns,
                     self.issns is not None and '1751-2395' in self.issns]) and not self.is_manually_opened()
 
-    def manual_open(self, pdf_url, oa_status=None):
+    def manual_open(self, pdf_url, oa_status=None, host_type=None):
         oa_manual = OAManual()
         oa_manual.response_jsonb = {'pdf_url': pdf_url}
         if oa_status:
             oa_manual.response_jsonb['oa_status_set'] = oa_status
+        if host_type:
+            oa_manual.response_jsonb['host_type_set'] = host_type
         oa_manual.doi = self.doi
         db.session.add(oa_manual)
         db.session.commit()
