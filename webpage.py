@@ -415,7 +415,7 @@ class Webpage(object):
         # logger.info(page)
 
         links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page_with_scripts or page)] + get_useful_links(page)
-        links = [link for link in links if link is not None]
+        links = [link for link in links if link is not None and link.href]
 
         for link in links:
             if DEBUG_SCRAPING:
