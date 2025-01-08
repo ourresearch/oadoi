@@ -53,6 +53,9 @@ lookup_raw = {
     "10.1007/978-3-662-44874-8": [
         "https://zenodo.org/record/4454681",
     ],
+    '10.4000/books.putc.16867': [
+        'https://www.elysee.fr/front/pdf/elysee-module-19159-fr.pdf'
+    ]
 }
 
 
