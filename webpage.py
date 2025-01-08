@@ -396,6 +396,9 @@ class Webpage(object):
         if link.href == 'https://dsq-sds.org/article/download/298/345':
             return True
 
+        if link.href == 'https://pq-static-content.proquest.com/collateral/media2/documents/ebookcentral-dda.pdf':
+            return True
+
         return False
 
     def filter_link(self, link):
