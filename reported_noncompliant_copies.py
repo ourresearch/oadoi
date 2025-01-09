@@ -55,6 +55,9 @@ lookup_raw = {
     ],
     '10.4000/books.putc.16867': [
         'https://www.elysee.fr/front/pdf/elysee-module-19159-fr.pdf'
+    ],
+    '10.1080/14693062.2015.1094729': [
+        'http://www.ucsusa.org/sites/default/files/attach/2015/07/The-Climate-Deception-Dossiers.pdf'
     ]
 }
 
