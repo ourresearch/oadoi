@@ -58,11 +58,17 @@ lookup_raw = {
     ]
 }
 
+location_url_blacklist = {
+    'https://pq-static-content.proquest.com/collateral/media2/documents/ebookcentral-dda.pdf'
+}
+
 
 def is_reported_noncompliant_url(dirty_doi, dirty_url):
     if not dirty_url:
         return False
 
+    if dirty_url in location_url_blacklist:
+        return True
     my_url = dirty_url.lower()
     for url_fragment in reported_noncompliant_url_fragments(dirty_doi):
         if url_fragment in my_url:
