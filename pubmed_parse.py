@@ -109,8 +109,8 @@ def store_pubmed_work(record: dict, tree=None):
     work.issn = safe_get_first_xpath(tree, '//ISSNLinking/text()')
     work.article_title = safe_get_first_xpath(tree, '//ArticleTitle/text()')
     work.year = safe_get_first_xpath(tree, '//PubDate/Year/text()')
-    work.abstract = '\n'.join(
-        [tag.text for tag in tree.xpath('//Abstract/AbstractText') if tag.text])
+    abstract_texts = tree.xpath('//Abstract/AbstractText')
+    work.abstract = '\n'.join(''.join(tag.itertext()) for tag in abstract_texts) if abstract_texts else None
     work.created = datetime.now()
     work.doi = record['doi']
     work.pmid = record['pmid']
