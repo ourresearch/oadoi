@@ -60,7 +60,10 @@ lookup_raw = {
         'http://www.ucsusa.org/sites/default/files/attach/2015/07/The-Climate-Deception-Dossiers.pdf'
     ],
     '10.1386/jwcp.3.1.31_1':
-        ['https://www.intellectbooks.com/asset/76511/1/JWCP_CallforTeamMembers_2023_1_.pdf']
+        ['https://www.intellectbooks.com/asset/76511/1/JWCP_CallforTeamMembers_2023_1_.pdf'],
+
+    '10.5153/sro.3693':
+        ['http://www.ejustice.just.fgov.be/mopdf/2013/04/11_1.pdf#Page41']
 }
 
 location_url_blacklist = {
