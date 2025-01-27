@@ -353,11 +353,11 @@ def call_requests_get(url=None,
         if policies := get_matching_policies(url):
             policy = policies[min(attempt_n, len(policies) - 1)]
             if policy.profile == 'api':
-                logger.info('using zyte profile')
+                logger.info(f'using zyte profile for url: {url}')
                 use_zyte_api_profile = True
                 zyte_params = policy.params
             elif policy.profile == 'proxy':
-                logger.info('using crawlera profile')
+                logger.info(f'using crawlera profile for url: {url}')
                 use_crawlera_profile = True
 
         if use_crawlera_profile:
