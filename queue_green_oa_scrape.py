@@ -375,12 +375,12 @@ class DbQueueGreenOAScrape(DbQueue):
                                 and qt.started is null
                                 and e.green_scrape
                                 {endpoint_filter}
-                            order by qt.finished asc nulls first
                             limit {per_endpoint_limit}
                             for update of qt skip locked
                         ) lru_by_endpoint
                     where
-                        finished is null lru_by_endpoint.rand
+                        finished is null
+                    order by lru_by_endpoint.rand
                     limit {chunk_size}
             )
             update {queue_table} queue_rows_to_update
