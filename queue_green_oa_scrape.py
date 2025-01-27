@@ -381,9 +381,7 @@ class DbQueueGreenOAScrape(DbQueue):
                             for update of qt skip locked
                         ) lru_by_endpoint
                     where
-                        finished is null
-                        or finished < now() - '60 days'::interval
-                    order by lru_by_endpoint.finished asc nulls first, lru_by_endpoint.rand
+                        finished is null lru_by_endpoint.rand
                     limit {chunk_size}
             )
             update {queue_table} queue_rows_to_update
