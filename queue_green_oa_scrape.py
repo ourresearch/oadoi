@@ -375,7 +375,6 @@ class DbQueueGreenOAScrape(DbQueue):
                                 and qt.started is null
                                 and e.green_scrape
                                 {endpoint_filter}
-                                and p.pmh_record is null
                             order by qt.finished asc nulls first
                             limit {per_endpoint_limit}
                             for update of qt skip locked
