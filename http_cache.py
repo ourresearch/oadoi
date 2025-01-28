@@ -414,6 +414,7 @@ def call_requests_get(url=None,
                 return r
         else:
             # logger.info(u"getting url {}".format(url))
+            logger.info(f'getting url: {url} | proxies = {proxies} | env proxies = {os.getenv("HTTP_PROXY")}, {os.getenv("HTTP_PROXY")}')
             r = requests_session.get(url,
                                      headers=headers,
                                      timeout=(connect_timeout, read_timeout),
