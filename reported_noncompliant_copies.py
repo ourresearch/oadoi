@@ -65,7 +65,10 @@ lookup_raw = {
     '10.5153/sro.3693':
         ['http://www.ejustice.just.fgov.be/mopdf/2013/04/11_1.pdf#Page41'],
     '10.29228/jamp.53876':
-        ['https://academicmed.org/Uploads/Volume7Issue1/1. [4520. JAMP_MOGA] 1-5.pdf']
+        ['https://academicmed.org/Uploads/Volume7Issue1/1. [4520. JAMP_MOGA] 1-5.pdf'],
+    '10.1002/9781118838983': [
+        'https://europepmc.org/backend/ptpmcrender.fcgi?accid=PMC1123482&blobtype=pdf'
+    ]
 }
 
 location_url_blacklist = {
