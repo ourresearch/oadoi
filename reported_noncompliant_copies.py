@@ -67,7 +67,7 @@ lookup_raw = {
     '10.29228/jamp.53876':
         ['https://academicmed.org/Uploads/Volume7Issue1/1. [4520. JAMP_MOGA] 1-5.pdf'],
     '10.1002/9781118838983': [
-        'https://europepmc.org/backend/ptpmcrender.fcgi?accid=PMC1123482&blobtype=pdf'
+        'https://europepmc.org/articles/pmc1123482?pdf=render'
     ]
 }
 
