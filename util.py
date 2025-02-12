@@ -892,16 +892,18 @@ def save_landing_page_new(content, native_id, native_id_ns, url='', resolved_url
             'native_id': native_id,
             'native_id_namespace': native_id_ns
         })
-    harvest_html_table.put_item(
-        Item={
+    item = {
             'id': new_key.replace('.html.gz', ''),
             'url': url,
             'native_id': native_id,
             'native_id_namespace': native_id_ns,
-            'normalized_doi': native_id if native_id_ns == 'doi' else None,
             'resolved_url': resolved_url,
             's3_key': new_key,
             's3_path': f's3://{LANDING_PAGE_ARCHIVE_BUCKET_NEW}/{new_key}',
             'created_date': datetime.datetime.utcnow().isoformat(),
             'created_timestamp': int(time.time()),
-        })
+        }
+    if native_id_ns == 'doi':
+        item['normalized_doi'] = native_id
+    harvest_html_table.put_item(
+        Item=item)

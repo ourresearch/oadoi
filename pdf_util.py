@@ -112,13 +112,14 @@ def save_pdf_new(content, native_id, native_id_ns, version=PDFVersion.PUBLISHED,
         'id': new_key.replace('.pdf', ''),
         'native_id': native_id,
         'native_id_namespace': native_id_ns,
-        'normalized_doi': native_id if native_id_ns == 'doi' else None,
         'type': version.value,
         's3_key': new_key,
         's3_path': f's3://{PDF_ARCHIVE_BUCKET_NEW}/{new_key}',
         'created_timestamp': int(time.time()),
         'created_date': datetime.utcnow().isoformat()
     }
+    if native_id_ns == 'doi':
+        item['normalized_doi'] = native_id
     harvest_pdf_table.put_item(Item=item)
 
 

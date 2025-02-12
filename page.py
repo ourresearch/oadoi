@@ -281,8 +281,9 @@ class PageBase(db.Model):
 
                 self.store_fulltext(my_webpage.fulltext_bytes,
                                     my_webpage.fulltext_type)
+                version = PDFVersion.from_version_str(my_webpage.scraped_version)
                 save_pdf_new(my_webpage.fulltext_bytes, self.pmh_id.split(':', 1)[-1], 'pmh',
-                             PDFVersion.from_version_str(my_webpage.scraped_version).value, resolved_url=my_webpage.scraped_pdf_url)
+                             version.value if version else None, resolved_url=my_webpage.scraped_pdf_url)
                 self.store_landing_page(my_webpage.page_text)
                 save_landing_page_new(my_webpage.page_text, self.pmh_id.split(':', 1)[-1], 'pmh', my_webpage.url, my_webpage.resolved_url)
 
