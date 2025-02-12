@@ -34,6 +34,8 @@ class PDFVersion(Enum):
 
     @classmethod
     def from_version_str(cls, version_str: str):
+        if not version_str:
+            return None
         for version in cls:
             if version.value in version_str.lower():
                 return version
