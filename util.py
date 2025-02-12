@@ -1,6 +1,7 @@
 import bisect
 import collections
 import datetime
+import gzip
 import json
 import logging
 import math
@@ -8,8 +9,9 @@ import os
 import re
 import time
 import unicodedata
+import uuid
 from typing import List
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 
 import heroku3
 import requests
@@ -24,6 +26,7 @@ from sqlalchemy import sql
 from tenacity import retry, stop_after_attempt, wait_exponential
 from unidecode import unidecode
 
+from const import LANDING_PAGE_ARCHIVE_BUCKET_NEW
 from convert_http_to_https import fix_url_scheme
 
 REDIS_UNPAYWALL_REFRESH_QUEUE = 'queue:unpaywall_refresh'
@@ -828,3 +831,77 @@ def openalex_works_paginate(oax_filter, **params):
         if not page:
             break
         yield page
+
+
+def extract_dois_from_text(text):
+    dois = set()
+
+    url_doi_pattern = r'cdi_unpaywall_primary_(.+?)(?:$|[/?])'
+
+    direct_doi_pattern = r'10\.\d{4,9}/[^\s"<>?]+'
+
+    url_matches = re.finditer(url_doi_pattern, text)
+    for match in url_matches:
+        doi = match.group(1)
+        doi = doi.replace('_', '/')
+        normalized = normalize_doi(doi)
+        if normalized:
+            dois.add(normalized)
+
+    direct_matches = re.finditer(direct_doi_pattern, text)
+    for match in direct_matches:
+        normalized = normalize_doi(match.group(0))
+        if normalized:
+            dois.add(normalized)
+
+    return set([doi.strip('.') for doi in dois])
+
+def sanitize_string(text):
+    # Normalize and remove non-ASCII characters
+    return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
+
+def save_landing_page_new(content, native_id, native_id_ns, url='', resolved_url=''):
+    from s3_util import harvest_html_table, s3
+    if not content:
+        return
+    response = harvest_html_table.query(IndexName='by_native_id',
+                                        KeyConditionExpression='native_id = :native_id',
+                                        ExpressionAttributeValues={
+                                            ':native_id': native_id})
+    if 'Items' in response and response['Items']:
+        existing_item = response['Items'][0]
+        if s3_path := existing_item.get('s3_path'):
+            _, _, bucket_name, object_key = s3_path.split("/", 3)
+            s3.delete_object(Bucket=bucket_name, Key=object_key)
+        harvest_html_table.delete_item(
+            Key={'id': existing_item.get('id')})
+    new_key = str(uuid.uuid4()) + '.html.gz'
+    encoded_url = quote(str(url or ''))
+    encoded_resolved_url = quote(str(resolved_url or ''))
+    s3.put_object(
+        Bucket=LANDING_PAGE_ARCHIVE_BUCKET_NEW,
+        Key=new_key,
+        Body=gzip.compress(content.encode('utf-8') if isinstance(content, str) else content),
+        Metadata={
+            'url': encoded_url,
+            'resolved_url': encoded_resolved_url,
+            'created_date': datetime.datetime.utcnow().isoformat(),
+            'created_timestamp': str(int(time.time())),
+            'content_type': 'html',
+            'id': new_key.replace('.html.gz', ''),
+            'native_id': native_id,
+            'native_id_namespace': native_id_ns
+        })
+    harvest_html_table.put_item(
+        Item={
+            'id': new_key.replace('.html.gz', ''),
+            'url': url,
+            'native_id': native_id,
+            'native_id_namespace': native_id_ns,
+            'normalized_doi': native_id if native_id_ns == 'doi' else None,
+            'resolved_url': resolved_url,
+            's3_key': new_key,
+            's3_path': f's3://{LANDING_PAGE_ARCHIVE_BUCKET_NEW}/{new_key}',
+            'created_date': datetime.datetime.utcnow().isoformat(),
+            'created_timestamp': int(time.time()),
+        })

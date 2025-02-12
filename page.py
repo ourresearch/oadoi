@@ -17,8 +17,8 @@ from http_cache import http_get
 from oa_local import find_normalized_license
 from oa_pmc import query_pmc
 from pdf_to_text import convert_pdf_to_txt_pages
-from pdf_util import PDFVersion, save_pdf, enqueue_pdf_parsing
-from util import clean_url, is_pmc
+from pdf_util import PDFVersion, save_pdf, enqueue_pdf_parsing, save_pdf_new
+from util import clean_url, is_pmc, save_landing_page_new
 from webpage import PmhRepoWebpage, PublisherWebpage
 
 DEBUG_BASE = False
@@ -281,7 +281,10 @@ class PageBase(db.Model):
 
                 self.store_fulltext(my_webpage.fulltext_bytes,
                                     my_webpage.fulltext_type)
+                save_pdf_new(my_webpage.fulltext_bytes, self.pmh_id.split(':', 1)[-1], 'pmh',
+                             PDFVersion.from_version_str(my_webpage.scraped_version).value, resolved_url=my_webpage.scraped_pdf_url)
                 self.store_landing_page(my_webpage.page_text)
+                save_landing_page_new(my_webpage.page_text, self.pmh_id.split(':', 1)[-1], 'pmh', my_webpage.url, my_webpage.resolved_url)
 
         if self.scrape_pdf_url and not self.scrape_version:
             with PmhRepoWebpage(url=self.url,
@@ -786,6 +789,7 @@ class PageNew(PageBase):
         elif hasattr(pdf_r, 'content'):
             pdf_content = pdf_r.content
         if pdf_content:
+            save_pdf_new(pdf_content, self.pmh_id.split(':', 1)[-1], 'pmh', version, resolved_url=pdf_r.url)
             save_pdf(doi or self.doi, pdf_content, version)
         enqueue_pdf_parsing(doi or self.doi, version)
 

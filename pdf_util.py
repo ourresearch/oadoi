@@ -1,3 +1,6 @@
+import time
+import uuid
+from datetime import datetime
 from enum import Enum
 from urllib.parse import quote
 
@@ -5,8 +8,8 @@ from sqlalchemy import text
 
 from app import s3_conn, logger, db
 
-from const import PDF_ARCHIVE_BUCKET, GROBID_XML_BUCKET
-from s3_util import check_exists, get_object
+from const import PDF_ARCHIVE_BUCKET, GROBID_XML_BUCKET, PDF_ARCHIVE_BUCKET_NEW
+from s3_util import check_exists, get_object, harvest_pdf_table, s3
 
 
 class PDFVersion(Enum):
@@ -67,6 +70,54 @@ def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
     except Exception as e:
         logger.error(f'failed to save pdf: {e}')
         return False
+
+
+def save_pdf_new(content, native_id, native_id_ns, version=PDFVersion.PUBLISHED, url='', resolved_url=''):
+    if not content:
+        return
+    response = harvest_pdf_table.query(
+        IndexName='by_native_id',
+        KeyConditionExpression='native_id = :native_id',
+        FilterExpression='#type = :type',
+        ExpressionAttributeNames={'#type': 'type'},
+        ExpressionAttributeValues={':native_id': native_id, ':type': version.value}
+    )
+    if 'Items' in response and response['Items']:
+        existing_item = response['Items'][0]
+        if s3_path := existing_item.get('s3_path'):
+            _, _, bucket_name, object_key = s3_path.split("/", 3)
+            s3.delete_object(Bucket=bucket_name, Key=object_key)
+        harvest_pdf_table.delete_item(
+            Key={'id': existing_item.get('id')})
+    new_key = str(uuid.uuid4()) + '.pdf'
+    encoded_url = quote(str(url or ''))
+    encoded_resolved_url = quote(str(resolved_url or ''))
+    s3.put_object(
+        Bucket=PDF_ARCHIVE_BUCKET_NEW,
+        Key=new_key,
+        Body=content,
+        Metadata={
+            'url': encoded_url,
+            'resolved_url': encoded_resolved_url,
+            'created_date': datetime.utcnow().isoformat(),
+            'created_timestamp': str(int(time.time())),
+            'content_type': 'pdf',
+            'id': new_key.replace('.pdf', ''),
+            'native_id': native_id,
+            'native_id_namespace': native_id_ns
+        })
+    item = {
+        'id': new_key.replace('.pdf', ''),
+        'native_id': native_id,
+        'native_id_namespace': native_id_ns,
+        'normalized_doi': native_id if native_id_ns == 'doi' else None,
+        'type': version.value,
+        's3_key': new_key,
+        's3_path': f's3://{PDF_ARCHIVE_BUCKET_NEW}/{new_key}',
+        'created_timestamp': int(time.time()),
+        'created_date': datetime.utcnow().isoformat()
+    }
+    harvest_pdf_table.put_item(Item=item)
 
 
 def enqueue_pdf_parsing(doi, version: PDFVersion = PDFVersion.PUBLISHED,

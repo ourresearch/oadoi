@@ -29,15 +29,17 @@ import oa_page
 import page
 from app import db, oa_db_engine
 from app import logger
-from const import LANDING_PAGE_ARCHIVE_BUCKET, PDF_ARCHIVE_BUCKET
+from const import LANDING_PAGE_ARCHIVE_BUCKET, PDF_ARCHIVE_BUCKET, \
+    LANDING_PAGE_ARCHIVE_BUCKET_NEW
 from convert_http_to_https import fix_url_scheme
 from http_cache import get_session_id
+from urllib.parse import quote
 from journal import Journal
 from oa_manual import OAManual
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, \
     oa_status_sort_key
 from pdf_url import PdfUrl
-from pdf_util import save_pdf, enqueue_pdf_parsing, PDFVersion
+from pdf_util import save_pdf, enqueue_pdf_parsing, PDFVersion, save_pdf_new
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -48,7 +50,9 @@ from recordthresher.record_maker.parseland_record_maker import \
 from recordthresher.record_maker import PmhRecordMaker
 from recordthresher.record_maker.pdf_record_maker import PDFRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
-from util import NoDoiException, enqueue_unpaywall_refresh
+from s3_util import harvest_html_table
+from util import NoDoiException, enqueue_unpaywall_refresh, \
+    save_landing_page_new
 from util import is_pmc, clamp, clean_doi, normalize_doi
 from convert_http_to_https import fix_url_scheme
 from util import normalize
@@ -1150,7 +1154,9 @@ class Pub(db.Model):
                 db.session.merge(self)
 
                 self.save_landing_page_text(publisher_landing_page.page_text)
+                save_landing_page_new(publisher_landing_page.page_text, self.doi, 'doi', self.url, publisher_landing_page.resolved_url)
                 save_pdf(self.doi, publisher_landing_page.pdf_content)
+                save_pdf_new(publisher_landing_page.pdf_content, self.doi, 'doi', PDFVersion.PUBLISHED, resolved_url=publisher_landing_page.scraped_pdf_url)
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string

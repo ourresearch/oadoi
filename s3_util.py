@@ -8,8 +8,15 @@ import botocore
 from const import LANDING_PAGE_ARCHIVE_BUCKET
 from util import normalize_doi
 
-_s3 = boto3.client('s3')
+s3 = boto3.client('s3')
 
+harvest_html_table = boto3.resource('dynamodb',
+        region_name='us-east-1',
+    ).Table('harvested-html')
+
+harvest_pdf_table = boto3.resource('dynamodb',
+        region_name='us-east-1',
+    ).Table('harvested-pdf')
 
 def mute_boto_logging():
     libs_to_mum = [
@@ -28,7 +35,7 @@ def make_s3():
 
 def _get_obj(bucket, key, f, s3=None, _raise=False):
     if not s3:
-        s3 = _s3
+        s3 = s3
     try:
         obj = s3.get_object(Bucket=bucket, Key=key)
         return f(obj)
@@ -48,7 +55,7 @@ def get_object(bucket, key, s3=None, _raise=False):
 
 def upload_obj(bucket, key, body, s3=None):
     if not s3:
-        s3 = _s3
+        s3 = s3
     s3.upload_fileobj(body, bucket, key)
 
 
