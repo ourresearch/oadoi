@@ -26,6 +26,21 @@ def get_override_dict(pub):
         return overrides_dict[pub.doi]
     elif db_overrides_dict:
         return db_overrides_dict.response_jsonb
+    elif pub.issn_l in ["0143-6244", "1477-0849"]:
+        # Journal of Biological Chemistry
+        # ticket 28190
+        # doi.org links resolve to jbc.org through JS redirect on linkinghub.elsevier.com
+        # which applies rate limits, but CrossRef metadata and PDF confirm CC BY
+        # https://doi.org/10.1016/j.jbc.2020.100199
+        jbc = {
+            "license": "cc-by",
+            "evidence": "open (via page says license)",
+            "oa_date": "2021-01-01",
+            "pdf_url": pub.doi_url,
+            "version": "publishedVersion",
+            "host_type_set": "publisher"
+        }
+        return jbc
     elif pub.issn_l == '0860-021X':
         # Biology of Sport.
         # ticket 995
@@ -1556,7 +1571,7 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
-    # the use of this is counting on the doi keys being lowercase/cannonical
+    # the use of this is counting on the doi keys being lowercase/canonical
     response = {}
     for k, v in override_dict.items():
         response[normalize_doi(k)] = v
