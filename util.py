@@ -864,17 +864,6 @@ def save_landing_page_new(content, native_id, native_id_ns, url='', resolved_url
     from s3_util import harvest_html_table, s3
     if not content:
         return
-    response = harvest_html_table.query(IndexName='by_native_id',
-                                        KeyConditionExpression='native_id = :native_id',
-                                        ExpressionAttributeValues={
-                                            ':native_id': native_id})
-    if 'Items' in response and response['Items']:
-        existing_item = response['Items'][0]
-        if s3_path := existing_item.get('s3_path'):
-            _, _, bucket_name, object_key = s3_path.split("/", 3)
-            s3.delete_object(Bucket=bucket_name, Key=object_key)
-        harvest_html_table.delete_item(
-            Key={'id': existing_item.get('id')})
     new_key = str(uuid.uuid4()) + '.html.gz'
     encoded_url = quote(str(url or ''))
     encoded_resolved_url = quote(str(resolved_url or ''))
@@ -887,7 +876,6 @@ def save_landing_page_new(content, native_id, native_id_ns, url='', resolved_url
             'resolved_url': encoded_resolved_url,
             'created_date': datetime.datetime.utcnow().isoformat(),
             'created_timestamp': str(int(time.time())),
-            'content_type': 'html',
             'id': new_key.replace('.html.gz', ''),
             'native_id': native_id,
             'native_id_namespace': native_id_ns

@@ -77,20 +77,6 @@ def save_pdf(doi, content, version=PDFVersion.PUBLISHED):
 def save_pdf_new(content, native_id, native_id_ns, version=PDFVersion.PUBLISHED, url='', resolved_url=''):
     if not content:
         return
-    response = harvest_pdf_table.query(
-        IndexName='by_native_id',
-        KeyConditionExpression='native_id = :native_id',
-        FilterExpression='#type = :type',
-        ExpressionAttributeNames={'#type': 'type'},
-        ExpressionAttributeValues={':native_id': native_id, ':type': version.value}
-    )
-    if 'Items' in response and response['Items']:
-        existing_item = response['Items'][0]
-        if s3_path := existing_item.get('s3_path'):
-            _, _, bucket_name, object_key = s3_path.split("/", 3)
-            s3.delete_object(Bucket=bucket_name, Key=object_key)
-        harvest_pdf_table.delete_item(
-            Key={'id': existing_item.get('id')})
     new_key = str(uuid.uuid4()) + '.pdf'
     encoded_url = quote(str(url or ''))
     encoded_resolved_url = quote(str(resolved_url or ''))
@@ -103,7 +89,6 @@ def save_pdf_new(content, native_id, native_id_ns, version=PDFVersion.PUBLISHED,
             'resolved_url': encoded_resolved_url,
             'created_date': datetime.utcnow().isoformat(),
             'created_timestamp': str(int(time.time())),
-            'content_type': 'pdf',
             'id': new_key.replace('.pdf', ''),
             'native_id': native_id,
             'native_id_namespace': native_id_ns
