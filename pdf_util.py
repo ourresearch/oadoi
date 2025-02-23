@@ -90,13 +90,14 @@ def save_pdf_new(content, native_id, native_id_ns, version=PDFVersion.PUBLISHED,
             'created_date': datetime.utcnow().isoformat(),
             'created_timestamp': str(int(time.time())),
             'id': new_key.replace('.pdf', ''),
-            'native_id': native_id,
+            'native_id': native_id.lower().strip(),
             'native_id_namespace': native_id_ns
         })
     item = {
         'id': new_key.replace('.pdf', ''),
-        'native_id': native_id,
+        'native_id': native_id.lower().strip(),
         'native_id_namespace': native_id_ns,
+        'url': url,
         'type': version.value,
         's3_key': new_key,
         's3_path': f's3://{PDF_ARCHIVE_BUCKET_NEW}/{new_key}',
