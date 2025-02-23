@@ -790,7 +790,7 @@ class PageNew(PageBase):
         elif hasattr(pdf_r, 'content'):
             pdf_content = pdf_r.content
         if pdf_content:
-            save_pdf_new(pdf_content, self.pmh_id.split(':', 1)[-1], 'pmh', version, resolved_url=pdf_r.url)
+            save_pdf_new(pdf_content, self.pmh_id.split(':', 1)[-1], 'pmh', version, url=pdf_r.url)
             save_pdf(doi or self.doi, pdf_content, version)
         enqueue_pdf_parsing(doi or self.doi, version)
 
