@@ -1156,7 +1156,7 @@ class Pub(db.Model):
                 self.save_landing_page_text(publisher_landing_page.page_text)
                 save_landing_page_new(publisher_landing_page.page_text, self.doi, 'doi', self.url, publisher_landing_page.resolved_url)
                 save_pdf(self.doi, publisher_landing_page.pdf_content)
-                save_pdf_new(publisher_landing_page.pdf_content, self.doi, 'doi', PDFVersion.PUBLISHED, resolved_url=publisher_landing_page.scraped_pdf_url)
+                save_pdf_new(publisher_landing_page.pdf_content, self.doi, 'doi', PDFVersion.PUBLISHED, url=publisher_landing_page.scraped_pdf_url)
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
