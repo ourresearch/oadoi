@@ -179,6 +179,11 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
+    # Check for admin key to bypass rate limiting
+    admin_key = request.args.get("admin_key", None)
+    admin_key_env = os.environ.get("ADMIN_KEY", None)
+    is_admin = admin_key and admin_key_env and admin_key == admin_key_env
+    
     if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint", "get_search_query"]:
         email = request.args.get("email", None)
         api_key = request.args.get("api_key", None)
@@ -213,44 +218,50 @@ def stuff_before_request():
                             "Please use your own email address in API calls. See http://unpaywall.org/products/api"
                         )
 
-            ip = get_ip()
+            # Skip rate limiting checks if admin key is valid
+            if is_admin:
+                # Admin key is valid, bypass all rate limiting
+                pass
+            else:
+                ip = get_ip()
 
-            try:
-                too_many_emails = too_many_emails_per_ip(ip, email)
-            except Exception as e:
-                logger.exception(f'error in email rate limiting: {e}')
-                too_many_emails = False
-
-            if too_many_emails:
-                logger.info(f"too many emails for {ip}, {email}")
-
-                if re.match(r'^[A-Za-z0-9]{10}@gmail\.com$', email):
-                    logger.info(f"returning 422 for {email}")
-
-                    abort_json(422, (
-                        "It looks like you're using many email addresses to call the API as part of the same product. "
-                        "Please use a single working address "
-                        "and observe the rate limit of 100,000 calls per day (https://unpaywall.org/products/api). "
-                        "If your use case doesn't fit within these limits, "
-                        "please consider the database snapshot (https://unpaywall.org/products/snapshot) "
-                        "or the data feed (https://unpaywall.org/products/data-feed) "
-                        "and help us keep the API available for free. "
-                        "Get in touch with us at support@unpaywall.org to see how we can help."
-                    ))
-
-            if email.lower().strip() == "unpaywall@impactstory.org":
                 try:
-                    too_many_requests = too_many_requests_per_second(ip)
+                    too_many_emails = too_many_emails_per_ip(ip, email)
                 except Exception as e:
-                    logger.exception(f'error in rate limiting requests per second: {e}')
-                    too_many_requests = False
-                if too_many_requests:
-                    logger.info(f"returning 422 for {email} due to too many requests per second for ip {ip}.")
+                    logger.exception(f'error in email rate limiting: {e}')
+                    too_many_emails = False
 
-                    abort_json(422, "Too many requests per second for this email address. "
-                                    "Please email support@unpaywall.org so we can help.")
+                if too_many_emails:
+                    logger.info(f"too many emails for {ip}, {email}")
 
-    if get_ip() in [
+                    if re.match(r'^[A-Za-z0-9]{10}@gmail\.com$', email):
+                        logger.info(f"returning 422 for {email}")
+
+                        abort_json(422, (
+                            "It looks like you're using many email addresses to call the API as part of the same product. "
+                            "Please use a single working address "
+                            "and observe the rate limit of 100,000 calls per day (https://unpaywall.org/products/api). "
+                            "If your use case doesn't fit within these limits, "
+                            "please consider the database snapshot (https://unpaywall.org/products/snapshot) "
+                            "or the data feed (https://unpaywall.org/products/data-feed) "
+                            "and help us keep the API available for free. "
+                            "Get in touch with us at support@unpaywall.org to see how we can help."
+                        ))
+
+                if email.lower().strip() == "unpaywall@impactstory.org":
+                    try:
+                        too_many_requests = too_many_requests_per_second(ip)
+                    except Exception as e:
+                        logger.exception(f'error in rate limiting requests per second: {e}')
+                        too_many_requests = False
+                    if too_many_requests:
+                        logger.info(f"returning 422 for {email} due to too many requests per second for ip {ip}.")
+
+                        abort_json(422, "Too many requests per second for this email address. "
+                                        "Please email support@unpaywall.org so we can help.")
+
+    # Skip IP blocklist check if admin key is provided and valid
+    if not is_admin and get_ip() in [
         "35.200.160.130", "45.249.247.101",  "137.120.7.33",
         "52.56.108.147",  "193.137.134.252", "130.225.74.231"
     ]:
