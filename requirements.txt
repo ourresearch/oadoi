@@ -20,7 +20,7 @@ python-digitalocean~=1.17.0
 et-xmlfile==1.1.0
 executor==23.2
 fasteners==0.16.3
-Flask==1.1.2
+Flask==2.3.2
 Flask-Compress==1.9.0
 Flask-DebugToolbar==0.11.0
 Flask-SQLAlchemy==2.5.1
