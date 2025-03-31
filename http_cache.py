@@ -211,7 +211,6 @@ def call_requests_get(url=None, headers=None, read_timeout=300, connect_timeout=
         url = redirected_url
 
     # default parameters setup
-    # default parameters setup
     default_params = {
         "url": url,
         "httpResponseBody": True,
@@ -223,7 +222,7 @@ def call_requests_get(url=None, headers=None, read_timeout=300, connect_timeout=
     if matching_policies:
         policy = matching_policies[min(attempt_n, len(matching_policies) - 1)]
 
-        if policy.profile == 'api' and policy.params is not None:
+        if policy.profile == 'api':
             logger.info(f'Using Zyte API profile for url: {url}')
             zyte_params = policy.params
         else:
@@ -232,10 +231,6 @@ def call_requests_get(url=None, headers=None, read_timeout=300, connect_timeout=
     else:
         logger.info(f'No matching policies - using default Zyte profile for url: {url}')
         zyte_params = default_params
-
-    if zyte_params is None:
-        logger.warning(f"zyte_params was None for url: {url}, using default params")
-        zyte_params = default_params.copy()
 
     # set URL in parameters
     zyte_params["url"] = url
