@@ -1,28 +1,21 @@
 from base64 import b64decode
-import html
-import inspect
 import os
 import re
 from dataclasses import dataclass
 from time import sleep
 from time import time
 from typing import Optional
-from urllib.parse import urljoin, urlparse
 import json
 
 import certifi
 import requests
 import tenacity
 
-from app import logger, db
+from app import logger
 from tenacity import retry, stop_after_attempt, wait_exponential, \
     retry_if_result
 import requests.exceptions
-from sqlalchemy import sql
-from util import DelayedAdapter
 from util import elapsed
-from util import get_link_target
-from util import is_same_publisher
 from zyte_session import get_matching_policies
 
 MAX_PAYLOAD_SIZE_BYTES = 1000 * 1000 * 10  # 10mb
@@ -107,117 +100,36 @@ def get_session_id():
             # bad call.  sleep and try again.
             sleep(1)
 
-    # logger.info(u"done with get_session_id. Got sessionid {}".format(session_id))
-
     return session_id
 
 
-def _log_oup_redirect(user_agent, requested_url, redirect_url):
-    db.engine.execute(
-        sql.text(
-            'insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :user_agent, :request_url, :redirect_url)').bindparams(
-            user_agent=user_agent,
-            request_url=requested_url,
-            redirect_url=redirect_url
-        )
-    )
-
-
 def chooser_redirect(r):
-    if '<title>Chooser</title>' in r.text_small():
-        if links := re.findall(
+    """
+    Check if the response contains a "Chooser" title and extract redirect links.
+
+    This function works with ResponseObject instances returned by Zyte API.
+    """
+    # Get the content as text
+    try:
+        content = r.text_small() if hasattr(r, 'text_small') else r.content
+
+        # If content is bytes, decode it
+        if isinstance(content, bytes):
+            content = content.decode('utf-8', 'ignore')
+
+        # Look for the Chooser title
+        if '<title>Chooser</title>' in content:
+            # Find resource links
+            links = re.findall(
                 r'<div class="resource-line">.*?<a\s+href="(.*?)".*?</div>',
-                r.text_small(), re.DOTALL):
-            return links[0]
-    return None
+                content, re.DOTALL
+            )
 
-
-def keep_redirecting(r, publisher):
-    # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
-
-    if target := chooser_redirect(r):
-        logger.info('Chooser redirect: {}'.format(target))
-        return target
-
-    if r.is_redirect:
-        location = r.headers.get('location', '')
-        location = location if location.startswith('http') else urljoin(r.url,
-                                                                        location)
-        location = location.replace('http:///', 'http://').replace('https:///',
-                                                                   'https://')
-        logger.info('30x redirect: {}'.format(location))
-
-        if location.startswith(
-                'https://academic.oup.com/crawlprevention/governor') or re.match(
-            r'https?://academic\.oup\.com/.*\.pdf', r.url):
-            _log_oup_redirect(r.headers.get('X-Crawlera-Debug-UA'), r.url,
-                              location)
-
-        return location
-
-    # 10.5762/kais.2016.17.5.316
-    if "content-length" in r.headers:
-        # manually follow javascript if that's all that's in the payload
-        file_size = int(r.headers["content-length"])
-        if file_size < 500:
-            matches = re.findall(r"<script>location.href='(.*)'</script>",
-                                 r.text_small(), re.IGNORECASE)
-            if matches:
-                redirect_url = matches[0]
-                if redirect_url.startswith("/"):
-                    redirect_url = get_link_target(redirect_url, r.url)
-                return redirect_url
-
-    # 10.1097/00003643-201406001-00238
-    if publisher and is_same_publisher(publisher,
-                                       "Ovid Technologies (Wolters Kluwer Health)"):
-        matches = re.findall(r"OvidAN = '(.*?)';", r.text_small(),
-                             re.IGNORECASE)
-        if matches:
-            an_number = matches[0]
-            redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(
-                an_number)
-            return redirect_url
-
-    # 10.1097/01.xps.0000491010.82675.1c
-    hostname = urlparse(r.url).hostname
-    if hostname and hostname.endswith('ovid.com'):
-        matches = re.findall(r'var journalURL = "(.*?)";', r.text_small(),
-                             re.IGNORECASE)
-        if matches:
-            journal_url = matches[0]
-            logger.info(
-                'ovid journal match. redirecting to {}'.format(journal_url))
-            return journal_url
-
-    # handle meta redirects
-    redirect_re = re.compile('<meta[^>]*http-equiv="?refresh"?[^>]*>',
-                             re.IGNORECASE | re.DOTALL)
-    redirect_match = redirect_re.findall(r.text_small())
-    if redirect_match:
-        redirect = redirect_match[0]
-        logger.info('found a meta refresh element: {}'.format(redirect))
-        url_re = re.compile('url=["\']?([^">\']*)', re.IGNORECASE | re.DOTALL)
-        url_match = url_re.findall(redirect)
-
-        if url_match:
-            redirect_path = html.unescape(url_match[0].strip())
-            redirect_url = urljoin(r.request.url, redirect_path)
-            if not redirect_url.endswith(
-                    'Error/JavaScript.html') and not redirect_url.endswith(
-                '/?reason=expired'):
-                logger.info(
-                    "redirect_match! redirecting to {}".format(redirect_url))
-                return redirect_url
-
-    redirect_re = re.compile(
-        r"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
-    redirect_match = redirect_re.findall(r.text_small())
-    if redirect_match:
-        redirect_url = redirect_match[0]
-        logger.info(
-            "javascript redirect_match! redirecting to {}".format(redirect_url))
-        return redirect_url
+            if links:
+                logger.info(f'Found chooser redirect to: {links[0]}')
+                return links[0]
+    except Exception as e:
+        logger.error(f"Error in chooser_redirect: {str(e)}")
 
     return None
 
@@ -292,182 +204,109 @@ def is_retry_status(response):
        wait=wait_exponential(multiplier=1, min=4, max=10),
        retry=retry_if_result(is_retry_status),
        before_sleep=before_retry)
-def call_requests_get(url=None,
-                      headers=None,
-                      read_timeout=300,
-                      connect_timeout=300,
-                      stream=False,
-                      publisher=None,
-                      session_id=None,
-                      ask_slowly=False,
-                      verify=False,
-                      cookies=None,
-                      use_zyte_api_profile=False,
-                      redirected_url=None,
-                      attempt_n=0,
-                      logger=logger):
+def call_requests_get(url=None, headers=None, read_timeout=300, connect_timeout=300,
+                      stream=False, publisher=None, session_id=None, ask_slowly=False,
+                      verify=False, cookies=None, redirected_url=None, attempt_n=0):
     if redirected_url:
         url = redirected_url
 
-    headers = headers or {}
+    # default parameters setup
+    default_params = {
+        "url": url,
+        "httpResponseBody": True,
+        "httpResponseHeaders": True,
+    }
 
-    saved_http_proxy = os.getenv("HTTP_PROXY", "")
-    saved_https_proxy = os.getenv("HTTPS_PROXY", "")
+    # get policies if they exist
+    matching_policies = get_matching_policies(url)
+    if matching_policies:
+        policy = matching_policies[min(attempt_n, len(matching_policies) - 1)]
 
-    if ask_slowly:
-        logger.info(f"asking slowly for url: {url}")
-
-        crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
-            os.getenv("CRAWLERA_KEY"))
-
-        os.environ["HTTP_PROXY"] = crawlera_url
-        os.environ["HTTPS_PROXY"] = crawlera_url
-
-        if session_id:
-            headers["X-Crawlera-Session"] = session_id
-
-        headers["X-Crawlera-Debug"] = "ua,request-time"
-        headers["X-Crawlera-Timeout"] = "{}".format(
-            300 * 1000)  # tomas recommended 300 seconds in email
-
-        read_timeout = 600
-        connect_timeout = 600
+        if policy.profile == 'api':
+            logger.info(f'Using Zyte API profile for url: {url}')
+            zyte_params = policy.params
+        else:
+            logger.info(f'Using Zyte profile with proxy mode for url: {url}')
+            zyte_params = default_params
     else:
-        if 'User-Agent' not in headers:
-            headers['User-Agent'] = request_ua_headers()['User-Agent']
+        logger.info(f'No matching policies - using default Zyte profile for url: {url}')
+        zyte_params = default_params
 
-        if 'From' not in headers:
-            headers['From'] = request_ua_headers()['From']
+    # set URL in parameters
+    zyte_params["url"] = url
 
-    following_redirects = True
-    num_browser_redirects = 0
-    num_http_redirects = 0
+    # make the API call
+    zyte_api_response = call_with_zyte_api(url, zyte_params)
+    good_status_code = zyte_api_response.get('statusCode')
+    bad_status_code = zyte_api_response.get('status')
 
-    requests_session = requests.Session()
+    if good_status_code is not None and good_status_code < 400:
+        logger.info(f"zyte api good status code for {url}: {good_status_code}")
 
-    use_crawlera_profile = False
-    zyte_params = None
+        headers = zyte_api_response.get('httpResponseHeaders', [])
+        logger.info(f"headers: {headers}")
 
-    while following_redirects:
-
-        if policies := get_matching_policies(url):
-            policy = policies[min(attempt_n, len(policies) - 1)]
-            if policy.profile == 'api':
-                logger.info(f'using zyte profile for url: {url}')
-                use_zyte_api_profile = True
-                zyte_params = policy.params
-            elif policy.profile == 'proxy':
-                logger.info(f'using crawlera profile for url: {url}')
-                use_crawlera_profile = True
-
-        if use_crawlera_profile:
-            headers["X-Crawlera-Profile"] = "desktop"
-            headers["X-Crawlera-Cookies"] = "disable"
-            headers.pop("User-Agent", None)
-            headers.pop("X-Crawlera-Profile-Pass", None)
+        content = None
+        if 'httpResponseBody' in zyte_api_response:
+            content = b64decode(zyte_api_response.get('httpResponseBody'))
+        elif 'browserHtml' in zyte_api_response:
+            content = zyte_api_response.get('browserHtml').encode()
         else:
-            headers["X-Crawlera-Cookies"] = "disable"
-            headers["Accept-Language"] = 'en-US,en;q=0.9'
-            if headers.get("User-Agent"):
-                headers["X-Crawlera-UA"] = "pass"
+            content = b''
 
-        requests_session.mount('http://', DelayedAdapter())
-        requests_session.mount('https://', DelayedAdapter())
+        # create response object
+        r = ResponseObject(
+            content=content,
+            headers=headers,
+            status_code=good_status_code,
+            url=zyte_api_response.get('url', url),
+        )
 
-        if "citeseerx.ist.psu.edu/" in url:
-            url = url.replace("http://", "https://")
-            proxy_url = os.getenv("STATIC_IP_PROXY")
-            proxies = {"https": proxy_url, "http": proxy_url}
-        else:
-            proxies = {}
+        content_type = r.headers.get("Content-Type", "").lower()
+        is_pdf = "application/pdf" in content_type
 
-        if use_zyte_api_profile:
-            zyte_api_response = call_with_zyte_api(url, zyte_params)
-            good_status_code = zyte_api_response.get('statusCode')
-            bad__status_code = zyte_api_response.get('status')
-            if good_status_code is not None and good_status_code < 400:
-                logger.info(
-                    f"zyte api good status code for {url}: {good_status_code}")
-                # make mock requests response object
-                r = ResponseObject(
-                    content=b64decode(
-                        zyte_api_response.get(
-                            'httpResponseBody')) if 'httpResponseBody' in
-                                                    zyte_api_response else zyte_api_response.get(
-                        'browserHtml').encode(),
-                    headers=zyte_api_response.get('httpResponseHeaders'),
-                    status_code=zyte_api_response.get('statusCode'),
-                    url=zyte_api_response.get('url'),
-                )
-                if r.headers.get("Content-Type") != "application/pdf":
-                    r.content = r.content.decode('utf-8', 'ignore')
-                return r
-            else:
-                r = ResponseObject(
-                    content='',
-                    headers={},
-                    status_code=bad__status_code,
-                    url=url,
-                )
-                logger.info(
-                    f"zyte api bad status code for {url}: {bad__status_code}")
-                return r
-        else:
-            # logger.info(u"getting url {}".format(url))
-            logger.info(f'getting url: {url} | proxies = {proxies} | env proxies = {os.getenv("HTTP_PROXY")}, {os.getenv("HTTP_PROXY")}')
-            r = requests_session.get(url,
-                                     headers=headers,
-                                     timeout=(connect_timeout, read_timeout),
-                                     stream=stream,
-                                     proxies=proxies,
-                                     allow_redirects=False,
-                                     verify=(verify and _cert_bundle),
-                                     cookies=cookies)
+        # try to detect PDF signature in content
+        if not is_pdf and isinstance(r.content, bytes) and len(r.content) > 4:
+            is_pdf = r.content.startswith(b'%PDF-')
 
-            # trigger 503 for iop.org pdf urls, so that we retry with zyte api
-            if 'iop.org' in url and url.endswith('/pdf'):
-                r.status_code = 503
+        if not is_pdf and isinstance(r.content, bytes):
+            try:
+                r.content = r.content.decode('utf-8', 'ignore')
+            except (UnicodeDecodeError, AttributeError):
+                # Keep as binary if decoding fails
+                pass
 
-        # from http://jakeaustwick.me/extending-the-requests-response-class/
-        for method_name, method in inspect.getmembers(RequestWithFileDownload,
-                                                      inspect.isfunction):
-            setattr(requests.models.Response, method_name, method)
+        # check for doi.org chooser redirects
+        redirect_url = chooser_redirect(r)
+        if redirect_url:
+            logger.info(f"Following chooser redirect to {redirect_url}")
 
-        if r and not r.encoding:
-            r.encoding = "utf-8"
+            # recursively follow the redirect with a new request
+            return call_requests_get(
+                url=redirect_url,
+                headers=headers,
+                read_timeout=read_timeout,
+                connect_timeout=connect_timeout,
+                stream=stream,
+                publisher=publisher,
+                session_id=session_id,
+                ask_slowly=ask_slowly,
+                verify=verify,
+                cookies=cookies,
+                attempt_n=attempt_n
+            )
 
-        # check to see if we actually want to keep redirecting, using business-logic redirect paths
-        following_redirects = False
-        if (r.is_redirect and num_http_redirects < 15) or (
-                r.status_code == 200 and num_browser_redirects < 5):
-            if r.is_redirect:
-                num_http_redirects += 1
-            if r.status_code == 200:
-                num_browser_redirects += 1
-
-            redirect_url = keep_redirecting(r, publisher)
-            if redirect_url:
-                if "hcvalidate.perfdrive.com" in redirect_url:
-                    # do not follow this redirect with proxy
-                    r.status_code = 503
-                    return r
-                else:
-                    following_redirects = True
-                    url = redirect_url
-
-        if ask_slowly and not use_zyte_api_profile and not use_crawlera_profile and headers.get(
-                "User-Agent"):
-            crawlera_ua = r.headers.get("X-Crawlera-Debug-UA")
-            if crawlera_ua:
-                logger.info('set proxy UA: {}'.format(crawlera_ua))
-                headers["User-Agent"] = crawlera_ua
-                headers["X-Crawlera-UA"] = "pass"
-
-    # now set proxy situation back to normal
-    os.environ["HTTP_PROXY"] = saved_http_proxy
-    os.environ["HTTPS_PROXY"] = saved_http_proxy
-
-    return r
+        return r
+    else:
+        # Create a response for error cases
+        r = ResponseObject(
+            content='',
+            headers=[],
+            status_code=bad_status_code,
+            url=url,
+        )
+        logger.info(f"zyte api bad status code for {url}: {bad_status_code}")
+        return r
 
 
 def http_get(url,
@@ -589,7 +428,5 @@ def get_cookies_with_zyte_api(url):
 
 
 if __name__ == '__main__':
-    # r = http_get('https://doi.org/10.1088/1475-7516/2010/04/014')
-    # print(r.status_code)
     r = http_get('https://doi.org/10.1002/jum.15761')
     print(r.status_code)
