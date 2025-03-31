@@ -71,36 +71,23 @@ def is_a_pdf_page(response, page_publisher):
 
     content = response.text_big()
 
-    if isinstance(content, bytes):
-        if content.startswith(b'%PDF'):
-            # Check for encrypted PDF in bytes
-            if re.search(b'/Encrypt \d+ \d+ [A-Za-z]+\s>>\sstartxref', content):
-                return False
-            return True
-    else:
-        if content.startswith('%PDF'):
-            # Check for encrypted PDF in text
-            if re.search(r'/Encrypt \d+ \d+ [A-Za-z]+\s>>\sstartxref', content):
-                return False
-            return True
+    # PDFs start with this character
+    if re.match("%PDF", content):
+        # Encrypted PDF
+        if re.search(r'/Encrypt \d+ \d+ [A-Za-z]+\s>>\sstartxref', content):
+            return False
+        return True
 
     if page_publisher:
         says_free_publisher_patterns = [
             ("Wiley-Blackwell", '<span class="freeAccess" title="You have free access to this content">'),
             ("Wiley-Blackwell", '<iframe id="pdfDocument"'),
             ("JSTOR", r'<li class="download-pdf-button">.*Download PDF.*</li>'),
-            ("Institute of Electrical and Electronics Engineers (IEEE)",
-             r'<frame src="http://ieeexplore.ieee.org/.*?pdf.*?</frameset>'),
+            ("Institute of Electrical and Electronics Engineers (IEEE)", r'<frame src="http://ieeexplore.ieee.org/.*?pdf.*?</frameset>'),
             ("IOP Publishing", r'Full Refereed Journal Article')
         ]
         for (publisher, pattern) in says_free_publisher_patterns:
-            # Make sure content is a string before regex
-            if isinstance(content, bytes):
-                text_content = content.decode('utf-8', 'ignore')
-            else:
-                text_content = content
-
-            matches = re.findall(pattern, text_content, re.IGNORECASE | re.DOTALL)
+            matches = re.findall(pattern, content, re.IGNORECASE | re.DOTALL)
             if is_same_publisher(page_publisher, publisher) and matches:
                 return True
     return False
