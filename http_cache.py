@@ -134,54 +134,6 @@ def chooser_redirect(r):
     return None
 
 
-class RequestWithFileDownload(object):
-
-    def content_small(self):
-        return self.content_big()
-
-        # if hasattr(self, "content_read"):
-        #     return self.content_read
-        #
-        # self.content_read = self.content
-        # return self.content_read
-
-    def content_big(self):
-        if hasattr(self, "content_read"):
-            return self.content_read
-
-        if not self.raw:
-            self.content_read = self.content
-            return self.content_read
-
-        megabyte = 1024 * 1024
-        maxsize = 25 * megabyte
-
-        self.content_read = b""
-        for chunk in self.iter_content(megabyte):
-            self.content_read += chunk
-            if len(self.content_read) > maxsize:
-                logger.info(
-                    "webpage is too big at {}, only getting first {} bytes".format(
-                        self.request.url, maxsize))
-                self.close()
-                return self.content_read
-        return self.content_read
-
-    def _text_encoding(self):
-        if not self.encoding or self.encoding == 'binary':
-            return 'utf-8'
-
-        return self.encoding
-
-    def text_small(self):
-        return str(self.content_small(), encoding=self._text_encoding(),
-                   errors="ignore")
-
-    def text_big(self):
-        return str(self.content_big(),
-                   encoding=self._text_encoding() or "utf-8", errors="ignore")
-
-
 def request_ua_headers():
     return {
         'User-Agent': 'Unpaywall (http://unpaywall.org/; mailto:team@impactstory.org)',
