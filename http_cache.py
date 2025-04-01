@@ -201,7 +201,6 @@ def call_requests_get(url=None, headers=None, read_timeout=300, connect_timeout=
         logger.info(f"zyte api good status code for {url}: {good_status_code}")
 
         headers = zyte_api_response.get('httpResponseHeaders', [])
-        logger.info(f"headers: {headers}")
 
         content = None
         if 'httpResponseBody' in zyte_api_response:
