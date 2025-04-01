@@ -38,6 +38,7 @@ libraries_to_mum = [
     "cryptography",
     "psycopg2",
     "botocore",
+    "boto3",
 ]
 
 

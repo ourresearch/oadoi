@@ -718,8 +718,19 @@ class Pub(db.Model):
                 return False
             return True
 
+    def problematic_scrape(self):
+        # query dynamodb to see if this has been scraped several times before
+        html_response = harvest_html_table.query(
+            IndexName='by_normalized_doi',
+            KeyConditionExpression='normalized_doi = :doi',
+            ExpressionAttributeValues={':doi': self.id}
+        )
+        if 'Count' in html_response and html_response['Count'] > 2:
+            logger.info(f"problematic scrape {self.id}, count in dynamodb is {html_response['Count']}")
+            return True
+
     def refresh(self, session_id=None, force=False):
-        if self.resolved_doi_http_status is not None and not force:
+        if (self.resolved_doi_http_status is not None or self.problematic_scrape()) and not force:
             logger.info(
                 f"not refreshing {self.id} because it has been scraped once already")
             self.store_or_remove_pdf_urls_for_validation()
