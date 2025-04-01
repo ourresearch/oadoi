@@ -1141,10 +1141,6 @@ class Pub(db.Model):
                                   session_id=self.session_id,
                                   issn_l=self.issn_l) as publisher_landing_page:
 
-                # end the session before the scrape
-                # logger.info(u"closing session for {}".format(self.doi))
-                db.session.close()
-
                 self.scrape_page_for_open_location(publisher_landing_page)
                 self.resolved_doi_url = publisher_landing_page.resolved_url
                 self.resolved_doi_http_status = publisher_landing_page.resolved_http_status_code
