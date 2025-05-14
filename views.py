@@ -60,6 +60,7 @@ from util import clean_doi, normalize_doi
 from util import elapsed
 from util import restart_dynos
 from util import str_to_bool
+from wunpaywall import WunpaywallPub
 
 
 def json_dumper(obj):
@@ -736,6 +737,15 @@ def get_doi_endpoint_v2(doi):
         indent = 2
 
     return current_app.response_class(json.dumps(answer, indent=indent), mimetype='application/json')
+
+
+@app.route("/v3/<path:doi>", methods=["GET"])
+def get_doi_endpoint_v3(doi):
+    doi = normalize_doi(doi, return_none_if_error=True)
+    wunpaywall_pub = WunpaywallPub.query.get(doi)
+    if not wunpaywall_pub:
+        abort(404)
+    return jsonify(wunpaywall_pub.to_dict())
 
 
 @app.route("/v2/dois", methods=["POST"])
