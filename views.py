@@ -62,6 +62,8 @@ from util import restart_dynos
 from util import str_to_bool
 from wunpaywall import WunpaywallPub
 
+app.config['JSON_SORT_KEYS'] = False
+
 
 def json_dumper(obj):
     """
