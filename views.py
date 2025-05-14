@@ -60,7 +60,7 @@ from util import clean_doi, normalize_doi
 from util import elapsed
 from util import restart_dynos
 from util import str_to_bool
-from wunpaywall import WunpaywallPub
+from wunpaywall import WunpaywallPub, WunpaywallFeed
 
 app.config['JSON_SORT_KEYS'] = False
 
@@ -890,6 +890,22 @@ def get_changefiles():
         abort_json(401, 'option "interval" must be one of ["day", "week"]')
 
     resp = get_changefile_dicts(api_key, feed=feed)
+    return jsonify({"list": resp})
+
+
+@app.route("/wunpaywall-feed/changefiles", methods=["GET"])
+def get_wunpaywall_changefiles():
+    api_key = request.args.get("api_key", "YOUR_API_KEY")
+    interval = request.args.get("interval", "day")
+
+    if interval == "day":
+        mode = "daily"
+        resp = WunpaywallFeed.get_feed_list(api_key, mode=mode)
+    elif interval == "week":
+        mode = "weekly"
+        resp = WunpaywallFeed.get_feed_list(api_key, mode=mode)
+    else:
+        abort_json(401, 'option "interval" must be one of ["day", "week"]')
     return jsonify({"list": resp})
 
 
