@@ -35,7 +35,7 @@ from app import db
 from app import logger
 from changefile import DAILY_FEED, WEEKLY_FEED
 from changefile import get_changefile_dicts
-from changefile import get_file_from_bucket
+from changefile import get_file_from_bucket, get_wunpaywall_file_from_bucket
 from changefile import valid_changefile_api_keys
 from emailer import create_email
 from emailer import send
@@ -927,6 +927,42 @@ def get_changefile_filename(filename):
         'Content-Length': key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
+
+
+@app.route("/wunpaywall-daily-feed/changefile/<path:filename>", methods=["GET"])
+def get_daily_changefile_filename_wunpaywall(filename):
+    api_key = request.args.get("api_key", None)
+    if not api_key:
+        abort_json(401, "You must provide an API_KEY")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid api_key")
+
+    mode = "daily"
+    response = get_wunpaywall_file_from_bucket(filename, mode=mode)
+
+    if not response:
+        abort_json(404, f"File {filename} not found")
+
+    file_size = response['ContentLength']
+
+    def generate_changefile():
+        stream = response['Body']
+
+        chunk_size = 8192  # 8KB chunks
+        while True:
+            chunk = stream.read(chunk_size)
+            if not chunk:
+                break
+            yield chunk
+
+    return Response(
+        generate_changefile(),
+        content_type="application/gzip",
+        headers={
+            'Content-Length': str(file_size),
+            'Content-Disposition': f'attachment; filename="{filename}"',
+        }
+    )
 
 
 @app.route("/snapshot", methods=["GET"])
