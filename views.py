@@ -8,8 +8,10 @@ from threading import Thread
 from time import time
 
 import boto
+import boto3
 import redis
 import unicodecsv
+from flask import stream_with_context
 from flask import Response
 from flask import abort
 from flask import current_app
@@ -987,6 +989,41 @@ def get_snapshot():
         'Content-Length': key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
+
+
+@app.route("/full-snapshot", methods=["GET"])
+def get_full_snapshot():
+    s3 = boto3.client("s3")
+    api_key = request.args.get("api_key")
+    if not api_key:
+        abort_json(401, "You must provide an api_key")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid api_key")
+
+    bucket = "unpaywall-data-feed-walden"
+    object_key = "full_snapshots/full_snapshot_2025-05-20T131000.jsonl.gz"
+    chunk_size = 8 * 1024 * 1024  # 8 MB
+    file_size = 0
+
+    try:
+        meta = s3.head_object(Bucket=bucket, Key=object_key)
+        file_size = meta["ContentLength"]
+    except s3.exceptions.NoSuchKey:
+        abort_json(404, "Snapshot not found")
+
+    def generate():
+        obj  = s3.get_object(Bucket=bucket, Key=object_key)
+        body = obj["Body"]
+        for chunk in body.iter_chunks(chunk_size=chunk_size):
+            if chunk:
+                yield chunk
+
+    headers = {
+        "Content-Type":        "application/gzip",
+        "Content-Length":      str(file_size),
+        "Content-Disposition": f'attachment; filename="{os.path.basename(object_key)}"',
+    }
+    return Response(stream_with_context(generate()), headers=headers)
 
 
 @app.route("/old-daily-feed/changefile/<path:filename>", methods=["GET"])
