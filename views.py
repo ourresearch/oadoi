@@ -187,7 +187,7 @@ def stuff_before_request():
     admin_key_env = os.environ.get("ADMIN_KEY", None)
     is_admin = admin_key and admin_key_env and admin_key == admin_key_env
     
-    if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint", "get_search_query"]:
+    if request.endpoint in ["get_doi_endpoint_v2_new", "get_doi_endpoint", "get_search_query"]:
         email = request.args.get("email", None)
         api_key = request.args.get("api_key", None)
 
@@ -707,8 +707,8 @@ def base_endpoint_v2():
 def get_doi_endpoint(doi):
     return get_doi_endpoint_v2(doi)
 
-@app.route("/v2/<path:doi>", methods=["GET"])
-def get_doi_endpoint_v2(doi):
+@app.route("/v2-old/<path:doi>", methods=["GET"])
+def get_doi_endpoint_v2_old(doi):
     # the GET api endpoint (returns json data)
     try:
         if request.args.get('email') == 'unpaywall@impactstory.org':
@@ -741,8 +741,8 @@ def get_doi_endpoint_v2(doi):
     return current_app.response_class(json.dumps(answer, indent=indent), mimetype='application/json')
 
 
-@app.route("/v3/<path:doi>", methods=["GET"])
-def get_doi_endpoint_v3(doi):
+@app.route("/v2/<path:doi>", methods=["GET"])
+def get_doi_endpoint_v2_new(doi):
     doi = normalize_doi(doi, return_none_if_error=True)
     wunpaywall_pub = WunpaywallPub.query.get(doi)
     if not wunpaywall_pub:
