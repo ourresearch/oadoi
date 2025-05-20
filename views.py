@@ -705,7 +705,7 @@ def base_endpoint_v2():
 
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_endpoint(doi):
-    return get_doi_endpoint_v2(doi)
+    return get_doi_endpoint_v2_new(doi)
 
 @app.route("/v2-old/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2_old(doi):
@@ -876,8 +876,8 @@ def get_crossref_issns():
     return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.ISSNS_FILE))
 
 
-@app.route("/feed/changefiles", methods=["GET"])
-def get_changefiles():
+@app.route("/old-feed/changefiles", methods=["GET"])
+def get_changefiles_old():
     # api key is optional here, is just sends back urls that populate with it
     api_key = request.args.get("api_key", "YOUR_API_KEY")
     interval = request.args.get("interval", "week")
@@ -893,10 +893,10 @@ def get_changefiles():
     return jsonify({"list": resp})
 
 
-@app.route("/wunpaywall-feed/changefiles", methods=["GET"])
+@app.route("/feed/changefiles", methods=["GET"])
 def get_wunpaywall_changefiles():
     api_key = request.args.get("api_key", "YOUR_API_KEY")
-    interval = request.args.get("interval", "day")
+    interval = request.args.get("interval", "week")
 
     if interval == "day":
         mode = "daily"
@@ -909,7 +909,7 @@ def get_wunpaywall_changefiles():
     return jsonify({"list": resp})
 
 
-@app.route("/feed/changefile/<path:filename>", methods=["GET"])
+@app.route("/old-feed/changefile/<path:filename>", methods=["GET"])
 def get_changefile_filename(filename):
     api_key = request.args.get("api_key", None)
     if not api_key:
@@ -929,7 +929,7 @@ def get_changefile_filename(filename):
     })
 
 
-@app.route("/wunpaywall-daily-feed/changefile/<path:filename>", methods=["GET"])
+@app.route("/daily-feed/changefile/<path:filename>", methods=["GET"])
 def get_daily_changefile_filename_wunpaywall(filename):
     api_key = request.args.get("api_key", None)
     if not api_key:
@@ -989,8 +989,8 @@ def get_snapshot():
     })
 
 
-@app.route("/daily-feed/changefile/<path:filename>", methods=["GET"])
-def get_daily_changefile_filename(filename):
+@app.route("/old-daily-feed/changefile/<path:filename>", methods=["GET"])
+def get_daily_changefile_filename_old(filename):
     api_key = request.args.get("api_key", None)
     if not api_key:
         abort_json(401, "You must provide an API_KEY")
