@@ -48,7 +48,7 @@ class WunpaywallFeed(db.Model):
             date_part = date_parts[0] if len(date_parts) > 0 else None
 
             # create API URL with the provided API key
-            base_url = "https://api.unpaywall.org/wunpaywall-daily-feed/changefile/"
+            base_url = "https://api.unpaywall.org/daily-feed/changefile/"
             url = f"{base_url}{record.file_name}?api_key={api_key}"
 
             feed_items.append({
