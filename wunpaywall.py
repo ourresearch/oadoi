@@ -4,7 +4,7 @@ from app import db
 
 
 class WunpaywallPub(db.Model):
-    __tablename__ = 'unpaywall_from_walden'
+    __tablename__ = 'unpaywall_from_walden_without_doi'
     __table_args__ = {'schema': 'unpaywall'}
     __bind_key__ = 'openalex'
 
