@@ -1001,7 +1001,7 @@ def get_full_snapshot():
         abort_json(403, "Invalid api_key")
 
     bucket = "unpaywall-data-feed-walden"
-    object_key = "full_snapshots/full_snapshot_2025-05-20T131000.jsonl.gz"
+    object_key = "full_snapshots/full_snapshot_2025-05-23T164004.jsonl.gz"
     chunk_size = 8 * 1024 * 1024  # 8 MB
     file_size = 0
 
