@@ -1070,6 +1070,9 @@ def get_search_query():
     is_oa = request.args.get("is_oa", None)
     page = request.args.get("page", None)
 
+    if query:
+        query = query.lstrip('-') # remove leading --
+
     if is_oa is not None:
         try:
             is_oa = str_to_bool(is_oa)
