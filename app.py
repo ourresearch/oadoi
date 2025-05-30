@@ -10,6 +10,7 @@ from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
+from sqlalchemy import event
 from sqlalchemy.pool import NullPool
 
 HEROKU_APP_NAME = "articlepage"
@@ -78,6 +79,13 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 oa_db_engine = create_engine(openalex_db_url)
 
+# set statement timeout for openalex db
+openalex_engine = db.get_engine(app, bind="openalex")
+
+@event.listens_for(openalex_engine, "connect")
+def set_stmt_timeout(dbapi_conn, conn_record):
+    with dbapi_conn.cursor() as cur:
+        cur.execute("SET statement_timeout = 5000")
 
 
 # do compression.  has to be above flask debug toolbar so it can override this.
