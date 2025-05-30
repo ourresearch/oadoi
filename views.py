@@ -899,7 +899,7 @@ def get_changefiles_old():
 @app.route("/feed/changefiles", methods=["GET"])
 def get_wunpaywall_changefiles():
     api_key = request.args.get("api_key", "YOUR_API_KEY")
-    interval = request.args.get("interval", "week")
+    interval = request.args.get("interval", "day")
 
     if interval == "day":
         mode = "daily"
@@ -1253,5 +1253,5 @@ def freshdesk_autorefresh():
     return Response(status=200)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
