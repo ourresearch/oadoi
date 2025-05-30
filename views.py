@@ -8,6 +8,7 @@ from threading import Thread
 from time import time
 
 import boto
+from botocore.exceptions import ClientError
 import boto3
 import redis
 import unicodecsv
@@ -37,7 +38,7 @@ from app import db
 from app import logger
 from changefile import DAILY_FEED, WEEKLY_FEED
 from changefile import get_changefile_dicts
-from changefile import get_file_from_bucket, get_wunpaywall_file_from_bucket
+from changefile import get_file_from_bucket, generate_presigned_download_url
 from changefile import valid_changefile_api_keys
 from emailer import create_email
 from emailer import send
@@ -939,32 +940,33 @@ def get_daily_changefile_filename_wunpaywall(filename):
     if api_key not in valid_changefile_api_keys():
         abort_json(403, "Invalid api_key")
 
+    bucket_name = "unpaywall-data-feed-walden"
     mode = "daily"
-    response = get_wunpaywall_file_from_bucket(filename, mode=mode)
+    file_path = f"{mode}/{filename}"
 
-    if not response:
-        abort_json(404, f"File {filename} not found")
+    s3_client = boto3.client('s3')
 
-    file_size = response['ContentLength']
+    try:
+        s3_client.head_object(Bucket=bucket_name, Key=file_path)
 
-    def generate_changefile():
-        stream = response['Body']
+        # Generate presigned URL (valid for 1 hour)
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': file_path},
+            ExpiresIn=3600  # 1 hour
+        )
 
-        chunk_size = 8192  # 8KB chunks
-        while True:
-            chunk = stream.read(chunk_size)
-            if not chunk:
-                break
-            yield chunk
+        # redirect user to S3
+        return redirect(presigned_url, 302)
 
-    return Response(
-        generate_changefile(),
-        content_type="application/gzip",
-        headers={
-            'Content-Length': str(file_size),
-            'Content-Disposition': f'attachment; filename="{filename}"',
-        }
-    )
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey' or error_code == 'NoSuchBucket':
+            logger.warning(f"File {filename} not found in {bucket_name}/{mode}")
+            abort_json(404, f"File {filename} not found")
+        else:
+            logger.error(f"Error accessing {filename} in {bucket_name}/{mode}: {str(e)}")
+            abort_json(500, "Error accessing file")
 
 
 @app.route("/snapshot", methods=["GET"])

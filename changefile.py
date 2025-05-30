@@ -66,3 +66,31 @@ def get_changefile_dicts(api_key, feed=WEEKLY_FEED):
     ).fetchone()[0]
 
     return json.loads(response_dict.replace('__DATA_FEED_API_KEY__', json.dumps(api_key)[1:-1]))
+
+
+def generate_presigned_download_url(filename, mode="daily", expiration=3600):
+    """Generate a presigned URL for downloading a file from S3"""
+    bucket_name = "unpaywall-data-feed-walden"
+    file_path = f"{mode}/{filename}"
+
+    s3_client = boto3.client('s3')
+
+    try:
+        # Check if file exists
+        s3_client.head_object(Bucket=bucket_name, Key=file_path)
+
+        # Generate presigned URL
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': file_path},
+            ExpiresIn=expiration
+        )
+
+        return presigned_url
+
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey' or error_code == 'NoSuchBucket':
+            return None
+        else:
+            raise e
