@@ -995,37 +995,33 @@ def get_snapshot():
 
 @app.route("/full-snapshot", methods=["GET"])
 def get_full_snapshot():
-    s3 = boto3.client("s3")
     api_key = request.args.get("api_key")
     if not api_key:
         abort_json(401, "You must provide an api_key")
     if api_key not in valid_changefile_api_keys():
         abort_json(403, "Invalid api_key")
 
+    s3_client = boto3.client("s3")
     bucket = "unpaywall-data-feed-walden"
     object_key = "full_snapshots/full_snapshot_2025-05-23T164004.jsonl.gz"
-    chunk_size = 8 * 1024 * 1024  # 8 MB
-    file_size = 0
 
     try:
-        meta = s3.head_object(Bucket=bucket, Key=object_key)
-        file_size = meta["ContentLength"]
-    except s3.exceptions.NoSuchKey:
-        abort_json(404, "Snapshot not found")
+        s3_client.head_object(Bucket=bucket, Key=object_key)
 
-    def generate():
-        obj  = s3.get_object(Bucket=bucket, Key=object_key)
-        body = obj["Body"]
-        for chunk in body.iter_chunks(chunk_size=chunk_size):
-            if chunk:
-                yield chunk
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket, 'Key': object_key},
+            ExpiresIn=7200  # 2 hours
+        )
 
-    headers = {
-        "Content-Type":        "application/gzip",
-        "Content-Length":      str(file_size),
-        "Content-Disposition": f'attachment; filename="{os.path.basename(object_key)}"',
-    }
-    return Response(stream_with_context(generate()), headers=headers)
+        return redirect(presigned_url, 302)
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            abort_json(404, "Snapshot not found")
+        else:
+            logger.error(f"Error accessing snapshot: {e}")
+            abort_json(500, "Error accessing snapshot")
 
 
 @app.route("/old-daily-feed/changefile/<path:filename>", methods=["GET"])
