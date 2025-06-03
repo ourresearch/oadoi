@@ -932,8 +932,12 @@ def get_changefile_filename(filename):
     })
 
 
-@app.route("/daily-feed/changefile/<path:filename>", methods=["GET"])
-def get_daily_changefile_filename_wunpaywall(filename):
+@app.route("/<mode>-feed/changefile/<path:filename>", methods=["GET"])
+def get_changefile_filename_wunpaywall(mode, filename):
+    # Validate the mode
+    if mode not in ['daily', 'weekly']:
+        abort_json(404, "Invalid feed type")
+
     api_key = request.args.get("api_key", None)
     if not api_key:
         abort_json(401, "You must provide an API_KEY")
@@ -941,7 +945,6 @@ def get_daily_changefile_filename_wunpaywall(filename):
         abort_json(403, "Invalid api_key")
 
     bucket_name = "unpaywall-data-feed-walden"
-    mode = "daily"
     file_path = f"{mode}/{filename}"
 
     s3_client = boto3.client('s3')
