@@ -879,23 +879,6 @@ def get_crossref_issns():
     return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.ISSNS_FILE))
 
 
-@app.route("/old-feed/changefiles", methods=["GET"])
-def get_changefiles_old():
-    # api key is optional here, is just sends back urls that populate with it
-    api_key = request.args.get("api_key", "YOUR_API_KEY")
-    interval = request.args.get("interval", "week")
-
-    if interval == "week":
-        feed = WEEKLY_FEED
-    elif interval == "day":
-        feed = DAILY_FEED
-    else:
-        abort_json(401, 'option "interval" must be one of ["day", "week"]')
-
-    resp = get_changefile_dicts(api_key, feed=feed)
-    return jsonify({"list": resp})
-
-
 @app.route("/feed/changefiles", methods=["GET"])
 def get_wunpaywall_changefiles():
     api_key = request.args.get("api_key", "YOUR_API_KEY")
@@ -910,26 +893,6 @@ def get_wunpaywall_changefiles():
     else:
         abort_json(401, 'option "interval" must be one of ["day", "week"]')
     return jsonify({"list": resp})
-
-
-@app.route("/old-feed/changefile/<path:filename>", methods=["GET"])
-def get_changefile_filename(filename):
-    api_key = request.args.get("api_key", None)
-    if not api_key:
-        abort_json(401, "You must provide an API_KEY")
-    if api_key not in valid_changefile_api_keys():
-        abort_json(403, "Invalid api_key")
-
-    key = get_file_from_bucket(filename)
-
-    def generate_changefile():
-        for chunk in key:
-            yield chunk
-
-    return Response(generate_changefile(), content_type="gzip", headers={
-        'Content-Length': key.size,
-        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
-    })
 
 
 @app.route("/<mode>-feed/changefile/<path:filename>", methods=["GET"])
@@ -974,6 +937,7 @@ def get_changefile_filename_wunpaywall(mode, filename):
 
 @app.route("/snapshot", methods=["GET"])
 @app.route("/feed/snapshot", methods=["GET"])
+@app.route("/full-snapshot", methods=["GET"])
 def get_snapshot():
     api_key = request.args.get("api_key", None)
     if not api_key:
@@ -986,65 +950,30 @@ def get_snapshot():
     if key is None:
         abort_json(404, "no snapshots ready")
 
-    def generate_snapshot():
-        for chunk in key:
-            yield chunk
+    bucket_name = 'unpaywall-data-feed-walden'
+    object_key = key
 
-    return Response(generate_snapshot(), content_type="gzip", headers={
-        'Content-Length': key.size,
-        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
-    })
-
-
-@app.route("/full-snapshot", methods=["GET"])
-def get_full_snapshot():
-    api_key = request.args.get("api_key")
-    if not api_key:
-        abort_json(401, "You must provide an api_key")
-    if api_key not in valid_changefile_api_keys():
-        abort_json(403, "Invalid api_key")
-
-    s3_client = boto3.client("s3")
-    bucket = "unpaywall-data-feed-walden"
-    object_key = "full_snapshots/full_snapshot_2025-05-23T164004.jsonl.gz"
+    s3_client = boto3.client('s3')
 
     try:
-        s3_client.head_object(Bucket=bucket, Key=object_key)
+        s3_client.head_object(Bucket=bucket_name, Key=object_key)
 
         presigned_url = s3_client.generate_presigned_url(
             'get_object',
-            Params={'Bucket': bucket, 'Key': object_key},
-            ExpiresIn=7200  # 2 hours
+            Params={'Bucket': bucket_name, 'Key': object_key},
+            ExpiresIn=14400  # 4 hours
         )
 
         return redirect(presigned_url, 302)
 
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchKey':
-            abort_json(404, "Snapshot not found")
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey' or error_code == 'NoSuchBucket':
+            logger.warning(f"Snapshot file not found in {bucket_name}/{object_key}")
+            abort_json(404, "Snapshot file not found")
         else:
-            logger.error(f"Error accessing snapshot: {e}")
-            abort_json(500, "Error accessing snapshot")
-
-
-@app.route("/old-daily-feed/changefile/<path:filename>", methods=["GET"])
-def get_daily_changefile_filename_old(filename):
-    api_key = request.args.get("api_key", None)
-    if not api_key:
-        abort_json(401, "You must provide an API_KEY")
-    if api_key not in valid_changefile_api_keys():
-        abort_json(403, "Invalid api_key")
-
-    key = get_file_from_bucket(filename, feed=DAILY_FEED)
-
-    def generate_changefile():
-        for chunk in key:
-            yield chunk
-
-    return Response(generate_changefile(), content_type="gzip", headers={
-        'Content-Length': key.size,
-        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
-    })
+            logger.error(f"Error accessing snapshot {object_key} in {bucket_name}: {str(e)}")
+            abort_json(500, "Error accessing snapshot file")
 
 
 @app.route("/issn_ls", methods=["GET", "POST"])
