@@ -739,7 +739,8 @@ class Pub(db.Model):
             db.session.merge(self)
             return
 
-        self.session_id = session_id or get_session_id()
+        self.session_id = session_id
+
         refresh_result = PubRefreshResult(
             id=self.id,
             refresh_time=datetime.datetime.utcnow(),
