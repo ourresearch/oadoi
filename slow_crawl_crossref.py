@@ -5,7 +5,7 @@ from time import time, sleep
 from urllib.parse import quote
 
 import requests
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
 from app import db
 from app import logger

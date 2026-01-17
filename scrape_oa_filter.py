@@ -15,6 +15,7 @@ import boto3
 import pdftotext
 import redis
 import requests
+import urllib3
 from bs4 import BeautifulSoup
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
@@ -29,7 +30,7 @@ from s3_util import get_object, landing_page_key, make_s3, upload_obj, \
 from util import normalize_doi, is_bad_landing_page
 from zyte_session import ZyteSession
 
-requests.packages.urllib3.disable_warnings()
+urllib3.disable_warnings()
 
 AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']

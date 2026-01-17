@@ -5,12 +5,12 @@ import warnings
 
 import boto3
 import requests
+import urllib3
 from flask import Flask
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-from sqlalchemy import event
 from sqlalchemy.pool import NullPool
 
 HEROKU_APP_NAME = "articlepage"
@@ -50,7 +50,7 @@ for a_library in libraries_to_mum:
     warnings.filterwarnings("ignore", category=UserWarning, module=a_library)
 
 # disable extra warnings
-requests.packages.urllib3.disable_warnings()
+urllib3.disable_warnings()
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 app = Flask(__name__)
@@ -59,7 +59,16 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
 openalex_db_url = os.getenv("OPENALEX_DATABASE_URL").replace('postgres://', 'postgresql://')
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace('postgres://', 'postgresql://')
-app.config["SQLALCHEMY_BINDS"] = {"openalex": openalex_db_url}
+app.config["SQLALCHEMY_BINDS"] = {
+    "openalex": {
+        "url": openalex_db_url,
+        "engine_options": {
+            "connect_args": {
+                "options": "-c statement_timeout=5000"
+            }
+        }
+    }
+}
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "connect_args": {
@@ -79,13 +88,7 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 oa_db_engine = create_engine(openalex_db_url)
 
-# set statement timeout for openalex db
-openalex_engine = db.get_engine(app, bind="openalex")
-
-@event.listens_for(openalex_engine, "connect")
-def set_stmt_timeout(dbapi_conn, conn_record):
-    with dbapi_conn.cursor() as cur:
-        cur.execute("SET statement_timeout = 5000")
+# Note: statement_timeout for openalex db is set via SQLALCHEMY_BINDS engine_options above
 
 
 # do compression.  has to be above flask debug toolbar so it can override this.
