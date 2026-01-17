@@ -16,6 +16,39 @@ class WunpaywallPub(db.Model):
         return response
 
 
+class DataFeedApiKey(db.Model):
+    __tablename__ = 'data_feed_api_keys'
+    __table_args__ = {'schema': 'unpaywall'}
+    __bind_key__ = 'openalex'
+
+    api_key = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String)
+    email = db.Column(db.String)
+    begins = db.Column(db.DateTime)
+    ends = db.Column(db.DateTime)
+    trial = db.Column(db.Boolean, default=False)
+    notes = db.Column(db.String)
+
+    @staticmethod
+    def get_valid_api_keys():
+        """Return list of valid API keys. Non-trial keys are always valid,
+        trial keys are valid if current time is within begins/ends + 7 days."""
+        from sqlalchemy import or_, and_, text
+        from datetime import datetime, timedelta
+
+        keys = DataFeedApiKey.query.filter(
+            or_(
+                DataFeedApiKey.trial == False,
+                and_(
+                    DataFeedApiKey.trial == True,
+                    DataFeedApiKey.begins <= datetime.utcnow(),
+                    DataFeedApiKey.ends + timedelta(days=7) >= datetime.utcnow()
+                )
+            )
+        ).all()
+        return [k.api_key for k in keys]
+
+
 class WunpaywallFeed(db.Model):
     __tablename__ = 'export_metadata'
     __table_args__ = {'schema': 'unpaywall'}

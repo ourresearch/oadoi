@@ -6,6 +6,7 @@ import boto3
 from sqlalchemy import sql
 
 from app import db, logger
+from wunpaywall import DataFeedApiKey
 
 WEEKLY_FEED = {
     'name': 'unpaywall-data-feed',
@@ -30,9 +31,8 @@ DAILY_FEED = {
 
 
 def valid_changefile_api_keys():
-    return [r[0] for r in db.session.execute(
-        "select api_key from data_feed_api_keys where not trial or now() between begins and ends + '7 days'::interval"
-    ).fetchall()]
+    """Return valid API keys from RDS (unpaywall.data_feed_api_keys)."""
+    return DataFeedApiKey.get_valid_api_keys()
 
 
 def get_file_from_bucket(filename, feed=WEEKLY_FEED):
