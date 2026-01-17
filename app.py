@@ -62,10 +62,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace('postg
 app.config["SQLALCHEMY_BINDS"] = {
     "openalex": {
         "url": openalex_db_url,
-        "engine_options": {
-            "connect_args": {
-                "options": "-c statement_timeout=5000"
-            }
+        "connect_args": {
+            "options": "-c statement_timeout=5000"
         }
     }
 }
