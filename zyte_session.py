@@ -13,7 +13,7 @@ from sqlalchemy import Column, Integer, Enum, String, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from tenacity import Retrying, stop_after_attempt, wait_exponential
 
-from app import db
+from app import app, db
 from const import ZYTE_API_URL, ZYTE_API_KEY
 from pdf_util import is_pdf
 from redirectors import ALL_REDIRECTORS
@@ -91,7 +91,9 @@ def _get_policies():
         session.close()
 
 
-_ALL_POLICIES: List[ZytePolicy] = _get_policies()
+# Flask-SQLAlchemy 3.x requires app context for database access at module load time
+with app.app_context():
+    _ALL_POLICIES: List[ZytePolicy] = _get_policies()
 _REFRESH_LOCK = threading.Lock()  # Lock to ensure thread safety
 _REFRESH_THREAD = None  # Reference to the refresh thread
 DEFAULT_NO_MATCH_POLICIES = (ZytePolicy(profile='proxy', id=1000),
