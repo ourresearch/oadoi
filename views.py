@@ -755,25 +755,25 @@ def get_doi_endpoint_v2_new(doi):
 
 @app.route("/v2/dois", methods=["POST"])
 def simple_query_tool():
+    from wunpaywall import WunpaywallPub
+
     body = request.json
     dirty_dois_list = [d for d in body["dois"] if d]
 
-    # look up normalized dois
-    normalized_dois = [n for n in [normalize_doi(d, return_none_if_error=True) for d in dirty_dois_list] if n]
-    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(set(normalized_dois)))
-    normalized_doi_responses = dict([(row[0]['doi'], row[0]) for row in q.all() if row[0]])
+    # Normalize and clean all DOIs
+    normalized_dois = [normalize_doi(d, return_none_if_error=True) for d in dirty_dois_list]
+    cleaned_dois = [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list]
 
-    # look up cleaned dois
-    cleaned_dois = [c for c in [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c]
-    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(set(cleaned_dois)))
-    cleaned_doi_responses = dict([(row[0]['doi'], row[0]) for row in q.all() if row[0]])
+    # Batch query RDS
+    all_dois_to_query = list(set(d for d in normalized_dois + cleaned_dois if d))
+    rds_results = WunpaywallPub.query.filter(WunpaywallPub.doi.in_(all_dois_to_query)).all()
+    rds_responses = {r.doi: r.to_dict() for r in rds_results}
 
-    responses = [
-        normalized_doi_responses.get(normalize_doi(d, return_none_if_error=True), None)
-        or cleaned_doi_responses.get(clean_doi(d, return_none_if_error=True), None)
-        or pub.build_new_pub(d, None).to_dict_v2()
-        for d in dirty_dois_list
-    ]
+    # Build response list (try normalized first, then cleaned, then null)
+    responses = []
+    for i, dirty_doi in enumerate(dirty_dois_list):
+        response = rds_responses.get(normalized_dois[i]) or rds_responses.get(cleaned_dois[i])
+        responses.append(response)  # None if not found
 
     formats = body.get("formats", []) or ["jsonl", "csv"]
     files = []
@@ -788,8 +788,13 @@ def simple_query_tool():
 
     csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in responses]
     csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
-    fieldnames = sorted(csv_dicts[0].keys())
-    fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
+
+    # Handle case where no DOIs were found
+    if csv_dicts:
+        fieldnames = sorted(csv_dicts[0].keys())
+        fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
+    else:
+        fieldnames = ["doi"]  # Minimal header for empty results
 
     if "csv" in formats:
         # save csv
@@ -826,7 +831,7 @@ def simple_query_tool():
 
     return jsonify({
         "got it": email_address,
-        "dois": [r['doi'] for r in responses]
+        "dois": [r['doi'] if r else None for r in responses]
     })
 
 
