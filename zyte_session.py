@@ -80,22 +80,42 @@ class ZytePolicy(db.Model):
 
 
 def _get_policies():
-    session = db.session()
+    """Load ZytePolicy records from database. Returns empty list if table doesn't exist."""
     try:
-        result = session.query(ZytePolicy).all()
-        return result
-    except Exception as e:
-        session.rollback()
-        raise e
-    finally:
-        session.close()
+        with app.app_context():
+            session = db.session()
+            try:
+                result = session.query(ZytePolicy).all()
+                return result
+            except Exception as e:
+                session.rollback()
+                # If table doesn't exist, return empty list instead of crashing
+                if 'UndefinedTable' in str(type(e).__name__) or 'zyte_policies' in str(e):
+                    return []
+                raise e
+            finally:
+                session.close()
+    except Exception:
+        # If anything fails (no app context, no db, etc.), return empty list
+        return []
 
 
-# Flask-SQLAlchemy 3.x requires app context for database access at module load time
-with app.app_context():
-    _ALL_POLICIES: List[ZytePolicy] = _get_policies()
+# Initialize as None - will be loaded lazily on first access
+_ALL_POLICIES: List[ZytePolicy] = None
+_POLICIES_LOADED = False
 _REFRESH_LOCK = threading.Lock()  # Lock to ensure thread safety
 _REFRESH_THREAD = None  # Reference to the refresh thread
+
+
+def _ensure_policies_loaded():
+    """Lazy-load policies on first access."""
+    global _ALL_POLICIES, _POLICIES_LOADED
+    if not _POLICIES_LOADED:
+        with _REFRESH_LOCK:
+            if not _POLICIES_LOADED:
+                _ALL_POLICIES = _get_policies()
+                _POLICIES_LOADED = True
+    return _ALL_POLICIES
 DEFAULT_NO_MATCH_POLICIES = (ZytePolicy(profile='proxy', id=1000),
                              ZytePolicy(profile='api', parent_id=1000))
 BYPASS_POLICY = ZytePolicy(profile='bypass')
@@ -103,9 +123,11 @@ NO_MATCH_POLICIES_TRY_BYPASS = [BYPASS_POLICY] + list(DEFAULT_NO_MATCH_POLICIES)
 
 
 def _refresh_policies():
-    global _ALL_POLICIES
+    global _ALL_POLICIES, _POLICIES_LOADED
     while True:
-        _ALL_POLICIES = _get_policies()
+        with _REFRESH_LOCK:
+            _ALL_POLICIES = _get_policies()
+            _POLICIES_LOADED = True
         time.sleep(5 * 60)
 
 
@@ -120,7 +142,8 @@ def start_refresh_thread():
 
 
 def get_matching_policies(url):
-    matching_policies = [policy for policy in _ALL_POLICIES if
+    policies = _ensure_policies_loaded()
+    matching_policies = [policy for policy in policies if
                          policy.match(url)]
     if not matching_policies:
         return []
