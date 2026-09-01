@@ -484,14 +484,23 @@ def get_repo_pulse_endpoint(endpoint_id):
 
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
-    from endpoint import test_harvest_url
-    response = test_harvest_url(url)
-    results = {
-        "check0_identify_status": response["harvest_identify_response"],
-        "check1_query_status": response["harvest_test_recent_dates"],
-        "sample_pmh_record": response["sample_pmh_record"]
-    }
-    return jsonify({"results": results})
+    # Retired 2026-09-01 (oxjob #930). This legacy Unpaywall validator had been
+    # permanently broken (AttributeError on its own documented example) and was
+    # manufacturing support tickets. The replacement lives in OpenAlex.
+    return jsonify({
+        "error": "gone",
+        "message": "This Unpaywall repository validator has been retired. "
+                   "To register or test an OAI-PMH endpoint, use OpenAlex: "
+                   "https://openalex.org/repositories/add (validation: "
+                   "POST https://user.openalex.org/repository-requests/validate "
+                   "with JSON body {\"pmh_url\": \"...\"}). "
+                   "Docs: https://help.openalex.org/how-to/getting-indexed/",
+        "replacement": {
+            "register": "https://openalex.org/repositories/add",
+            "validate": "POST https://user.openalex.org/repository-requests/validate",
+            "docs": "https://help.openalex.org/how-to/getting-indexed/"
+        }
+    }), 410
 
 @app.route("/data/repo_pulse/status/<path:endpoint_id>", methods=["GET"])
 def repo_pulse_status_endpoint_id(endpoint_id):
