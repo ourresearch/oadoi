@@ -414,73 +414,74 @@ def get_pub_from_doi(doi, recalculate=True):
         raise NoDoiException(msg)
     return my_pub
 
+# ---------------------------------------------------------------------------
+# Retired endpoints (oxjob #1236, 2026-09-18). These all read tables or exports
+# that did not survive the 2026-01-19 migration off the old Heroku Postgres and
+# had been returning 500 since. Retired rather than rebuilt: OpenAlex covers
+# each of them. DOI lookup (/v2/<doi>, POST /v2/dois) and the data feed are
+# untouched. Same 410 shape as the 2026-09-01 validator retirement (#930).
+RETIRED_ON = "2026-09-18"
+
+def gone(what, message, replacement):
+    return jsonify({
+        "error": "gone",
+        "retired": RETIRED_ON,
+        "message": "{} was retired on {}. {}".format(what, RETIRED_ON, message),
+        "replacement": replacement,
+    }), 410
+
+GONE_TITLE_SEARCH = lambda: gone(
+    "Unpaywall title search",
+    "Use OpenAlex search instead: https://api.openalex.org/works?search=YOUR+QUERY "
+    "(or filter=title.search:YOUR+QUERY). Every work includes open_access and "
+    "best_oa_location, so no second lookup is needed. Docs: https://help.openalex.org/api/searching/",
+    {"search": "https://api.openalex.org/works?search=YOUR+QUERY",
+     "title_only": "https://api.openalex.org/works?filter=title.search:YOUR+QUERY",
+     "docs": "https://help.openalex.org/api/searching/"})
+
+GONE_ISSN_L = lambda: gone(
+    "Unpaywall ISSN-L lookup",
+    "Look the journal up in OpenAlex instead: https://api.openalex.org/sources?filter=issn:ISSN "
+    "(each source carries issn_l). Docs: https://help.openalex.org/api/",
+    {"lookup": "https://api.openalex.org/sources?filter=issn:ISSN",
+     "docs": "https://help.openalex.org/api/"})
+
+GONE_JOURNALS_CSV = lambda: gone(
+    "The Unpaywall journals export",
+    "Journal-level data now lives in OpenAlex sources: https://api.openalex.org/sources "
+    "(or the OpenAlex snapshot). Docs: https://help.openalex.org/api/",
+    {"api": "https://api.openalex.org/sources",
+     "docs": "https://help.openalex.org/api/"})
+
+GONE_REPOSITORIES = lambda: gone(
+    "The Unpaywall repository dashboard",
+    "Repositories are now tracked in OpenAlex: https://openalex.org/sources?filter=type:repository. "
+    "To register or test an OAI-PMH endpoint use https://openalex.org/repositories/add. "
+    "Docs: https://help.openalex.org/how-to/getting-indexed/",
+    {"browse": "https://openalex.org/sources?filter=type:repository",
+     "register": "https://openalex.org/repositories/add",
+     "docs": "https://help.openalex.org/how-to/getting-indexed/"})
+# ---------------------------------------------------------------------------
+
 @app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
 def get_repo_pulse_search_endpoint(repo_name):
-    my_repo = Repository.query.filter(Repository.institution_name.ilike("%{}%".format(repo_name))).first()
-    my_endpoint = my_repo.endpoints[0]
-    endpoint_id = my_endpoint.id
-    return get_repo_pulse_endpoint(endpoint_id)
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>/pmh/recent", methods=["GET"])
 def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
-    version_filter = request.args.get("version", None)
-    if version_filter:
-        rows = PageNew.query\
-            .filter(PageNew.endpoint_id==endpoint_id, PageNew.scrape_version==version_filter)\
-            .order_by(PageNew.record_timestamp.desc())\
-            .limit(100)
-        # deduplicate, because they don't care about the match type of the pages
-        results = [r.to_dict(include_id=False) for r in rows]
-        results = [dict(t) for t in {tuple(d.items()) for d in results}]
-    else:
-        rows = PmhRecord.query.options(raiseload('*')).filter(PmhRecord.endpoint_id==endpoint_id).order_by(PmhRecord.record_timestamp.desc()).limit(100)
-        results = [r.to_dict() for r in rows]
-
-    results = sorted(results, key=lambda k: k['oaipmh_record_timestamp'], reverse=True)
-    return jsonify({"results": results})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/debug/endpoint/<endpoint_id>/pmh/all", methods=["GET"])
 def get_debug_endpoint_page_all(endpoint_id):
-    version_filter = request.args.get("version", None)
-    if version_filter:
-        rows = PageNew.query\
-            .filter(PageNew.endpoint_id==endpoint_id, PageNew.scrape_version==version_filter)\
-            .all()
-    else:
-        rows = PageNew.query.filter(PageNew.endpoint_id==endpoint_id).all()
-
-    rows_by_pmh_id_version = defaultdict(dict)
-
-    for row in rows:
-        if not row.scrape_version:
-            continue
-
-        existing_row = rows_by_pmh_id_version[row.bare_pmh_id].get(row.scrape_version, None)
-
-        if not existing_row or (row.doi and not existing_row['doi']):
-            rows_by_pmh_id_version[row.bare_pmh_id][row.scrape_version] = row.to_dict(include_id=False)
-            rows_by_pmh_id_version[row.bare_pmh_id][row.scrape_version]['doi'] = row.doi
-            del rows_by_pmh_id_version[row.bare_pmh_id][row.scrape_version]['version']
-
-    return jsonify({"results": rows_by_pmh_id_version})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
-    my_live_endpoint = Endpoint.query.get(endpoint_id)
-    live_results = my_live_endpoint.to_dict_repo_pulse()
-
-    my_repo_pulse = BqRepoPulse.query.get(endpoint_id)
-    if my_repo_pulse:
-        results = my_repo_pulse.to_dict()
-        # override the bq status, to get the most recent
-        results["status"]["check0_identify_status"] = live_results["status"]["check0_identify_status"]
-        results["status"]["check1_query_status"] = live_results["status"]["check1_query_status"]
-    else:
-        results = live_results
-    return jsonify({"results": results})
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
@@ -504,55 +505,23 @@ def repo_pulse_test_url(url):
 
 @app.route("/data/repo_pulse/status/<path:endpoint_id>", methods=["GET"])
 def repo_pulse_status_endpoint_id(endpoint_id):
-    my_endpoint = Endpoint.query.filter(Endpoint.id==endpoint_id).first()
-    return jsonify({"results": my_endpoint.to_dict_status()})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
-    query_parts = query_string.split(",")
-    objs = []
-    for query_part in query_parts:
-        objs += lookup_endpoint_by_pmh_url(query_part)
-    return jsonify({"results": [obj.to_dict() for obj in objs]})
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/debug/repo/search/<path:query_string>", methods=["GET"])
 def debug_repo_endpoint_search(query_string):
-    repos = repository.get_raw_repo_meta(query_string)
-    endpoints = []
-    for repo in repos:
-        for endpoint in repo.endpoints:
-            endpoints.append(endpoint)
-    return jsonify({"results": [obj.to_dict() for obj in endpoints]})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>/request_oa_locations", methods=["POST"])
 def repo_oa_location_request(endpoint_id):
-    body = request.json
-    email_address = body["email"]
-
-    export_request = RepoOALocationExportRequest.query.filter(
-        RepoOALocationExportRequest.email == email_address,
-        RepoOALocationExportRequest.endpoint_id == endpoint_id,
-        RepoOALocationExportRequest.finished == None
-    ).first()
-
-    if not export_request:
-        export_request = RepoOALocationExportRequest(
-            endpoint_id=endpoint_id,
-            requested=datetime.utcnow(),
-            email=email_address
-        )
-
-        db.session.merge(export_request)
-        db.session.commit()
-
-    return jsonify({
-        'endpoint_id': export_request.endpoint_id,
-        'requested': export_request.requested,
-        'email': export_request.email
-    })
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 def get_endpoints_from_query_string(query_string):
     if "," in query_string:
@@ -568,48 +537,38 @@ def get_endpoints_from_query_string(query_string):
 
 @app.route("/debug/repo/<query_string>", methods=["GET"])
 def debug_repo_endpoint(query_string):
-    endpoints = get_endpoints_from_query_string(query_string)
-    return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/debug/repo/<query_string>/examples/closed", methods=["GET"])
 def debug_repo_examples_closed(query_string):
-    endpoints = get_endpoints_from_query_string(query_string)
-    return jsonify({"results": [obj.get_closed_pages() for obj in endpoints]})
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/debug/repo/<query_string>/examples/open", methods=["GET"])
 def debug_repo_examples_open(query_string):
-    endpoints = get_endpoints_from_query_string(query_string)
-    return jsonify({"results": [obj.get_open_pages() for obj in endpoints]})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/data/sources/<query_string>", methods=["GET"])
 def sources_endpoint_search(query_string):
-    objs = repository.get_sources_data(query_string)
-    return jsonify({"results": [obj.to_dict() for obj in objs]})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/data/sources.csv", methods=["GET"])
 def sources_endpoint_csv():
-    objs = repository.get_sources_data()
-    data_string = '\n'.join([obj.to_csv_row() for obj in objs])
-    data_string = data_string.encode("utf-8")
-    output = make_response(data_string)
-    output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
-    output.headers["Content-type"] = "text/csv; charset=UTF-8"
-    return output
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/data/sources", methods=["GET"])
 def sources_endpoint():
-    sources = repository.get_sources_data_fast()
-    return jsonify({"results": [s.to_dict() for s in sources]})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/data/repositories", methods=["GET"])
 def repositories_endpoint():
-    repository_metadata_objects = repository.get_repository_data()
-    return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_REPOSITORIES()
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
@@ -867,11 +826,10 @@ def get_s3_csv_gz(s3_key):
         'Content-Type': 'application/gzip',
     })
 
-
 @app.route("/journals.csv.gz", methods=["GET"])
 def get_journals_csv():
-    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.JOURNAL_FILE))
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_JOURNALS_CSV()
 
 @app.route("/journal_open_access.csv.gz", methods=["GET"])
 def get_journal_open_access():
@@ -989,81 +947,20 @@ def get_snapshot():
             logger.error(f"Error accessing snapshot {object_key} in {bucket_name}: {str(e)}")
             abort_json(500, "Error accessing snapshot file")
 
-
 @app.route("/issn_ls", methods=["GET", "POST"])
 def get_issnls():
-    if request.method == 'GET':
-        issns = request.args.get('issns', '').split(',')
-    else:
-        if request.json and isinstance(request.json.get('issns', None), list):
-            issns = request.json.get('issns')
-        else:
-            abort_json(400, 'send a json object like {"issns": ["0005-0970","1804-6436"]}')
-
-    query = sql.text('select issn, issn_l from journalsdb_issn_to_issn_l where issn = any(:issns)').bindparams(issns=issns)
-
-    issn_l_list = db.engine.execute(query).fetchall()
-    issn_l_map = dict([(issn_pair[0], issn_pair[1]) for issn_pair in issn_l_list])
-
-    response = {'issn_ls': [issn_l_map.get(issn, None) for issn in issns]}
-
-    return jsonify(response)
-
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_ISSN_L()
 
 @app.route("/v2/search/", methods=["GET"], strict_slashes=False)
 def get_search_query():
-    query = request.args.get("query", None)
-    is_oa = request.args.get("is_oa", None)
-    page = request.args.get("page", None)
-
-    if query:
-        query = query.lstrip('-') # remove leading --
-
-    if is_oa is not None:
-        try:
-            is_oa = str_to_bool(is_oa)
-        except ValueError:
-            if is_oa == 'null':
-                is_oa = None
-            else:
-                abort_json(400, "is_oa must be 'true' or 'false'")
-
-    if page is not None:
-        try:
-            page = int(page)
-            if page < 1:
-                raise ValueError
-        except ValueError:
-            abort_json(400, "'page' must be a positive integer")
-    else:
-        page = 1
-
-    if not query:
-        abort_json(400, "query parameter is required")
-
-    start_time = time()
-    response = fulltext_search_title(query, is_oa, page=page)
-    sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
-
-    for api_response in sorted_response:
-        doi = api_response['response']['doi']
-        version_suffix = re.findall(r'[./](v\d+)$', doi, re.IGNORECASE)
-
-        if version_suffix:
-            title = api_response['response']['title']
-            title = '{} ({})'.format(title, version_suffix[0].upper())
-            api_response['response']['title'] = title
-
-    elapsed_time = elapsed(start_time, 3)
-    return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_TITLE_SEARCH()
 
 @app.route("/search/autocomplete/<path:query>", methods=["GET"])
 def get_search_autocomplete_query(query):
-    start_time = time()
-    response = autocomplete_phrases(query)
-    sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
-    elapsed_time = elapsed(start_time, 3)
-    return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
+    # Retired 2026-09-18 (oxjob #1236); see gone() above.
+    return GONE_TITLE_SEARCH()
 
 @app.route("/admin/restart/<api_key>", methods=["GET"])
 def restart_endpoint(api_key):
