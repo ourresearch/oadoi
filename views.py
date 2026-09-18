@@ -421,9 +421,9 @@ def get_pub_from_doi(doi, recalculate=True):
 # each of them. DOI lookup (/v2/<doi>, POST /v2/dois) and the data feed are
 # untouched. Same 410 shape as the 2026-09-01 validator retirement (#930).
 RETIRED_ON = "2026-09-18"
-RETIRED_DOCS = "https://help.openalex.org/access/unpaywall-and-openalex/"
+RETIRED_DOCS = "https://help.openalex.org/access/unpaywall/"
 
-def gone(what, replacement, anchor="what-was-retired"):
+def gone(what, replacement, anchor="retired-unpaywall-features"):
     docs = RETIRED_DOCS + "#" + anchor
     return jsonify({
         "error": "gone",
@@ -439,8 +439,7 @@ def gone(what, replacement, anchor="what-was-retired"):
 
 GONE_TITLE_SEARCH = lambda: gone(
     "Unpaywall title search",
-    "https://api.openalex.org/works?search=YOUR+QUERY",
-    anchor="migrating-a-title-search")
+    "https://api.openalex.org/works?search=YOUR+QUERY")
 
 GONE_ISSN_L = lambda: gone(
     "Unpaywall ISSN-L lookup",
