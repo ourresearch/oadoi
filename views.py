@@ -423,15 +423,15 @@ def get_pub_from_doi(doi, recalculate=True):
 RETIRED_ON = "2026-09-18"
 RETIRED_DOCS = "https://help.openalex.org/access/unpaywall/"
 
-def gone(what, replacement, anchor="retired-unpaywall-features"):
+def gone(what, replacement, anchor="unpaywall-and-openalex"):
     docs = RETIRED_DOCS + "#" + anchor
     return jsonify({
         "error": "gone",
         "retired": RETIRED_ON,
         "message": (
-            "{what} was retired on {date}. Unpaywall and OpenAlex share one database, "
-            "so the same data is available from OpenAlex: {replacement} . "
-            "How to migrate, and how Unpaywall and OpenAlex fit together: {docs}"
+            "{what} was retired on {date}. Use OpenAlex instead: {replacement} . "
+            "OpenAlex is the successor to Unpaywall, from the same team, and Unpaywall now runs "
+            "on the OpenAlex database, so it is the same data. More: {docs}"
         ).format(what=what, date=RETIRED_ON, replacement=replacement, docs=docs),
         "replacement": replacement,
         "docs": docs,
