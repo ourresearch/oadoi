@@ -421,46 +421,38 @@ def get_pub_from_doi(doi, recalculate=True):
 # each of them. DOI lookup (/v2/<doi>, POST /v2/dois) and the data feed are
 # untouched. Same 410 shape as the 2026-09-01 validator retirement (#930).
 RETIRED_ON = "2026-09-18"
+RETIRED_DOCS = "https://help.openalex.org/access/unpaywall-and-openalex/"
 
-def gone(what, message, replacement):
+def gone(what, replacement, anchor="what-was-retired"):
+    docs = RETIRED_DOCS + "#" + anchor
     return jsonify({
         "error": "gone",
         "retired": RETIRED_ON,
-        "message": "{} was retired on {}. {}".format(what, RETIRED_ON, message),
+        "message": (
+            "{what} was retired on {date}. Unpaywall and OpenAlex share one database, "
+            "so the same data is available from OpenAlex: {replacement} . "
+            "How to migrate, and how Unpaywall and OpenAlex fit together: {docs}"
+        ).format(what=what, date=RETIRED_ON, replacement=replacement, docs=docs),
         "replacement": replacement,
+        "docs": docs,
     }), 410
 
 GONE_TITLE_SEARCH = lambda: gone(
     "Unpaywall title search",
-    "Use OpenAlex search instead: https://api.openalex.org/works?search=YOUR+QUERY "
-    "(or filter=title.search:YOUR+QUERY). Every work includes open_access and "
-    "best_oa_location, so no second lookup is needed. Docs: https://help.openalex.org/api/searching/",
-    {"search": "https://api.openalex.org/works?search=YOUR+QUERY",
-     "title_only": "https://api.openalex.org/works?filter=title.search:YOUR+QUERY",
-     "docs": "https://help.openalex.org/api/searching/"})
+    "https://api.openalex.org/works?search=YOUR+QUERY",
+    anchor="migrating-a-title-search")
 
 GONE_ISSN_L = lambda: gone(
     "Unpaywall ISSN-L lookup",
-    "Look the journal up in OpenAlex instead: https://api.openalex.org/sources?filter=issn:ISSN "
-    "(each source carries issn_l). Docs: https://help.openalex.org/api/",
-    {"lookup": "https://api.openalex.org/sources?filter=issn:ISSN",
-     "docs": "https://help.openalex.org/api/"})
+    "https://api.openalex.org/sources?filter=issn:YOUR_ISSN")
 
-GONE_JOURNALS_CSV = lambda: gone(
-    "The Unpaywall journals export",
-    "Journal-level data now lives in OpenAlex sources: https://api.openalex.org/sources "
-    "(or the OpenAlex snapshot). Docs: https://help.openalex.org/api/",
-    {"api": "https://api.openalex.org/sources",
-     "docs": "https://help.openalex.org/api/"})
+GONE_JOURNAL_EXPORTS = lambda: gone(
+    "This Unpaywall journal export (last generated December 2024)",
+    "https://api.openalex.org/sources")
 
 GONE_REPOSITORIES = lambda: gone(
     "The Unpaywall repository dashboard",
-    "Repositories are now tracked in OpenAlex: https://openalex.org/sources?filter=type:repository. "
-    "To register or test an OAI-PMH endpoint use https://openalex.org/repositories/add. "
-    "Docs: https://help.openalex.org/how-to/getting-indexed/",
-    {"browse": "https://openalex.org/sources?filter=type:repository",
-     "register": "https://openalex.org/repositories/add",
-     "docs": "https://help.openalex.org/how-to/getting-indexed/"})
+    "https://openalex.org/sources?filter=type:repository")
 # ---------------------------------------------------------------------------
 
 @app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
@@ -829,26 +821,30 @@ def get_s3_csv_gz(s3_key):
 @app.route("/journals.csv.gz", methods=["GET"])
 def get_journals_csv():
     # Retired 2026-09-18 (oxjob #1236); see gone() above.
-    return GONE_JOURNALS_CSV()
+    return GONE_JOURNAL_EXPORTS()
 
 @app.route("/journal_open_access.csv.gz", methods=["GET"])
 def get_journal_open_access():
-    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.OA_STATS_FILE))
+    # Retired 2026-09-18 (oxjob #1236): stale S3 export, last written 2024-12-09.
+    return GONE_JOURNAL_EXPORTS()
 
 
 @app.route("/repositories.csv.gz", methods=["GET"])
 def get_repository_journal_stats():
-    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.REPO_FILE))
+    # Retired 2026-09-18 (oxjob #1236): stale S3 export, last written 2024-12-09.
+    return GONE_JOURNAL_EXPORTS()
 
 
 @app.route("/extension_requests.csv.gz", methods=["GET"])
 def get_journal_extension_requests():
-    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.REQUESTS_FILE))
+    # Retired 2026-09-18 (oxjob #1236): stale S3 export, last written 2024-12-09.
+    return GONE_JOURNAL_EXPORTS()
 
 
 @app.route("/crossref_issns.csv.gz", methods=["GET"])
 def get_crossref_issns():
-    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.ISSNS_FILE))
+    # Retired 2026-09-18 (oxjob #1236): stale S3 export, last written 2024-12-09.
+    return GONE_JOURNAL_EXPORTS()
 
 
 @app.route("/feed/changefiles", methods=["GET"])
