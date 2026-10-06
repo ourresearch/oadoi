@@ -63,8 +63,14 @@ app.config["SQLALCHEMY_BINDS"] = {
     "openalex": {
         "url": openalex_db_url,
         "connect_args": {
-            "options": "-c statement_timeout=5000"
-        }
+            "options": "-c statement_timeout=5000",
+            "connect_timeout": 5  # SQLALCHEMY_ENGINE_OPTIONS applies only to the default bind; set connect_timeout here
+        },
+        "isolation_level": "AUTOCOMMIT",  # one round trip per lookup instead of BEGIN + SELECT + ROLLBACK
+        "pool_size": 2,  # 1 sync worker per dyno; at most 4 connections per process,
+        "max_overflow": 2,  # 120 across 30 dynos (240 at 2 workers), under the role's 300
+        "pool_timeout": 3,  # well under gunicorn's 10 s request timeout
+        "pool_recycle": 1800  # open a fresh connection after 30 min (checked at checkout; not outage protection)
     }
 }
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
