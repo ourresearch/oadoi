@@ -423,16 +423,16 @@ def get_pub_from_doi(doi, recalculate=True):
 RETIRED_ON = "2026-09-18"
 RETIRED_DOCS = "https://help.openalex.org/access/unpaywall/"
 
-def gone(what, replacement, anchor="unpaywall-and-openalex"):
+def gone(what, replacement, anchor="unpaywall-and-openalex", retired_on=RETIRED_ON):
     docs = RETIRED_DOCS + "#" + anchor
     return jsonify({
         "error": "gone",
-        "retired": RETIRED_ON,
+        "retired": retired_on,
         "message": (
             "{what} was retired on {date}. Use OpenAlex instead: {replacement} . "
             "OpenAlex is the successor to Unpaywall, from the same team, and Unpaywall now runs "
             "on the OpenAlex database, so it is the same data. More: {docs}"
-        ).format(what=what, date=RETIRED_ON, replacement=replacement, docs=docs),
+        ).format(what=what, date=retired_on, replacement=replacement, docs=docs),
         "replacement": replacement,
         "docs": docs,
     }), 410
@@ -452,6 +452,20 @@ GONE_JOURNAL_EXPORTS = lambda: gone(
 GONE_REPOSITORIES = lambda: gone(
     "The Unpaywall repository dashboard",
     "https://openalex.org/sources?filter=type:repository")
+
+# Retired 2026-10-14: the routes below read the default bind (DATABASE_URL: pub, static_api_response, pmh_record,
+# page_new, recordthresher.pubmed_raw, repo_request/endpoint). That database was RDS openalex-1, deleted on
+# 2026-10-09, so they had returned 500 since. DOI lookup (/v2/<doi>, /<doi>, POST /v2/dois) and the data feed use the
+# 'openalex' bind (Lakebase) and are untouched.
+RETIRED_ON_RDS = "2026-10-14"
+
+GONE_V1 = lambda: gone(
+    "The Unpaywall v1 API",
+    "https://api.unpaywall.org/v2/YOUR_DOI?email=YOUR_EMAIL", retired_on=RETIRED_ON_RDS)
+
+GONE_RAW_RECORDS = lambda: gone(
+    "This Unpaywall raw-record lookup",
+    "https://api.openalex.org/works/doi:YOUR_DOI", retired_on=RETIRED_ON_RDS)
 # ---------------------------------------------------------------------------
 
 @app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
@@ -564,12 +578,8 @@ def repositories_endpoint():
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    try:
-        my_pub = get_pub_from_doi(doi)
-        return jsonify({"results": [my_pub.to_dict_v1()]})
-    except NoDoiException as e:
-        abort_json(404, str(e))
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_V1()
 
 def get_ip():
     # from http://stackoverflow.com/a/12771438/596939
@@ -595,12 +605,8 @@ def print_ip():
 # this is undocumented and is just for impactstory use now.
 @app.route("/v1/publications", methods=["POST"])
 def new_post_publications_endpoint():
-    print_ip()
-    pubs = get_multiple_pubs_response()
-    if not pubs:
-        abort_json(500, "something went wrong.  please email support@unpaywall.org and we'll have a look!")
-    return jsonify({"results": [p.to_dict_v1() for p in pubs]})
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_V1()
 
 
 # this endpoint is undocumented for public use, and we don't really use it
@@ -611,15 +617,8 @@ def new_post_publications_endpoint():
 @app.route("/v1/publication", methods=["GET"])
 @app.route("/v1/publication.json", methods=["GET"])
 def get_from_biblio_endpoint():
-    request_biblio = {}
-    for (k, v) in request.args.items():
-        request_biblio[k] = v
-    run_with_hybrid = g.hybrid
-    my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
-    return json_resp({"results": [my_pub.to_dict()]})
-
-
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_V1()
 
 @app.route("/favicon.ico")
 def favicon_ico():
@@ -671,37 +670,8 @@ def get_doi_endpoint(doi):
 
 @app.route("/v2-old/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2_old(doi):
-    # the GET api endpoint (returns json data)
-    try:
-        if request.args.get('email') == 'unpaywall@impactstory.org':
-            my_pub = get_pub_from_doi(doi, recalculate=False)
-            logger.info('request from unpaywall@impactstory.org, serving cached response')
-            response_dict = my_pub.response_jsonb or {}
-            answer = OrderedDict([
-                (key, response_dict.get(key, None))
-                for key in pub.Pub.dict_v2_fields().keys()
-            ])
-        else:
-            my_pub = get_pub_from_doi(doi)
-            answer = my_pub.to_dict_v2()
-    except NoDoiException as e:
-        answer = {}
-        normalized_doi = normalize_doi(doi, return_none_if_error=True)
-        if normalized_doi:
-            static_response = StaticAPIResponse.query.get(doi)
-            if static_response:
-                answer = OrderedDict([
-                    (key, static_response.response_jsonb.get(key, None)) for key in pub.Pub.dict_v2_fields().keys()
-                ])
-        if not answer:
-            abort_json(404, str(e))
-
-    indent = None
-    if current_app.config['JSONIFY_PRETTYPRINT_REGULAR'] and not request.is_xhr:
-        indent = 2
-
-    return current_app.response_class(json.dumps(answer, indent=indent), mimetype='application/json')
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_V1()
 
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2_new(doi):
@@ -796,15 +766,8 @@ def simple_query_tool():
 
 @app.route("/repository", methods=["POST"])
 def repository_post_endpoint():
-    body = request.json
-    repo_request = RepoRequest(**body)
-
-    new_endpoint = add_endpoint(repo_request)
-    if not new_endpoint:
-        abort_json(422, "missing arguments")
-
-    return jsonify({"response": new_endpoint.to_dict()})
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_REPOSITORIES()
 
 def get_s3_csv_gz(s3_key):
     def generate_file():
@@ -990,33 +953,18 @@ def report_error(api_key):
 
 @app.route("/pmh_record_xml/<path:pmh_record_id>", methods=["GET"])
 def get_pmh_record_xml(pmh_record_id):
-    record = PmhRecord.query.get(pmh_record_id)
-
-    if not record or not record.api_raw:
-        return Response('', mimetype='text/xml', status=404)
-    else:
-        return Response(record.api_raw, mimetype='text/xml')
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_RAW_RECORDS()
 
 @app.route("/crossref_api_cache/<path:doi>", methods=["GET"])
 def get_crossref_api_json(doi):
-    my_pub = pub.Pub.query.get(normalize_doi(doi))
-
-    if not my_pub or not my_pub.crossref_api_raw_new:
-        abort_json(404, f"Can't find a crossref API record for {doi}")
-    else:
-        return jsonify(my_pub.crossref_api_raw_new)
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_RAW_RECORDS()
 
 @app.route("/pubmed_xml/<pmid>", methods=["GET"])
 def get_pubmed_xml(pmid):
-    pubmed_raw = PubmedRaw.query.get(pmid)
-
-    if not pubmed_raw or not pubmed_raw.pubmed_article_xml:
-        abort_json(404, f"Can't find a PubMed record for PMID {pmid}")
-    else:
-        return Response(pubmed_raw.pubmed_article_xml, mimetype='text/xml')
-
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_RAW_RECORDS()
 
 @app.route("/doi_page/<path:doi>", methods=["GET"])
 def get_doi_landing_page(doi):
@@ -1041,56 +989,16 @@ def get_doi_landing_page(doi):
 
 @app.route("/repo_page/<page_id>", methods=["GET"])
 def get_repository_page(page_id):
-    if repo_page := PageNew.query.get(page_id):
-        if repo_page.landing_page_archive_key:
-            s3 = boto.connect_s3()
-            bucket = s3.get_bucket(REPO_PAGE_ARCHIVE_BUCKET)
-            if key := bucket.lookup(repo_page.landing_page_archive_key.key):
-                def generate_file():
-                    for chunk in key:
-                        yield chunk
-
-                return Response(generate_file(), content_type="gzip", headers={
-                    'Content-Length': key.size,
-                    'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
-                })
-
-    abort_json(404, f"Can't find an archive for repo page {page_id}")
+    # Retired 2026-10-14 (default-bind database deleted); see GONE_V1 / GONE_RAW_RECORDS above.
+    return GONE_RAW_RECORDS()
 
 @app.route('/freshdesk_autorefresh_hook', methods=['POST'])
 def freshdesk_autorefresh():
-    api_key = request.authorization.username
+    # Auto-refresh retired 2026-10-14: it read and refreshed `pub` on the default bind (RDS openalex-1, deleted
+    # 2026-10-09). Still answer 200 to an authorised webhook so Freshdesk does not retry.
+    api_key = request.authorization.username if request.authorization else None
     if api_key != os.getenv('FRESHDESK_HOOK_API_KEY'):
         return Response(status=403)
-    description = request.json['freshdesk_webhook']['ticket_description']
-    subject = request.json['freshdesk_webhook']['ticket_subject']
-    if re.search(r'from:\s+support@unpaywall\.org', description):
-        return Response(status=200)
-    ticket_id = request.json['freshdesk_webhook']['ticket_id']
-    doi_pattern = r'10\.\d{4,9}/[^\s"<>?]+'
-    dois = re.findall(doi_pattern, description)
-    dois += re.findall(doi_pattern, subject)
-    dois = set([normalize_doi(doi).strip('.') for doi in dois])
-    if not dois:
-        return Response(status=200)
-    pubs = pub.Pub.query.filter(pub.Pub.id.in_(dois)).all()
-    if not pubs:
-        return Response(status=200)
-
-    def refresh_pubs(pubs):
-        for i, p in enumerate(pubs):
-            logger.info(f'Refreshing {p.doi} for ticket {ticket_id} ({i+1}/{len(pubs)})')
-            p.refresh(force=True)
-            db.session.commit()
-        freshdesk_api_key = os.getenv('FRESHDESK_API_KEY_NOLAN')
-        freshdesk_api = API('impactstory.freshdesk.com', freshdesk_api_key)
-        logger.info(
-            f'Sending auto-refresh response to Freshdesk ticket {ticket_id}')
-        dois_str = ', '.join([p.doi for p in pubs])
-        freshdesk_api.comments.create_reply(ticket_id,
-                                            f'The following DOIs were detected in your ticket and refreshed in our system automatically: {dois_str}<br><br>If this did not fix your issue, please respond again letting us know as such and we will get back to you as soon as possible.<br><br>Thanks!<br>Unpaywall Team')
-
-    Thread(target=refresh_pubs, args=(pubs, )).start()
     return Response(status=200)
 
 if __name__ == "__main__":
