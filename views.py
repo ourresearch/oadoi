@@ -461,7 +461,7 @@ RETIRED_ON_RDS = "2026-10-14"
 
 GONE_V1 = lambda: gone(
     "The Unpaywall v1 API",
-    "https://api.unpaywall.org/v2/YOUR_DOI?email=YOUR_EMAIL", retired_on=RETIRED_ON_RDS)
+    "https://api.openalex.org/works/doi:YOUR_DOI", retired_on=RETIRED_ON_RDS)
 
 GONE_RAW_RECORDS = lambda: gone(
     "This Unpaywall raw-record lookup",
