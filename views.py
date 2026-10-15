@@ -11,6 +11,7 @@ import boto
 from botocore.exceptions import ClientError
 import boto3
 import redis
+import sentry_sdk
 import unicodecsv
 from flask import stream_with_context
 from flask import Response
@@ -862,6 +863,7 @@ def get_changefile_filename_wunpaywall(mode, filename):
             abort_json(404, f"File {filename} not found")
         else:
             logger.error(f"Error accessing {filename} in {bucket_name}/{mode}: {str(e)}")
+            sentry_sdk.capture_exception(e)
             abort_json(500, "Error accessing file")
 
 
@@ -903,6 +905,7 @@ def get_snapshot():
             abort_json(404, "Snapshot file not found")
         else:
             logger.error(f"Error accessing snapshot {object_key} in {bucket_name}: {str(e)}")
+            sentry_sdk.capture_exception(e)
             abort_json(500, "Error accessing snapshot file")
 
 @app.route("/issn_ls", methods=["GET", "POST"])

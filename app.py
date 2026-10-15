@@ -13,6 +13,44 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
+# Sentry error reporting (oxjob #1685). Every web worker and script imports this module, so
+# one init here covers them all. A missing SENTRY_DSN makes this a no-op.
+if os.environ.get("SENTRY_DSN"):
+    import re as _re
+    import sentry_sdk
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    from sentry_sdk.scrubber import EventScrubber
+
+    # /admin/restart/<key> and /admin/report-error/<key> carry the Heroku API key in the path,
+    # and report_error logs a wrong key verbatim.
+    _ADMIN_KEY_PATH = _re.compile(r"(/admin/(?:restart|report-error)/|wrong heroku API key )[^/?#\s'\"]+")
+
+    def _scrub_admin_keys(value):
+        if isinstance(value, str):
+            return _ADMIN_KEY_PATH.sub(r"\1[Filtered]", value)
+        if isinstance(value, dict):
+            return {k: _scrub_admin_keys(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [_scrub_admin_keys(v) for v in value]
+        return value
+
+    def _sentry_before_send(event, hint):
+        return _scrub_admin_keys(event)
+
+    sentry_sdk.init(
+        dsn=os.environ["SENTRY_DSN"],
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
+        release=os.environ.get("HEROKU_SLUG_COMMIT") or os.environ.get("HEROKU_RELEASE_VERSION"),
+        server_name=os.environ.get("DYNO"),
+        send_default_pii=False,
+        traces_sample_rate=0,
+        # Errors only from unhandled exceptions and explicit capture_exception calls; logger.error
+        # lines (some are user errors, e.g. a wrong admin key) stay breadcrumbs, not events.
+        integrations=[LoggingIntegration(event_level=None)],
+        before_send=_sentry_before_send,  # also scrubs the event's breadcrumbs
+        event_scrubber=EventScrubber(recursive=True),  # api_key etc. nested in frame vars
+    )
+
 HEROKU_APP_NAME = "articlepage"
 
 # set up logging
